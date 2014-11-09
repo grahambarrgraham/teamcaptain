@@ -1,0 +1,132 @@
+<html>
+<head>
+<title>jbehave.ArrangeMatch</title>
+<style type="text/css" media="all">
+@import url( "./style/jbehave-core.css" );
+</style>
+</head>
+<body>
+ 
+<script type="syntaxhighlighter" class="brush: txt"><![CDATA[
+
+(jbehave/ArrangeMatch.story)
+Scenario: a notification email is sent out to the first pick players
+Given a match is scheduled (PENDING)
+When it is 10 days before the match (PENDING)
+Then an availability notification is sent to the first pick members (PENDING)
+
+Scenario: a player can play
+Given a match is scheduled (PENDING)
+And notifications have been sent out to the proposed team members (PENDING)
+When a team member acknowledges their availability (PENDING)
+Then they are assigned to the match (PENDING)
+And an acknowledgement notification goes to the player (PENDING)
+
+Scenario: player cannot play
+Given a match is scheduled (PENDING)
+And notifications have been sent out to the first pick players (PENDING)
+When a player responds that they are not available (PENDING)
+Then a notification goes out to the next appropriate player in the pool (PENDING)
+And an acknowledgement notification goes to the player (PENDING)
+
+Scenario: a player does not respond
+Given a match is scheduled (PENDING)
+And it is at least 4 days before the match (PENDING)
+And more than 1 day has elapsed since a notification was sent to the player (PENDING)
+When a team member fails to acknowledges their availability (PENDING)
+Then a reminder notification is sent to the player (PENDING)
+
+Scenario: a player continues not to respond
+Given a match is scheduled (PENDING)
+And it is less than 4 days before the match (PENDING)
+And more than 1 day has elapsed since a notification was sent to the player (PENDING)
+When a team member fails to acknowledges their availability (PENDING)
+Then a reminder notification is sent to the player (PENDING)
+Then a reserve notification goes out to the next appropriate player in the pool (PENDING)
+And an administrator alert is raised (PENDING)
+
+Scenario: a team is confirmed
+Given a match is scheduled (PENDING)
+When sufficient players are assigned to the match (PENDING)
+Then a match confirmation notification is sent out to all notified players (PENDING)
+And the confirmation contains the list of players assigned to the match (PENDING)
+And the confirmation contains the match details (PENDING)
+And an administration notification is raised (PENDING)
+
+Scenario: a player is on holiday and is is not eligible to play
+Given a match is scheduled (PENDING)
+And a member of the pool is on holiday on the date of the match (PENDING)
+When players are notified (PENDING)
+Then the player on holiday is not notified (PENDING)
+
+Scenario: a player is injured and so is not eligible to play
+Given a match is scheduled (PENDING)
+And a member of the pool is injured (PENDING)
+When players are notified (PENDING)
+Then the injured player is not notified (PENDING)
+
+Scenario: there are insufficient eligible players
+Given a match is scheduled (PENDING)
+And an there are insufficient eligible players to fulfill the match (PENDING)
+When it is 10 days before the match (PENDING)
+Then an administrator alert is raised (PENDING)
+
+Scenario: Cambridge League Mixed Badminton
+Given a mixed doubles match is scheduled (PENDING)
+When players are chosen (PENDING)
+Then the 3 strongest eligible ladies are chosen from the pool (PENDING)
+And the 3 strongest eligible men are chosen from the pool (PENDING)
+
+Scenario: Cambridge League Mens Badminton
+Given a Cambridge league mens doubles badminton match is scheduled (PENDING)
+When players are chosen (PENDING)
+Then the 6 strongest eligible and available men are chosen from the pool (PENDING)
+
+Scenario: Cambridge League Ladies Badminton
+Given a Cambridge league mens doubles badminton match is scheduled (PENDING)
+When players are chosen (PENDING)
+Then the 6 strongest eligible and available ladies are chosen from the pool (PENDING)
+
+Scenario: Cambridgeshire County Team Nominated Team
+Given a Cambridge county match is scheduled (PENDING)
+When players are chosen (PENDING)
+Then the nominated players are chosen first (PENDING)
+
+Scenario: Cambridgeshire County Team substitute gender
+Given a Cambridge county match is scheduled (PENDING)
+When players are chosen (PENDING)
+Then the nominated ladies are chosen (PENDING)
+And the nominated men are chosen (PENDING)
+
+Scenario: Cambridgeshire County Team substitutes
+Given a Cambridge county match is scheduled (PENDING)
+And a nominated player is unavailable (PENDING)
+When players are chosen (PENDING)
+Then the next strongest player of the same gender is chosen (PENDING)
+
+
+
+]]></script>
+</body>
+<!--  SyntaxHighlighter resources:  should be included at end of body -->
+<link rel="stylesheet" type="text/css" href="./style/sh-3.0.83/shCore.css"/>
+<link rel="stylesheet" type="text/css" href="./style/sh-3.0.83/shThemeRDark.css"/>
+<script language="javascript" src="./js/sh-3.0.83/shCore.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushBash.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushCss.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushDiff.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushGroovy.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushJava.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushJScript.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushPlain.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushPython.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushRuby.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushScala.js"></script>
+<script language="javascript" src="./js/sh-3.0.83/shBrushXml.js"></script>
+<script language="javascript" src="./js/shBrushBdd.js"></script>
+<script type="text/javascript">
+    SyntaxHighlighter.defaults['gutter'] = false;
+    SyntaxHighlighter.defaults['toolbar'] = false;    
+    SyntaxHighlighter.all();
+</script>
+</html>

@@ -1,0 +1,739 @@
+<xref>
+  <whenMade>1415572822937</whenMade>
+  <createdBy>JBehave</createdBy>
+  <metaFilter></metaFilter>
+  <meta/>
+  <stories>
+    <story>
+      <description></description>
+      <narrative></narrative>
+      <name>ArrangeMatch.story</name>
+      <path>jbehave/ArrangeMatch.story</path>
+      <html>jbehave.ArrangeMatch.html</html>
+      <meta></meta>
+      <scenarios>Scenario:a notification email is sent out to the first pick players
+Given a match is scheduled
+When it is 10 days before the match
+Then an availability notification is sent to the first pick members
+
+
+Scenario:a player can play
+Given a match is scheduled
+And notifications have been sent out to the proposed team members
+When a team member acknowledges their availability
+Then they are assigned to the match
+And an acknowledgement notification goes to the player
+
+
+Scenario:player cannot play
+Given a match is scheduled
+And notifications have been sent out to the first pick players
+When a player responds that they are not available
+Then a notification goes out to the next appropriate player in the pool
+And an acknowledgement notification goes to the player
+
+
+Scenario:a player does not respond
+Given a match is scheduled
+And it is at least 4 days before the match
+And more than 1 day has elapsed since a notification was sent to the player
+When a team member fails to acknowledges their availability
+Then a reminder notification is sent to the player
+
+
+Scenario:a player continues not to respond
+Given a match is scheduled
+And it is less than 4 days before the match
+And more than 1 day has elapsed since a notification was sent to the player
+When a team member fails to acknowledges their availability
+Then a reminder notification is sent to the player
+Then a reserve notification goes out to the next appropriate player in the pool
+And an administrator alert is raised
+
+
+Scenario:a team is confirmed
+Given a match is scheduled
+When sufficient players are assigned to the match
+Then a match confirmation notification is sent out to all notified players
+And the confirmation contains the list of players assigned to the match
+And the confirmation contains the match details
+And an administration notification is raised
+
+
+Scenario:a player is on holiday and is is not eligible to play
+Given a match is scheduled
+And a member of the pool is on holiday on the date of the match
+When players are notified
+Then the player on holiday is not notified
+
+
+Scenario:a player is injured and so is not eligible to play
+Given a match is scheduled
+And a member of the pool is injured
+When players are notified
+Then the injured player is not notified
+
+
+Scenario:there are insufficient eligible players
+Given a match is scheduled
+And an there are insufficient eligible players to fulfill the match
+When it is 10 days before the match
+Then an administrator alert is raised
+
+
+Scenario:Cambridge League Mixed Badminton
+Given a mixed doubles match is scheduled
+When players are chosen
+Then the 3 strongest eligible ladies are chosen from the pool
+And the 3 strongest eligible men are chosen from the pool
+
+
+Scenario:Cambridge League Mens Badminton
+Given a Cambridge league mens doubles badminton match is scheduled
+When players are chosen
+Then the 6 strongest eligible and available men are chosen from the pool
+
+
+Scenario:Cambridge League Ladies Badminton
+Given a Cambridge league mens doubles badminton match is scheduled
+When players are chosen
+Then the 6 strongest eligible and available ladies are chosen from the pool
+
+
+Scenario:Cambridgeshire County Team Nominated Team
+Given a Cambridge county match is scheduled
+When players are chosen
+Then the nominated players are chosen first
+
+
+Scenario:Cambridgeshire County Team substitute gender
+Given a Cambridge county match is scheduled
+When players are chosen
+Then the nominated ladies are chosen
+And the nominated men are chosen
+
+
+Scenario:Cambridgeshire County Team substitutes
+Given a Cambridge county match is scheduled
+And a nominated player is unavailable
+When players are chosen
+Then the next strongest player of the same gender is chosen
+
+
+</scenarios>
+      <passed>true</passed>
+      <pending>true</pending>
+      <started>1415572818650</started>
+      <duration>2051</duration>
+    </story>
+  </stories>
+  <stepMatches>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the confirmation contains the list of players assigned to the match</annotatedPattern>
+      <resolvedPattern>the\s+confirmation\s+contains\s+the\s+list\s+of\s+players\s+assigned\s+to\s+the\s+match</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a team is confirmed</scenario>
+          <step>And the confirmation contains the list of players assigned to the match</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>WHEN</type>
+      <annotatedPattern>it is 10 days before the match</annotatedPattern>
+      <resolvedPattern>it\s+is\s+10\s+days\s+before\s+the\s+match</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a notification email is sent out to the first pick players</scenario>
+          <step>When it is 10 days before the match</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>there are insufficient eligible players</scenario>
+          <step>When it is 10 days before the match</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>a notification goes out to the next appropriate player in the pool</annotatedPattern>
+      <resolvedPattern>a\s+notification\s+goes\s+out\s+to\s+the\s+next\s+appropriate\s+player\s+in\s+the\s+pool</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>player cannot play</scenario>
+          <step>Then a notification goes out to the next appropriate player in the pool</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>an administration notification is raised</annotatedPattern>
+      <resolvedPattern>an\s+administration\s+notification\s+is\s+raised</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a team is confirmed</scenario>
+          <step>And an administration notification is raised</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>a reserve notification goes out to the next appropriate player in the pool</annotatedPattern>
+      <resolvedPattern>a\s+reserve\s+notification\s+goes\s+out\s+to\s+the\s+next\s+appropriate\s+player\s+in\s+the\s+pool</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player continues not to respond</scenario>
+          <step>Then a reserve notification goes out to the next appropriate player in the pool</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>an availability notification is sent to the first pick members</annotatedPattern>
+      <resolvedPattern>an\s+availability\s+notification\s+is\s+sent\s+to\s+the\s+first\s+pick\s+members</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a notification email is sent out to the first pick players</scenario>
+          <step>Then an availability notification is sent to the first pick members</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>WHEN</type>
+      <annotatedPattern>a team member fails to acknowledges their availability</annotatedPattern>
+      <resolvedPattern>a\s+team\s+member\s+fails\s+to\s+acknowledges\s+their\s+availability</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player does not respond</scenario>
+          <step>When a team member fails to acknowledges their availability</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player continues not to respond</scenario>
+          <step>When a team member fails to acknowledges their availability</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the 3 strongest eligible ladies are chosen from the pool</annotatedPattern>
+      <resolvedPattern>the\s+3\s+strongest\s+eligible\s+ladies\s+are\s+chosen\s+from\s+the\s+pool</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Mixed Badminton</scenario>
+          <step>Then the 3 strongest eligible ladies are chosen from the pool</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>they are assigned to the match</annotatedPattern>
+      <resolvedPattern>they\s+are\s+assigned\s+to\s+the\s+match</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player can play</scenario>
+          <step>Then they are assigned to the match</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the 6 strongest eligible and available ladies are chosen from the pool</annotatedPattern>
+      <resolvedPattern>the\s+6\s+strongest\s+eligible\s+and\s+available\s+ladies\s+are\s+chosen\s+from\s+the\s+pool</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Ladies Badminton</scenario>
+          <step>Then the 6 strongest eligible and available ladies are chosen from the pool</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>a Cambridge county match is scheduled</annotatedPattern>
+      <resolvedPattern>a\s+Cambridge\s+county\s+match\s+is\s+scheduled</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team Nominated Team</scenario>
+          <step>Given a Cambridge county match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team substitute gender</scenario>
+          <step>Given a Cambridge county match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team substitutes</scenario>
+          <step>Given a Cambridge county match is scheduled</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>notifications have been sent out to the first pick players</annotatedPattern>
+      <resolvedPattern>notifications\s+have\s+been\s+sent\s+out\s+to\s+the\s+first\s+pick\s+players</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>player cannot play</scenario>
+          <step>And notifications have been sent out to the first pick players</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>it is at least 4 days before the match</annotatedPattern>
+      <resolvedPattern>it\s+is\s+at\s+least\s+4\s+days\s+before\s+the\s+match</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player does not respond</scenario>
+          <step>And it is at least 4 days before the match</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>a match confirmation notification is sent out to all notified players</annotatedPattern>
+      <resolvedPattern>a\s+match\s+confirmation\s+notification\s+is\s+sent\s+out\s+to\s+all\s+notified\s+players</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a team is confirmed</scenario>
+          <step>Then a match confirmation notification is sent out to all notified players</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>WHEN</type>
+      <annotatedPattern>players are chosen</annotatedPattern>
+      <resolvedPattern>players\s+are\s+chosen</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Mixed Badminton</scenario>
+          <step>When players are chosen</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team substitutes</scenario>
+          <step>When players are chosen</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Ladies Badminton</scenario>
+          <step>When players are chosen</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Mens Badminton</scenario>
+          <step>When players are chosen</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team substitute gender</scenario>
+          <step>When players are chosen</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team Nominated Team</scenario>
+          <step>When players are chosen</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the nominated men are chosen</annotatedPattern>
+      <resolvedPattern>the\s+nominated\s+men\s+are\s+chosen</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team substitute gender</scenario>
+          <step>And the nominated men are chosen</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>WHEN</type>
+      <annotatedPattern>sufficient players are assigned to the match</annotatedPattern>
+      <resolvedPattern>sufficient\s+players\s+are\s+assigned\s+to\s+the\s+match</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a team is confirmed</scenario>
+          <step>When sufficient players are assigned to the match</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>a Cambridge league mens doubles badminton match is scheduled</annotatedPattern>
+      <resolvedPattern>a\s+Cambridge\s+league\s+mens\s+doubles\s+badminton\s+match\s+is\s+scheduled</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Mens Badminton</scenario>
+          <step>Given a Cambridge league mens doubles badminton match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Ladies Badminton</scenario>
+          <step>Given a Cambridge league mens doubles badminton match is scheduled</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>notifications have been sent out to the proposed team members</annotatedPattern>
+      <resolvedPattern>notifications\s+have\s+been\s+sent\s+out\s+to\s+the\s+proposed\s+team\s+members</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player can play</scenario>
+          <step>And notifications have been sent out to the proposed team members</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>a member of the pool is on holiday on the date of the match</annotatedPattern>
+      <resolvedPattern>a\s+member\s+of\s+the\s+pool\s+is\s+on\s+holiday\s+on\s+the\s+date\s+of\s+the\s+match</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player is on holiday and is is not eligible to play</scenario>
+          <step>And a member of the pool is on holiday on the date of the match</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>WHEN</type>
+      <annotatedPattern>players are notified</annotatedPattern>
+      <resolvedPattern>players\s+are\s+notified</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player is on holiday and is is not eligible to play</scenario>
+          <step>When players are notified</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player is injured and so is not eligible to play</scenario>
+          <step>When players are notified</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>a member of the pool is injured</annotatedPattern>
+      <resolvedPattern>a\s+member\s+of\s+the\s+pool\s+is\s+injured</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player is injured and so is not eligible to play</scenario>
+          <step>And a member of the pool is injured</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the injured player is not notified</annotatedPattern>
+      <resolvedPattern>the\s+injured\s+player\s+is\s+not\s+notified</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player is injured and so is not eligible to play</scenario>
+          <step>Then the injured player is not notified</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>an there are insufficient eligible players to fulfill the match</annotatedPattern>
+      <resolvedPattern>an\s+there\s+are\s+insufficient\s+eligible\s+players\s+to\s+fulfill\s+the\s+match</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>there are insufficient eligible players</scenario>
+          <step>And an there are insufficient eligible players to fulfill the match</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the next strongest player of the same gender is chosen</annotatedPattern>
+      <resolvedPattern>the\s+next\s+strongest\s+player\s+of\s+the\s+same\s+gender\s+is\s+chosen</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team substitutes</scenario>
+          <step>Then the next strongest player of the same gender is chosen</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the 3 strongest eligible men are chosen from the pool</annotatedPattern>
+      <resolvedPattern>the\s+3\s+strongest\s+eligible\s+men\s+are\s+chosen\s+from\s+the\s+pool</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Mixed Badminton</scenario>
+          <step>And the 3 strongest eligible men are chosen from the pool</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the 6 strongest eligible and available men are chosen from the pool</annotatedPattern>
+      <resolvedPattern>the\s+6\s+strongest\s+eligible\s+and\s+available\s+men\s+are\s+chosen\s+from\s+the\s+pool</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Mens Badminton</scenario>
+          <step>Then the 6 strongest eligible and available men are chosen from the pool</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>an administrator alert is raised</annotatedPattern>
+      <resolvedPattern>an\s+administrator\s+alert\s+is\s+raised</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player continues not to respond</scenario>
+          <step>And an administrator alert is raised</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>there are insufficient eligible players</scenario>
+          <step>Then an administrator alert is raised</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>WHEN</type>
+      <annotatedPattern>a player responds that they are not available</annotatedPattern>
+      <resolvedPattern>a\s+player\s+responds\s+that\s+they\s+are\s+not\s+available</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>player cannot play</scenario>
+          <step>When a player responds that they are not available</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>a nominated player is unavailable</annotatedPattern>
+      <resolvedPattern>a\s+nominated\s+player\s+is\s+unavailable</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team substitutes</scenario>
+          <step>And a nominated player is unavailable</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>a mixed doubles match is scheduled</annotatedPattern>
+      <resolvedPattern>a\s+mixed\s+doubles\s+match\s+is\s+scheduled</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridge League Mixed Badminton</scenario>
+          <step>Given a mixed doubles match is scheduled</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>it is less than 4 days before the match</annotatedPattern>
+      <resolvedPattern>it\s+is\s+less\s+than\s+4\s+days\s+before\s+the\s+match</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player continues not to respond</scenario>
+          <step>And it is less than 4 days before the match</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>a match is scheduled</annotatedPattern>
+      <resolvedPattern>a\s+match\s+is\s+scheduled</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a team is confirmed</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player is on holiday and is is not eligible to play</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>player cannot play</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a notification email is sent out to the first pick players</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player is injured and so is not eligible to play</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player continues not to respond</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player does not respond</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player can play</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>there are insufficient eligible players</scenario>
+          <step>Given a match is scheduled</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>a reminder notification is sent to the player</annotatedPattern>
+      <resolvedPattern>a\s+reminder\s+notification\s+is\s+sent\s+to\s+the\s+player</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player continues not to respond</scenario>
+          <step>Then a reminder notification is sent to the player</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player does not respond</scenario>
+          <step>Then a reminder notification is sent to the player</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>WHEN</type>
+      <annotatedPattern>a team member acknowledges their availability</annotatedPattern>
+      <resolvedPattern>a\s+team\s+member\s+acknowledges\s+their\s+availability</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player can play</scenario>
+          <step>When a team member acknowledges their availability</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the confirmation contains the match details</annotatedPattern>
+      <resolvedPattern>the\s+confirmation\s+contains\s+the\s+match\s+details</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a team is confirmed</scenario>
+          <step>And the confirmation contains the match details</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the player on holiday is not notified</annotatedPattern>
+      <resolvedPattern>the\s+player\s+on\s+holiday\s+is\s+not\s+notified</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player is on holiday and is is not eligible to play</scenario>
+          <step>Then the player on holiday is not notified</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the nominated ladies are chosen</annotatedPattern>
+      <resolvedPattern>the\s+nominated\s+ladies\s+are\s+chosen</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team substitute gender</scenario>
+          <step>Then the nominated ladies are chosen</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>an acknowledgement notification goes to the player</annotatedPattern>
+      <resolvedPattern>an\s+acknowledgement\s+notification\s+goes\s+to\s+the\s+player</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player can play</scenario>
+          <step>And an acknowledgement notification goes to the player</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>player cannot play</scenario>
+          <step>And an acknowledgement notification goes to the player</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>GIVEN</type>
+      <annotatedPattern>more than 1 day has elapsed since a notification was sent to the player</annotatedPattern>
+      <resolvedPattern>more\s+than\s+1\s+day\s+has\s+elapsed\s+since\s+a\s+notification\s+was\s+sent\s+to\s+the\s+player</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player continues not to respond</scenario>
+          <step>And more than 1 day has elapsed since a notification was sent to the player</step>
+        </use>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>a player does not respond</scenario>
+          <step>And more than 1 day has elapsed since a notification was sent to the player</step>
+        </use>
+      </usages>
+    </stepMatch>
+    <stepMatch>
+      <type>THEN</type>
+      <annotatedPattern>the nominated players are chosen first</annotatedPattern>
+      <resolvedPattern>the\s+nominated\s+players\s+are\s+chosen\s+first</resolvedPattern>
+      <usages>
+        <use>
+          <story>jbehave/ArrangeMatch.story</story>
+          <scenario>Cambridgeshire County Team Nominated Team</scenario>
+          <step>Then the nominated players are chosen first</step>
+        </use>
+      </usages>
+    </stepMatch>
+  </stepMatches>
+</xref>
