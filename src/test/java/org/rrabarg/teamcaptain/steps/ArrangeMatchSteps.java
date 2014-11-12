@@ -1,5 +1,8 @@
 package org.rrabarg.teamcaptain.steps;
 
+import java.io.IOException;
+
+import org.jbehave.core.annotations.BeforeScenario;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Pending;
 import org.jbehave.core.annotations.Then;
@@ -8,258 +11,260 @@ import org.jbehave.core.steps.Steps;
 import org.rrabarg.teamcaptain.fixture.ScheduleFixture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
- 
+
 @Component
 public class ArrangeMatchSteps extends Steps {
 
     @Autowired
     ScheduleFixture scheduleFixture;
-    
+
+    @BeforeScenario
+    public void reset() throws IOException {
+        scheduleFixture.reset();
+    }
+
     @Given("a match is scheduled")
-    @Pending
     public void givenAMatchIsScheduled() {
-      scheduleFixture.scheduleMatch();
+        scheduleFixture.scheduleMatch();
     }
 
     @When("it is 10 days before the match")
     @Pending
     public void whenItIs10DaysBeforeTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Then("an availability notification is sent to the first pick members")
     @Pending
     public void thenAnAvailabilityNotificationIsSentToTheFirstPickMembers() {
-      // PENDING
+        // PENDING
     }
 
     @Given("notifications have been sent out to the proposed team members")
     @Pending
     public void givenNotificationsHaveBeenSentOutToTheProposedTeamMembers() {
-      // PENDING
+        // PENDING
     }
 
     @When("a team member acknowledges their availability")
     @Pending
     public void whenATeamMemberAcknowledgesTheirAvailability() {
-      // PENDING
+        // PENDING
     }
 
     @Then("they are assigned to the match")
     @Pending
     public void thenTheyAreAssignedToTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Then("an acknowledgement notification goes to the player")
     @Pending
     public void thenAnAcknowledgementNotificationGoesToThePlayer() {
-      // PENDING
+        // PENDING
     }
 
     @Given("notifications have been sent out to the first pick players")
     @Pending
     public void givenNotificationsHaveBeenSentOutToTheFirstPickPlayers() {
-      // PENDING
+        // PENDING
     }
 
     @When("a player responds that they are not available")
     @Pending
     public void whenAPlayerRespondsThatTheyAreNotAvailable() {
-      // PENDING
+        // PENDING
     }
 
     @Then("a notification goes out to the next appropriate player in the pool")
     @Pending
     public void thenANotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
+        // PENDING
     }
 
     @Given("it is at least 4 days before the match")
     @Pending
     public void givenItIsAtLeast4DaysBeforeTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Given("more than 1 day has elapsed since a notification was sent to the player")
     @Pending
     public void givenMoreThan1DayHasElapsedSinceANotificationWasSentToThePlayer() {
-      // PENDING
+        // PENDING
     }
 
     @When("a team member fails to acknowledges their availability")
     @Pending
     public void whenATeamMemberFailsToAcknowledgesTheirAvailability() {
-      // PENDING
+        // PENDING
     }
 
     @Then("a reminder notification is sent to the player")
     @Pending
     public void thenAReminderNotificationIsSentToThePlayer() {
-      // PENDING
+        // PENDING
     }
 
     @Given("it is less than 4 days before the match")
     @Pending
     public void givenItIsLessThan4DaysBeforeTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Then("a reserve notification goes out to the next appropriate player in the pool")
     @Pending
     public void thenAReserveNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
+        // PENDING
     }
 
     @Then("an administrator alert is raised")
     @Pending
     public void thenAnAdministratorAlertIsRaised() {
-      // PENDING
+        // PENDING
     }
 
     @When("sufficient players are assigned to the match")
     @Pending
     public void whenSufficientPlayersAreAssignedToTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Then("a match confirmation notification is sent out to all notified players")
     @Pending
     public void thenAMatchConfirmationNotificationIsSentOutToAllNotifiedPlayers() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the confirmation contains the list of players assigned to the match")
     @Pending
     public void thenTheConfirmationContainsTheListOfPlayersAssignedToTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the confirmation contains the match details")
     @Pending
     public void thenTheConfirmationContainsTheMatchDetails() {
-      // PENDING
+        // PENDING
     }
 
     @Then("an administration notification is raised")
     @Pending
     public void thenAnAdministrationNotificationIsRaised() {
-      // PENDING
+        // PENDING
     }
 
     @Given("a member of the pool is on holiday on the date of the match")
     @Pending
     public void givenAMemberOfThePoolIsOnHolidayOnTheDateOfTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @When("players are notified")
     @Pending
     public void whenPlayersAreNotified() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the player on holiday is not notified")
     @Pending
     public void thenThePlayerOnHolidayIsNotNotified() {
-      // PENDING
+        // PENDING
     }
 
     @Given("a member of the pool is injured")
     @Pending
     public void givenAMemberOfThePoolIsInjured() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the injured player is not notified")
     @Pending
     public void thenTheInjuredPlayerIsNotNotified() {
-      // PENDING
+        // PENDING
     }
 
     @Given("an there are insufficient eligible players to fulfill the match")
     @Pending
     public void givenAnThereAreInsufficientEligiblePlayersToFulfillTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Given("a mixed doubles match is scheduled")
     @Pending
     public void givenAMixedDoublesMatchIsScheduled() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the 3 strongest eligible ladies are chosen from the pool")
     @Pending
     public void thenThe3StrongestEligibleLadiesAreChosenFromThePool() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the 3 strongest eligible men are chosen from the pool")
     @Pending
     public void thenThe3StrongestEligibleMenAreChosenFromThePool() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the 6 strongest eligible and available men are chosen from the pool")
     @Pending
     public void thenThe6StrongestEligibleAndAvailableMenAreChosenFromThePool() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the 6 strongest eligible and available ladies are chosen from the pool")
     @Pending
     public void thenThe6StrongestEligibleAndAvailableLadiesAreChosenFromThePool() {
-      // PENDING
+        // PENDING
     }
 
     @Given("a Cambridge county match is scheduled")
     @Pending
     public void givenACambridgeCountyMatchIsScheduled() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the nominated players are chosen first")
     @Pending
     public void thenTheNominatedPlayersAreChosenFirst() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the nominated ladies are chosen")
     @Pending
     public void thenTheNominatedLadiesAreChosen() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the nominated men are chosen")
     @Pending
     public void thenTheNominatedMenAreChosen() {
-      // PENDING
+        // PENDING
     }
 
     @Given("a nominated player is unavailable")
     @Pending
     public void givenANominatedPlayerIsUnavailable() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the next strongest player of the same gender is chosen")
     @Pending
     public void thenTheNextStrongestPlayerOfTheSameGenderIsChosen() {
-      // PENDING
+        // PENDING
     }
 
     @When("players are chosen")
     @Pending
     public void whenPlayersAreChosen() {
-      // PENDING
+        // PENDING
     }
-    
+
     @Given("a Cambridge league mens doubles badminton match is scheduled")
     @Pending
     public void givenACambridgeLeagueMensDoublesBadmintonMatchIsScheduled() {
-      // PENDING
+        // PENDING
     }
 }
-
-

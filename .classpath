@@ -32,5 +32,14 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/home/graham/.m2/repository/com/google/apis/google-api-services-calendar/v3-rev87-1.19.0/google-api-services-calendar-v3-rev87-1.19.0.jar" sourcepath="/home/graham/.m2/repository/com/google/apis/google-api-services-calendar/v3-rev87-1.19.0/google-api-services-calendar-v3-rev87-1.19.0-sources.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="com.google.apis"/>
+			<attribute name="maven.artifactId" value="google-api-services-calendar"/>
+			<attribute name="maven.version" value="v3-rev87-1.19.0"/>
+			<attribute name="maven.scope" value="compile"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
