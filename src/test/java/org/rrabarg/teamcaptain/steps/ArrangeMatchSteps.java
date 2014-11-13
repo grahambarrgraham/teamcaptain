@@ -2,6 +2,7 @@ package org.rrabarg.teamcaptain.steps;
 
 import java.io.IOException;
 
+import org.jbehave.core.annotations.AfterStories;
 import org.jbehave.core.annotations.BeforeScenario;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Pending;
@@ -9,6 +10,8 @@ import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.jbehave.core.steps.Steps;
 import org.rrabarg.teamcaptain.fixture.ScheduleFixture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +21,34 @@ public class ArrangeMatchSteps extends Steps {
     @Autowired
     ScheduleFixture scheduleFixture;
 
+    Logger log = LoggerFactory.getLogger(getClass().getName());
+
     @BeforeScenario
-    public void reset() throws IOException {
+    public void slowTheTestDownToKeepInApiQuota() throws IOException,
+            InterruptedException {
+        Thread.sleep(50);
+        log.info("slow");
+    }
+
+    @BeforeScenario
+    public void reset() throws IOException, InterruptedException {
+        log.info("reset called");
         scheduleFixture.reset();
+        log.info("reset complete");
+    }
+
+    @AfterStories
+    public void teardown() throws IOException, InterruptedException {
+        log.info("teardown called");
+        scheduleFixture.teardown();
+        log.info("teardown complete");
+
     }
 
     @Given("a match is scheduled")
     public void givenAMatchIsScheduled() {
         scheduleFixture.scheduleMatch();
+        log.info("a match was scheduled");
     }
 
     @When("it is 10 days before the match")
