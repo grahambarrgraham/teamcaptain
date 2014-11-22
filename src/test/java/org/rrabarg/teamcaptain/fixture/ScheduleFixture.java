@@ -7,11 +7,19 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
-import org.rrabarg.teamcaptain.Match;
 import org.rrabarg.teamcaptain.MatchBuilder;
 import org.rrabarg.teamcaptain.ScheduleRepository;
 import org.rrabarg.teamcaptain.ScheduleService;
+import org.rrabarg.teamcaptain.TestClockFactory;
+import org.rrabarg.teamcaptain.domain.Competition;
+import org.rrabarg.teamcaptain.domain.Gender;
+import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.domain.Player;
+import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
+import org.rrabarg.teamcaptain.domain.Schedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +42,19 @@ public class ScheduleFixture {
 
     @Autowired
     ScheduleRepository scheduleRepository;
+
+    @Autowired
+    TestClockFactory clockFactory;
+
+    // google calendar schedules are a scarce resource (15 creations per day, so
+    // we need reuse one)
     private String scheduleId;
+
+    private final Player joe = new Player("Joe", "Ninety", Gender.Male);
+
+    private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female);
+
+    private final Player peter = new Player("Peter", "Pan", Gender.Male);
 
     public void deleteSchedule() throws IOException {
         if (scheduleId != null) {
@@ -56,8 +76,9 @@ public class ScheduleFixture {
     }
 
     private Match standardMatch() {
-        return new MatchBuilder().withTitle(aTitle).withDate(aDate)
-                .withStartTime(aTime).withEndTime(aEndTime)
+        return new MatchBuilder().withTitle(aTitle)
+                .withStart(aDate, aTime)
+                .withEnd(aDate, aEndTime)
                 .withLocation(aLocationFirstLine, aLocationPostcode).build();
     }
 
@@ -91,4 +112,27 @@ public class ScheduleFixture {
         return "Test schedule-" + Inet4Address.getLocalHost().getHostAddress();
     }
 
+    public void fixDateTimeBeforeMatch(int amount, ChronoUnit unit) {
+        clockFactory.fixInstant(aDate.atTime(aTime).minus(amount, unit).atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public void nudgeScheduler() throws IOException {
+        scheduleService.checkScheduleForUpcomingMatches(scheduleId);
+    }
+
+    public void createCompetition() {
+        final Competition competition = standardCompetition();
+    }
+
+    private Competition standardCompetition() {
+        return new Competition(standardSchedule(), standardPoolOfPlayers());
+    }
+
+    private PoolOfPlayers standardPoolOfPlayers() {
+        return new PoolOfPlayers(joe, stacy, peter);
+    }
+
+    private Schedule standardSchedule() {
+        return new Schedule(scheduleId, standardMatch());
+    }
 }

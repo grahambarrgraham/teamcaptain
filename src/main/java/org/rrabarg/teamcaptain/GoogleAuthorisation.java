@@ -3,7 +3,7 @@ package org.rrabarg.teamcaptain;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.Collections;
+import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +25,8 @@ import com.google.api.services.calendar.CalendarScopes;
 @Configuration
 public class GoogleAuthorisation {
 
+    private static final String CONTACTS_API_SCOPE = "https://www.google.com/m8/feeds";
+
     private static final String APPLICATION_NAME = "Actorspace Limited-TeamCaptain/0.1";
 
     /** Directory to store user credentials. */
@@ -34,11 +36,15 @@ public class GoogleAuthorisation {
     private static final JsonFactory JSON_FACTORY = JacksonFactory
             .getDefaultInstance();
 
+    private final String[] scopes = new String[] {
+            CalendarScopes.CALENDAR, CONTACTS_API_SCOPE
+    };
+
     @Bean
     public Calendar googleCalendarClient() throws GeneralSecurityException,
             IOException, Exception {
         return new Calendar.Builder(httpTransport(), JSON_FACTORY,
-                authorizeCalendarApi()).setApplicationName(APPLICATION_NAME)
+                authorizeApis(scopes)).setApplicationName(APPLICATION_NAME)
                 .build();
     }
 
@@ -51,11 +57,11 @@ public class GoogleAuthorisation {
         return new FileDataStoreFactory(DATA_STORE_DIR);
     }
 
-    private Credential authorizeCalendarApi() throws IOException,
+    private Credential authorizeApis(String... scopes) throws IOException,
             GeneralSecurityException {
         return authoriseApp(createAuthorisationFlow(
                 getClientSecrets("/client_secrets.json"),
-                CalendarScopes.CALENDAR));
+                scopes));
     }
 
     private GoogleClientSecrets getClientSecrets(String clientSecretFile)
@@ -74,11 +80,11 @@ public class GoogleAuthorisation {
     }
 
     private GoogleAuthorizationCodeFlow createAuthorisationFlow(
-            final GoogleClientSecrets clientSecrets, String calendarScope)
+            final GoogleClientSecrets clientSecrets, String... scopes)
             throws IOException, GeneralSecurityException {
         final GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 httpTransport(), JSON_FACTORY, clientSecrets,
-                Collections.singleton(calendarScope)).setDataStoreFactory(
+                Arrays.asList(scopes)).setDataStoreFactory(
                 dataStoreFactory()).build();
         return flow;
     }

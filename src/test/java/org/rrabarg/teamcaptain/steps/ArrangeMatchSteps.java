@@ -1,6 +1,7 @@
 package org.rrabarg.teamcaptain.steps;
 
 import java.io.IOException;
+import java.time.temporal.ChronoUnit;
 
 import org.jbehave.core.annotations.AfterStories;
 import org.jbehave.core.annotations.BeforeScenario;
@@ -47,14 +48,15 @@ public class ArrangeMatchSteps extends Steps {
 
     @Given("a match is scheduled")
     public void givenAMatchIsScheduled() {
+        scheduleFixture.createCompetition();
         scheduleFixture.scheduleMatch();
         log.info("a match was scheduled");
     }
 
     @When("it is 10 days before the match")
-    @Pending
-    public void whenItIs10DaysBeforeTheMatch() {
-        // PENDING
+    public void whenItIs10DaysBeforeTheMatch() throws IOException {
+        scheduleFixture.fixDateTimeBeforeMatch(10, ChronoUnit.DAYS);
+        scheduleFixture.nudgeScheduler();
     }
 
     @Then("an availability notification is sent to the first pick members")
