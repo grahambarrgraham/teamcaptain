@@ -10,10 +10,10 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
+import org.rrabarg.teamcaptain.CompetitionService;
 import org.rrabarg.teamcaptain.MatchBuilder;
-import org.rrabarg.teamcaptain.ScheduleRepository;
-import org.rrabarg.teamcaptain.ScheduleService;
 import org.rrabarg.teamcaptain.TestClockFactory;
+import org.rrabarg.teamcaptain.WorkflowService;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Match;
@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ScheduleFixture {
+public class CompetitionFixture {
 
     Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -38,41 +38,29 @@ public class ScheduleFixture {
     String aLocationPostcode = "EH1 1YA";
 
     @Autowired
-    ScheduleService scheduleService;
+    CompetitionService competitionService;
 
     @Autowired
-    ScheduleRepository scheduleRepository;
+    WorkflowService workflowService;
 
     @Autowired
     TestClockFactory clockFactory;
 
-    // google calendar schedules are a scarce resource (15 creations per day, so
-    // we need reuse one)
-    private String scheduleId;
+    private final Player joe = new Player("Joe", "Ninety", Gender.Male, null, null);
 
-    private final Player joe = new Player("Joe", "Ninety", Gender.Male);
+    private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, null, null);
 
-    private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female);
+    private final Player peter = new Player("Peter", "Pan", Gender.Male, null, null);
 
-    private final Player peter = new Player("Peter", "Pan", Gender.Male);
+    private Competition competition;
 
-    public void deleteSchedule() throws IOException {
-        if (scheduleId != null) {
-            scheduleRepository.deleteSchedule(scheduleId);
+    public void clearCompetition() {
+
+        if (competition == null) {
+            return;
         }
-    }
 
-    public void clearSchedule() throws IOException {
-        scheduleRepository.clearSchedule(scheduleId);
-    }
-
-    public void clearTestSchedules() throws IOException {
-        scheduleRepository
-                .clearSchedulesWithSummaryStartingWith("Test schedule ");
-    }
-
-    public void scheduleMatch() {
-        scheduleService.createMatch(scheduleId, standardMatch());
+        competitionService.clearCompetition(competition);
     }
 
     private Match standardMatch() {
@@ -82,34 +70,12 @@ public class ScheduleFixture {
                 .withLocation(aLocationFirstLine, aLocationPostcode).build();
     }
 
-    public void reset() throws IOException, InterruptedException {
-        teardown();
-        setup();
+    public void setup() {
+        clearCompetition();
     }
 
-    public void setup() throws IOException, InterruptedException {
-
-        if (scheduleId != null) {
-            return;
-        }
-
-        scheduleId = scheduleRepository.findSchedule(getTestScheduleName());
-        if (scheduleId == null) {
-            scheduleId = scheduleRepository.addSchedule(getTestScheduleName());
-            log.info("Created test schedule " + scheduleId);
-        } else {
-            log.info("Found test schedule " + scheduleId);
-        }
-    }
-
-    public void teardown() throws IOException, InterruptedException {
-        if (scheduleId != null) {
-            clearSchedule();
-        }
-    }
-
-    private String getTestScheduleName() throws UnknownHostException {
-        return "Test schedule-" + Inet4Address.getLocalHost().getHostAddress();
+    public void teardown() {
+        clearCompetition();
     }
 
     public void fixDateTimeBeforeMatch(int amount, ChronoUnit unit) {
@@ -117,22 +83,41 @@ public class ScheduleFixture {
     }
 
     public void nudgeScheduler() throws IOException {
-        scheduleService.checkScheduleForUpcomingMatches(scheduleId);
+        workflowService.checkForUpcomingMatches(competition.getName());
     }
 
     public void createCompetition() {
-        final Competition competition = standardCompetition();
+        competition = standardCompetition();
+        competitionService.saveCompetition(competition);
+    }
+
+    public void checkAllNotificationsWereSent() {
+        // TODO Auto-generated method stub
     }
 
     private Competition standardCompetition() {
-        return new Competition(standardSchedule(), standardPoolOfPlayers());
+        return new Competition(getTestCompetitionName(),
+                standardSchedule(getTestCompetitionName()),
+                standardPoolOfPlayers(getTestCompetitionName()));
     }
 
-    private PoolOfPlayers standardPoolOfPlayers() {
+    private PoolOfPlayers standardPoolOfPlayers(String competitionName) {
         return new PoolOfPlayers(joe, stacy, peter);
     }
 
-    private Schedule standardSchedule() {
-        return new Schedule(scheduleId, standardMatch());
+    private Schedule standardSchedule(String scheduleName) {
+        return new Schedule(standardMatch());
+    }
+
+    private String getTestCompetitionName() {
+        return "Test competition-" + getUniqueNameForHost();
+    }
+
+    private String getUniqueNameForHost() {
+        try {
+            return Inet4Address.getLocalHost().getHostAddress();
+        } catch (final UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

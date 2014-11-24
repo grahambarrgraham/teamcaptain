@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,17 +24,18 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
+import com.google.gdata.client.contacts.ContactsService;
 
 @Configuration
 public class GoogleAuthorisation {
 
     private static final String CONTACTS_API_SCOPE = "https://www.google.com/m8/feeds";
 
-    private static final String APPLICATION_NAME = "Actorspace Limited-TeamCaptain/0.1";
+    public static final String APPLICATION_NAME = "Actorspace Limited-TeamCaptain/0.1";
 
     /** Directory to store user credentials. */
     private static final java.io.File DATA_STORE_DIR = new java.io.File(
-            System.getProperty("user.home"), ".store/calendar_sample");
+            System.getProperty("user.home"), ".store/googleapicredential");
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory
             .getDefaultInstance();
@@ -40,12 +44,38 @@ public class GoogleAuthorisation {
             CalendarScopes.CALENDAR, CONTACTS_API_SCOPE
     };
 
+    public void setupGoogleLogging() {
+        // Configure the logging mechanisms.
+        final Logger httpLogger = Logger.getLogger("com.google.gdata.client.http.HttpGDataRequest");
+        httpLogger.setLevel(Level.ALL);
+        final Logger xmlLogger = Logger.getLogger("com.google.gdata.util.XmlParser");
+        // xmlLogger.setLevel(Level.ALL);
+        // Create a log handler which prints all log events to the console.
+        final ConsoleHandler logHandler = new ConsoleHandler();
+        logHandler.setLevel(Level.ALL);
+        httpLogger.addHandler(logHandler);
+        xmlLogger.addHandler(logHandler);
+    }
+
+    @Bean
+    public ContactsService googleContactsClient() throws IOException, GeneralSecurityException {
+        final ContactsService contactsService = new ContactsService(APPLICATION_NAME);
+        contactsService.setOAuth2Credentials(googleApiCredential());
+        return contactsService;
+    }
+
     @Bean
     public Calendar googleCalendarClient() throws GeneralSecurityException,
             IOException, Exception {
         return new Calendar.Builder(httpTransport(), JSON_FACTORY,
-                authorizeApis(scopes)).setApplicationName(APPLICATION_NAME)
+                googleApiCredential()).setApplicationName(APPLICATION_NAME)
                 .build();
+    }
+
+    @Bean
+    public Credential googleApiCredential() throws IOException, GeneralSecurityException {
+        setupGoogleLogging();
+        return authorizeApis(scopes);
     }
 
     private HttpTransport httpTransport() throws GeneralSecurityException,

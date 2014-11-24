@@ -5,7 +5,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -15,6 +14,8 @@ import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.domain.Location;
 import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.domain.MatchWorkflow;
+import org.rrabarg.teamcaptain.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,14 +31,33 @@ import com.google.api.services.calendar.model.Events;
 @Component
 public class ScheduleRepository {
 
+    private static final String PLAYER_POOL_FIELD = "Player Pool";
+
     @Autowired
     private Provider<Clock> clock;
 
     @Autowired
     private com.google.api.services.calendar.Calendar googleCalendarClient;
 
-    public String addSchedule(String summary) throws IOException {
-        return addCalendar(summary).getId();
+    public Schedule getScheduleByName(String competitionName) throws IOException {
+        final String scheduleId = getScheduleId(competitionName);
+
+        if (scheduleId == null) {
+            return null;
+        }
+
+        final CalendarListEntry calendar = getCalendarEntryById(scheduleId);
+
+        return new Schedule(scheduleId, (String) calendar.get(PLAYER_POOL_FIELD),
+                getUpcomingMatches(scheduleId, 10, ChronoUnit.DAYS));
+    }
+
+    private CalendarListEntry getCalendarEntryById(final String calendarId) throws IOException {
+        return googleCalendarClient.calendarList().get(calendarId).execute();
+    }
+
+    public String addSchedule(String scheduleTitle, String playerPoolId) throws IOException {
+        return addCalendar(scheduleTitle, playerPoolId).getId();
     }
 
     public void deleteSchedule(String sheduleId) throws IOException {
@@ -55,17 +75,7 @@ public class ScheduleRepository {
         }
     }
 
-    public void clearSchedulesWithSummaryStartingWith(String string) throws IOException {
-        for (final CalendarListEntry calendarListEntry : getCalendarList().getItems()) {
-
-            if (calendarListEntry.getSummary().startsWith(string)) {
-                getCalendars().delete(calendarListEntry.getId()).execute();
-            }
-
-        }
-    }
-
-    public String findSchedule(String scheduleName) throws IOException {
+    public String getScheduleId(String scheduleName) throws IOException {
         final List<CalendarListEntry> items = getCalendarList().getItems();
         for (final CalendarListEntry calendarListEntry : items) {
             if (scheduleName.equals(calendarListEntry.getSummary())) {
@@ -75,7 +85,7 @@ public class ScheduleRepository {
         return null;
     }
 
-    public Collection<Match> getUpcomingMatches(String scheduleId,
+    public List<Match> getUpcomingMatches(String scheduleId,
             int numberOfDaysTillMatch, ChronoUnit days) throws IOException {
         return getEventsForSchedule(scheduleId).getItems().stream().map(event -> asMatch(event))
                 .filter(match -> isUpcoming(match, numberOfDaysTillMatch, days)).collect(Collectors.toList());
@@ -88,10 +98,17 @@ public class ScheduleRepository {
     private Match asMatch(Event event) {
 
         return new Match(
+                event.getId(),
                 event.getSummary(),
                 asJavaDateTime(event.getStart().getDateTime(), getTimezone(event)),
                 asJavaDateTime(event.getEnd().getDateTime(), getTimezone(event)),
-                Location.fromString(event.getLocation()));
+                Location.fromString(event.getLocation()),
+                getMatchWorkflow(event));
+    }
+
+    private MatchWorkflow getMatchWorkflow(Event event) {
+        final String description = event.getDescription();
+        return new MatchWorkflow(description);
     }
 
     private TimeZone getTimezone(Event event) {
@@ -99,9 +116,10 @@ public class ScheduleRepository {
         return timeZone == null ? TimeZone.getDefault() : TimeZone.getTimeZone(timeZone);
     }
 
-    private Calendar addCalendar(String summary) throws IOException {
+    private Calendar addCalendar(String summary, String playerPoolId) throws IOException {
         final Calendar entry = new Calendar();
         entry.setSummary(summary);
+        entry.set(PLAYER_POOL_FIELD, playerPoolId);
         return getCalendars().insert(entry).execute();
     }
 

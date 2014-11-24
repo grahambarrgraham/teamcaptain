@@ -1,17 +1,32 @@
 package org.rrabarg.teamcaptain;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
+import java.io.IOException;
 
-import org.rrabarg.teamcaptain.domain.Match;
-import org.rrabarg.teamcaptain.domain.MatchWorkflow;
+import org.rrabarg.teamcaptain.domain.Competition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class WorkflowService {
 
-    public Collection<MatchWorkflow> getWorkflows(Collection<Match> matches) {
-        return matches.stream().map(a -> new MatchWorkflow(a)).collect(Collectors.toList());
-    }
+    Logger log = LoggerFactory.getLogger(this.getClass());
 
+    @Autowired
+    CompetitionService competitionService;
+
+    public void checkForUpcomingMatches(String competitionName) throws IOException {
+        final Competition competition = competitionService.findCompetitionByName(competitionName);
+
+        if (competition != null) {
+            competition.getSchedule().getUpcomingMatches().stream()
+                    .parallel()
+                    .peek(match -> log.info("Notify workflow for match " + match))
+                    .map(match -> match.getWorkflow())
+                    .forEach(workflow -> workflow.matchUpcoming());
+        } else {
+            log.info("No upcoming matches for competition " + competitionName);
+        }
+    }
 }

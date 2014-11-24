@@ -10,17 +10,19 @@ import org.jbehave.core.annotations.Pending;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.jbehave.core.steps.Steps;
-import org.rrabarg.teamcaptain.fixture.ScheduleFixture;
+import org.rrabarg.teamcaptain.fixture.CompetitionFixture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.google.gdata.util.ServiceException;
+
 @Component
 public class ArrangeMatchSteps extends Steps {
 
     @Autowired
-    ScheduleFixture scheduleFixture;
+    CompetitionFixture competitionFixture;
 
     Logger log = LoggerFactory.getLogger(getClass().getName());
 
@@ -32,37 +34,32 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @BeforeScenario
-    public void reset() throws IOException, InterruptedException {
-        log.info("reset called");
-        scheduleFixture.reset();
-        log.info("reset complete");
+    public void setup() throws IOException, InterruptedException {
+        competitionFixture.setup();
     }
 
     @AfterStories
     public void teardown() throws IOException, InterruptedException {
-        log.info("teardown called");
-        scheduleFixture.teardown();
+        competitionFixture.teardown();
         log.info("teardown complete");
-
     }
 
     @Given("a match is scheduled")
-    public void givenAMatchIsScheduled() {
-        scheduleFixture.createCompetition();
-        scheduleFixture.scheduleMatch();
+    public void givenAMatchIsScheduled() throws IOException, ServiceException, InterruptedException {
+        competitionFixture.createCompetition();
         log.info("a match was scheduled");
     }
 
     @When("it is 10 days before the match")
     public void whenItIs10DaysBeforeTheMatch() throws IOException {
-        scheduleFixture.fixDateTimeBeforeMatch(10, ChronoUnit.DAYS);
-        scheduleFixture.nudgeScheduler();
+        competitionFixture.fixDateTimeBeforeMatch(10, ChronoUnit.DAYS);
+        competitionFixture.nudgeScheduler();
     }
 
     @Then("an availability notification is sent to the first pick members")
     @Pending
     public void thenAnAvailabilityNotificationIsSentToTheFirstPickMembers() {
-        // PENDING
+        competitionFixture.checkAllNotificationsWereSent();
     }
 
     @Given("notifications have been sent out to the proposed team members")

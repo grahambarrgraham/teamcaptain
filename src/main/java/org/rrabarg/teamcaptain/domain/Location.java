@@ -26,5 +26,4 @@ public class Location {
         final String[] split = locationString.split(",");
         return new Location(split[0].trim(), split[1].trim());
     }
-
 }

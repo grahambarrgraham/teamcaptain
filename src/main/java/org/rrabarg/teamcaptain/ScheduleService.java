@@ -1,10 +1,10 @@
 package org.rrabarg.teamcaptain;
 
 import java.io.IOException;
-import java.time.temporal.ChronoUnit;
-import java.util.Collection;
+import java.util.List;
 
 import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,27 +14,56 @@ public class ScheduleService {
     private static final int NUMBER_OF_DAYS_TILL_UPCOMING_MATCH = 10;
 
     @Autowired
-    ScheduleRepository repository;
+    ScheduleRepository scheduleRepository;
 
-    @Autowired
-    WorkflowService workflowService;
+    public Schedule findByName(String scheduleName) {
+        try {
+            return scheduleRepository.getScheduleByName(scheduleName);
+        } catch (final IOException e) {
+            throw new RuntimeException("Failed whilst trying to find schedule with name " + scheduleName);
+        }
+    }
 
     public String createMatch(String scheduleId, Match match) {
         try {
-            return repository.scheduleMatch(scheduleId, match);
+            return scheduleRepository.scheduleMatch(scheduleId, match);
         } catch (final IOException ioe) {
             throw new ScheduleException("Failed to create match " + match
                     + " on schedule " + scheduleId, ioe);
         }
     }
 
-    public void checkScheduleForUpcomingMatches(String scheduleId) throws IOException {
-        workflowService.getWorkflows(getUpcomingMatches(scheduleId)).stream()
-                .parallel().forEach(workflow -> workflow.matchUpcoming());
+    public String saveSchedule(String name, String poolId, Schedule schedule) throws IOException, InterruptedException {
+        String scheduleId = schedule.getId();
+
+        if (scheduleId == null) {
+            scheduleId = getOrCreateScheduleId(name, poolId);
+            schedule.setId(scheduleId);
+        }
+
+        final List<Match> matches = schedule.getMatches();
+        for (final Match match : matches) {
+            scheduleRepository.scheduleMatch(scheduleId, match);
+        }
+
+        schedule.setPlayerPoolId(poolId);
+
+        return scheduleId;
     }
 
-    private Collection<Match> getUpcomingMatches(String scheduleId) throws IOException {
-        return repository.getUpcomingMatches(scheduleId,
-                NUMBER_OF_DAYS_TILL_UPCOMING_MATCH, ChronoUnit.DAYS);
+    private String getOrCreateScheduleId(String scheduleName, String poolId) throws IOException, InterruptedException {
+
+        String scheduleId = scheduleRepository.getScheduleId(scheduleName);
+
+        if (scheduleId == null) {
+            scheduleId = scheduleRepository.addSchedule(scheduleName, poolId);
+        }
+
+        return scheduleId;
     }
+
+    public void clearMatches(Schedule schedule) throws IOException {
+        scheduleRepository.clearSchedule(schedule.getId());
+    }
+
 }
