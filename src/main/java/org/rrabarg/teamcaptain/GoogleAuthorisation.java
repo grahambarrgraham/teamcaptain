@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -25,7 +25,9 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.gdata.client.contacts.ContactsService;
+import com.google.gdata.util.AuthenticationException;
 
+@EnableAspectJAutoProxy
 @Configuration
 public class GoogleAuthorisation {
 
@@ -35,7 +37,7 @@ public class GoogleAuthorisation {
 
     /** Directory to store user credentials. */
     private static final java.io.File DATA_STORE_DIR = new java.io.File(
-            System.getProperty("user.home"), ".store/googleapicredential");
+            System.getProperty("user.home"), ".store/googleapicredential1");
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory
             .getDefaultInstance();
@@ -44,21 +46,11 @@ public class GoogleAuthorisation {
             CalendarScopes.CALENDAR, CONTACTS_API_SCOPE
     };
 
-    public void setupGoogleLogging() {
-        // Configure the logging mechanisms.
-        final Logger httpLogger = Logger.getLogger("com.google.gdata.client.http.HttpGDataRequest");
-        httpLogger.setLevel(Level.ALL);
-        final Logger xmlLogger = Logger.getLogger("com.google.gdata.util.XmlParser");
-        // xmlLogger.setLevel(Level.ALL);
-        // Create a log handler which prints all log events to the console.
-        final ConsoleHandler logHandler = new ConsoleHandler();
-        logHandler.setLevel(Level.ALL);
-        httpLogger.addHandler(logHandler);
-        xmlLogger.addHandler(logHandler);
-    }
+    @Inject
+    JavaUtilLoggingBridgeConfiguration julBridge; // ensure configured
 
     @Bean
-    public ContactsService googleContactsClient() throws IOException, GeneralSecurityException {
+    public ContactsService googleContactsClient() throws IOException, GeneralSecurityException, AuthenticationException {
         final ContactsService contactsService = new ContactsService(APPLICATION_NAME);
         contactsService.setOAuth2Credentials(googleApiCredential());
         return contactsService;
@@ -67,14 +59,14 @@ public class GoogleAuthorisation {
     @Bean
     public Calendar googleCalendarClient() throws GeneralSecurityException,
             IOException, Exception {
+        final Credential googleApiCredential = googleApiCredential();
         return new Calendar.Builder(httpTransport(), JSON_FACTORY,
-                googleApiCredential()).setApplicationName(APPLICATION_NAME)
+                googleApiCredential).setApplicationName(APPLICATION_NAME)
                 .build();
     }
 
     @Bean
     public Credential googleApiCredential() throws IOException, GeneralSecurityException {
-        setupGoogleLogging();
         return authorizeApis(scopes);
     }
 

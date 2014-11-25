@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScheduleService {
 
-    private static final int NUMBER_OF_DAYS_TILL_UPCOMING_MATCH = 10;
-
     @Autowired
     ScheduleRepository scheduleRepository;
 
@@ -57,6 +55,8 @@ public class ScheduleService {
 
         if (scheduleId == null) {
             scheduleId = scheduleRepository.addSchedule(scheduleName, poolId);
+        } else {
+            scheduleRepository.setPlayerPoolId(scheduleId, poolId);
         }
 
         return scheduleId;

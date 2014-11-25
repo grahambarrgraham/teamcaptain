@@ -39,7 +39,7 @@ public class JBehaveRunner extends JUnitStories {
 
     public JBehaveRunner() {
         configuredEmbedder().embedderControls().doGenerateViewAfterStories(true).doIgnoreFailureInStories(true)
-                .doIgnoreFailureInView(true).useThreads(2).useStoryTimeoutInSecs(60);
+                .doIgnoreFailureInView(true).useThreads(2).useStoryTimeoutInSecs(360);
     }
 
     @Override
@@ -49,17 +49,17 @@ public class JBehaveRunner extends JUnitStories {
 
     @Override
     public Configuration configuration() {
-        Class<? extends Embeddable> embeddableClass = this.getClass();
+        final Class<? extends Embeddable> embeddableClass = this.getClass();
 
-        Properties viewResources = new Properties();
+        final Properties viewResources = new Properties();
         viewResources.put("decorateNonHtml", "true");
 
         // Start from default ParameterConverters instance
-        ParameterConverters parameterConverters = new ParameterConverters();
+        final ParameterConverters parameterConverters = new ParameterConverters();
 
         // factory to allow parameter conversion and loading from external
         // resources (used by StoryParser too)
-        ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
+        final ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
                 new LoadFromClasspath(embeddableClass), parameterConverters);
 
         // add custom converters

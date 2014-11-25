@@ -2,8 +2,6 @@ package org.rrabarg.teamcaptain;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +13,7 @@ import java.util.stream.Stream;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +37,8 @@ import com.google.gdata.util.ServiceException;
 @Component
 public class PoolOfPlayersRepository {
 
+    Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
+
     private static final String CONTACT_LABEL = "TeamCaptain";
     private static final String groupsFeedUrl = "https://www.google.com/m8/feeds/groups/default/full";
     private static final String contactsFeedUrl = "https://www.google.com/m8/feeds/contacts/default/full";
@@ -47,9 +48,14 @@ public class PoolOfPlayersRepository {
 
     public String findPlayerPoolIdByName(String competitionName) throws IOException, ServiceException {
         final Query myQuery = new Query(getGroupsFeedUrl());
-        myQuery.setStringCustomParameter("title", competitionName);
+        myQuery.setStringCustomParameter("Title", competitionName);
         final ContactGroupFeed queryResult = contactService.query(myQuery, ContactGroupFeed.class);
-        final Optional<ContactGroupEntry> entries = queryResult.getEntries().stream().findAny();
+
+        final Stream<ContactGroupEntry> stream = queryResult.getEntries()
+                .stream().peek(entry -> log.debug("Found group " + entry.getTitle().getPlainText()));
+
+        final Optional<ContactGroupEntry> entries = stream.filter(
+                a -> competitionName.equals(a.getTitle().getPlainText())).findAny();
         return entries.isPresent() ? entries.get().getId() : null;
     }
 
@@ -57,6 +63,9 @@ public class PoolOfPlayersRepository {
             ServiceException {
         final ContactGroupEntry entry = new ContactGroupEntry();
         entry.setTitle(TextConstruct.plainText(competitionName));
+
+        log.debug("Creating group with title " + competitionName);
+
         return contactService.insert(getGroupsFeedUrl(), entry).getId();
     }
 
@@ -90,14 +99,15 @@ public class PoolOfPlayersRepository {
 
     private void deleteContact(ContactEntry entry) {
         try {
-            contactService.delete(asUri(entry.getEditLink()));
-        } catch (IOException | ServiceException | URISyntaxException e) {
-            throw new RuntimeException("Failed to delete contact " + entry, e);
+            contactService.delete(asUrl(entry.getEditLink()), entry.getEtag());
+        } catch (IOException | ServiceException e) {
+            throw new RuntimeException("Failed to delete contact with surname : "
+                    + entry.getName().getFamilyName().getValue(), e);
         }
     }
 
-    private URI asUri(Link link) throws URISyntaxException {
-        return new URI(link.getHref());
+    private URL asUrl(Link link) throws MalformedURLException {
+        return new URL(link.getHref());
     }
 
     private ContactEntry buildContact(Player player, String groupHref) {
@@ -138,19 +148,48 @@ public class PoolOfPlayersRepository {
     }
 
     private Player instantiatePlayer(ContactEntry entry) {
-        return new Player(
-                entry.getName().getGivenName().getValue(),
-                entry.getName().getFamilyName().getValue(),
-                convert(entry.getGender()), getEmailAddress(entry), getPhoneNumber(entry));
+
+        try {
+            final Player player = new Player(
+                    getGivenName(entry),
+                    getFamilyName(entry),
+                    convert(entry.getGender()),
+                    getEmailAddress(entry),
+                    getPhoneNumber(entry));
+
+            log.debug("Instantiated player " + player);
+
+            return player;
+        } catch (final Exception e) {
+            log.error("Failed to instantiate player for entry " + entry);
+            throw e;
+        }
+
+    }
+
+    private String getGivenName(ContactEntry entry) {
+        return entry == null ? null : entry.getName() == null ? null : entry.getName().getGivenName() == null ? null
+                : entry.getName().getGivenName().getValue();
+    }
+
+    private String getFamilyName(ContactEntry entry) {
+        return entry == null ? null : entry.getName() == null ? null : entry.getName().getFamilyName() == null ? null
+                : entry.getName().getFamilyName().getValue();
     }
 
     private String getEmailAddress(ContactEntry entry) {
+        if (entry.getEmailAddresses() == null) {
+            return null;
+        }
         final Optional<Email> optional = entry.getEmailAddresses().stream()
                 .filter(a -> CONTACT_LABEL.equals(a.getLabel())).findFirst();
         return optional.isPresent() ? optional.get().getAddress() : null;
     }
 
     private String getPhoneNumber(ContactEntry entry) {
+        if (entry.getPhoneNumbers() == null) {
+            return null;
+        }
         final Optional<PhoneNumber> optional = entry.getPhoneNumbers().stream()
                 .filter(a -> CONTACT_LABEL.equals(a.getLabel())).findFirst();
         return optional.isPresent() ? optional.get().getPhoneNumber() : null;
@@ -161,22 +200,27 @@ public class PoolOfPlayersRepository {
 
         // TODO - work out how to do this using Stream supplier model
 
-        URL feedUrl = getContactFeedUrl();
         final List<ContactEntry> contactEntries = new ArrayList<>();
 
-        while (feedUrl != null) {
-            final ContactFeed result = getResult(groupId, feedUrl);
-            contactEntries.addAll(result.getEntries());
-            final Link nextLink = result.getNextLink();
-            feedUrl = new URL(nextLink.getHref());
+        int startingIndex = 1;
+
+        while (true) {
+            final ContactFeed result = getResult(groupId, startingIndex);
+            final List<ContactEntry> entries = result.getEntries();
+            if ((entries == null) || (entries.size() == 0)) {
+                break; // yuk
+            }
+            contactEntries.addAll(entries);
+            startingIndex += entries.size();
         }
 
-        return contactEntries.stream();
+        return contactEntries.stream().filter(a -> null != a);
     }
 
-    private ContactFeed getResult(String groupId, URL href) throws IOException, ServiceException {
-        final Query myQuery = new Query(href);
+    private ContactFeed getResult(String groupId, int startingIndex) throws IOException, ServiceException {
+        final Query myQuery = new Query(getContactFeedUrl());
         myQuery.setMaxResults(100);
+        myQuery.setStartIndex(startingIndex);
         myQuery.setStringCustomParameter("group", groupId);
         final ContactFeed queryResult = contactService.query(myQuery, ContactFeed.class);
         return queryResult;
@@ -191,6 +235,11 @@ public class PoolOfPlayersRepository {
     }
 
     private Gender convert(com.google.gdata.data.contacts.Gender gender) {
+
+        if (gender == null) {
+            return null;
+        }
+
         return gender.getValue() == null ?
                 null : Value.MALE == gender.getValue() ?
                         Gender.Male : Gender.Female;

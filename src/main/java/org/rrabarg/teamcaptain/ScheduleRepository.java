@@ -91,6 +91,13 @@ public class ScheduleRepository {
                 .filter(match -> isUpcoming(match, numberOfDaysTillMatch, days)).collect(Collectors.toList());
     }
 
+    public Calendar setPlayerPoolId(String scheduleId, String playerPoolId) throws IOException {
+        final Calendar entry = getCalendars().get(scheduleId).execute();
+        entry.setSummary(playerPoolId);
+        entry.set(PLAYER_POOL_FIELD, playerPoolId);
+        return getCalendars().update(scheduleId, entry).execute();
+    }
+
     private boolean isUpcoming(Match match, int numberOfDaysTillMatch, ChronoUnit days) {
         return Instant.now(clock.get()).plus(numberOfDaysTillMatch, days).isAfter(match.getStartDateTime().toInstant());
     }
