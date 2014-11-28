@@ -31,7 +31,7 @@ public class CompetitionFixture {
     Logger log = LoggerFactory.getLogger(this.getClass());
 
     String aTitle = "A test match";
-    LocalDate aDate = LocalDate.of(2011, 3, 20);
+    LocalDate aDate = LocalDate.of(2014, 3, 20);
     LocalTime aTime = LocalTime.of(20, 00);
     LocalTime aEndTime = aTime.plus(3, HOURS);
     String aLocationFirstLine = "1 some street";

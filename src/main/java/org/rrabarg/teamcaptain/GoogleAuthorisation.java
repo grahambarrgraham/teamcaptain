@@ -7,15 +7,19 @@ import java.util.Arrays;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.auth.oauth2.DataStoreCredentialRefreshListener;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets.Details;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -30,6 +34,8 @@ import com.google.gdata.util.AuthenticationException;
 @EnableAspectJAutoProxy
 @Configuration
 public class GoogleAuthorisation {
+
+    Logger log = LoggerFactory.getLogger(this.getClass());
 
     private static final String CONTACTS_API_SCOPE = "https://www.google.com/m8/feeds";
 
@@ -75,7 +81,8 @@ public class GoogleAuthorisation {
         return GoogleNetHttpTransport.newTrustedTransport();
     }
 
-    private DataStoreFactory dataStoreFactory() throws IOException {
+    @Bean
+    public DataStoreFactory dataStoreFactory() throws IOException {
         return new FileDataStoreFactory(DATA_STORE_DIR);
     }
 
@@ -91,8 +98,14 @@ public class GoogleAuthorisation {
         final GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
                 JSON_FACTORY, new InputStreamReader(this.getClass()
                         .getResourceAsStream(clientSecretFile)));
-        if (clientSecrets.getDetails().getClientId().startsWith("Enter")
-                || clientSecrets.getDetails().getClientSecret()
+
+        final Details details = clientSecrets.getDetails();
+
+        log.debug("Client secrets are auth uri: " + details.getAuthUri() + " client id " + details.getClientId()
+                + " token uri " + details.getTokenUri() + " secret " + details.getClientSecret());
+
+        if (details.getClientId().startsWith("Enter")
+                || details.getClientSecret()
                         .startsWith("Enter ")) {
             throw new RuntimeException(
                     "Enter Client ID and Secret from https://code.google.com/apis/console/?api=calendar "
@@ -106,8 +119,12 @@ public class GoogleAuthorisation {
             throws IOException, GeneralSecurityException {
         final GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
                 httpTransport(), JSON_FACTORY, clientSecrets,
-                Arrays.asList(scopes)).setDataStoreFactory(
-                dataStoreFactory()).build();
+                Arrays.asList(scopes))
+                .setDataStoreFactory(
+                        dataStoreFactory())
+                .addRefreshListener(
+                        new DataStoreCredentialRefreshListener(clientSecrets.getDetails().getClientId(),
+                                dataStoreFactory())).build();
         return flow;
     }
 

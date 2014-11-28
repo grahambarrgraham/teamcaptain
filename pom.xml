@@ -172,6 +172,11 @@
 			<artifactId>aspectjweaver</artifactId>
 			<version>1.7.3</version>
 		</dependency>
+		<dependency>
+			<groupId>org.projectreactor</groupId>
+			<artifactId>reactor-spring</artifactId>
+			<version>1.0.0.RELEASE</version>
+		</dependency>
 	</dependencies>
 
 </project>

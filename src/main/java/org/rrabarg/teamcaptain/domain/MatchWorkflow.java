@@ -6,22 +6,23 @@ import org.slf4j.LoggerFactory;
 public class MatchWorkflow {
 
     Logger log = LoggerFactory.getLogger(this.getClass());
-    private Match match;
-    private String state;
+    private final Match match;
+    private final Competition competition;
 
-    public MatchWorkflow() {
+    public MatchWorkflow(Competition comp, Match match) {
+        competition = comp;
+        this.match = match;
     }
 
-    public MatchWorkflow(String state) {
-        this.state = state;
-    }
-
-    public MatchWorkflow matchUpcoming() {
+    public MatchWorkflow event() {
+        competition.getPlayerPool().getPlayers().stream()
+                .peek(player -> log.debug("matchUpcoming event for " + player + " for " + match))
+                .forEach(player -> event(player));
         return this;
     }
 
-    public void setMatch(Match match) {
-        this.match = match;
+    private void event(Player player) {
+        // TODO implement this
     }
 
 }

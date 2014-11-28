@@ -3,6 +3,7 @@ package org.rrabarg.teamcaptain;
 import java.io.IOException;
 
 import org.rrabarg.teamcaptain.domain.Competition;
+import org.rrabarg.teamcaptain.domain.MatchWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,9 @@ public class WorkflowService {
         if (competition != null) {
             competition.getSchedule().getUpcomingMatches().stream()
                     .parallel()
-                    .peek(match -> log.info("Notify workflow for match " + match))
-                    .map(match -> match.getWorkflow())
-                    .forEach(workflow -> workflow.matchUpcoming());
+                    .peek(match -> log.info("Notify workflow for match \"" + match + "\""))
+                    .map(match -> new MatchWorkflow(competition, match))
+                    .forEach(workflow -> workflow.event());
         } else {
             log.info("No upcoming matches for competition " + competitionName);
         }

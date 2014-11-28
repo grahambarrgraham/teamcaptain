@@ -47,6 +47,10 @@ public class PoolOfPlayersRepository {
     ContactsService contactService;
 
     public String findPlayerPoolIdByName(String competitionName) throws IOException, ServiceException {
+        if (competitionName == null) {
+            return null;
+        }
+
         final Query myQuery = new Query(getGroupsFeedUrl());
         myQuery.setStringCustomParameter("Title", competitionName);
         final ContactGroupFeed queryResult = contactService.query(myQuery, ContactGroupFeed.class);
@@ -59,17 +63,26 @@ public class PoolOfPlayersRepository {
         return entries.isPresent() ? entries.get().getId() : null;
     }
 
-    public String createPlayerPoolWithName(String competitionName) throws MalformedURLException, IOException,
+    public String createPlayerPoolWithName(String title) throws MalformedURLException, IOException,
             ServiceException {
-        final ContactGroupEntry entry = new ContactGroupEntry();
-        entry.setTitle(TextConstruct.plainText(competitionName));
 
-        log.debug("Creating group with title " + competitionName);
+        if (title == null) {
+            throw new RuntimeException("Invalid title " + title);
+        }
+
+        final ContactGroupEntry entry = new ContactGroupEntry();
+        entry.setTitle(TextConstruct.plainText(title));
+
+        log.debug("Creating group with title " + title);
 
         return contactService.insert(getGroupsFeedUrl(), entry).getId();
     }
 
     public PoolOfPlayers getPlayerPoolById(String poolId) throws MalformedURLException, IOException, ServiceException {
+
+        if (poolId == null) {
+            throw new RuntimeException("Invalid pool id " + poolId);
+        }
 
         final List<Player> players = streamAllContactsInGroup(poolId).map(entry -> instantiatePlayer(entry)).collect(
                 Collectors.toList());
@@ -80,14 +93,19 @@ public class PoolOfPlayersRepository {
 
     public void addPlayersToPool(String poolId, Collection<Player> players) throws MalformedURLException, IOException,
             ServiceException {
+        assert (poolId != null);
+
         players.stream().forEach(a -> addPlayer(poolId, a));
     }
 
     public void clearPlayersFromPool(String poolId) throws MalformedURLException, IOException, ServiceException {
+        assert (poolId != null);
         streamAllContactsInGroup(poolId).forEach(a -> deleteContact(a));
     }
 
     private void addPlayer(String poolId, final Player player) {
+        assert (poolId != null);
+
         ContactEntry addedContact;
         try {
             addedContact = contactService.insert(getContactFeedUrl(), buildContact(player, poolId));
@@ -197,6 +215,10 @@ public class PoolOfPlayersRepository {
 
     private Stream<ContactEntry> streamAllContactsInGroup(String groupId) throws MalformedURLException, IOException,
             ServiceException {
+
+        if (groupId == null) {
+            throw new RuntimeException("Invalid contact group " + groupId);
+        }
 
         // TODO - work out how to do this using Stream supplier model
 

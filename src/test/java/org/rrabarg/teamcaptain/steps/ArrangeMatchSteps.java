@@ -29,8 +29,7 @@ public class ArrangeMatchSteps extends Steps {
     @BeforeScenario
     public void slowTheTestDownToKeepInApiQuota() throws IOException,
             InterruptedException {
-        Thread.sleep(50);
-        log.info("slow");
+        Thread.sleep(10); // slow down comms with google
     }
 
     @BeforeScenario

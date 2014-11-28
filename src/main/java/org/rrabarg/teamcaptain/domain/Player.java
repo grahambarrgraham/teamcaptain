@@ -52,7 +52,7 @@ public class Player {
 
     @Override
     public String toString() {
-        return getFirstname() + " " + getSurname() + " id:(" + getId() + ")";
+        return getFirstname() + " " + getSurname();
     }
 
 }

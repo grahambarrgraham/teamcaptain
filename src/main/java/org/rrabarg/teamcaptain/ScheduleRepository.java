@@ -14,7 +14,6 @@ import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.domain.Location;
 import org.rrabarg.teamcaptain.domain.Match;
-import org.rrabarg.teamcaptain.domain.MatchWorkflow;
 import org.rrabarg.teamcaptain.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,8 +30,6 @@ import com.google.api.services.calendar.model.Events;
 @Component
 public class ScheduleRepository {
 
-    private static final String PLAYER_POOL_FIELD = "Player Pool";
-
     @Autowired
     private Provider<Clock> clock;
 
@@ -48,7 +45,7 @@ public class ScheduleRepository {
 
         final CalendarListEntry calendar = getCalendarEntryById(scheduleId);
 
-        return new Schedule(scheduleId, (String) calendar.get(PLAYER_POOL_FIELD),
+        return new Schedule(scheduleId, calendar.getDescription(),
                 getUpcomingMatches(scheduleId, 10, ChronoUnit.DAYS));
     }
 
@@ -93,9 +90,12 @@ public class ScheduleRepository {
 
     public Calendar setPlayerPoolId(String scheduleId, String playerPoolId) throws IOException {
         final Calendar entry = getCalendars().get(scheduleId).execute();
-        entry.setSummary(playerPoolId);
-        entry.set(PLAYER_POOL_FIELD, playerPoolId);
+        setPlayerPoolData(playerPoolId, entry);
         return getCalendars().update(scheduleId, entry).execute();
+    }
+
+    private void setPlayerPoolData(String playerPoolId, final Calendar entry) {
+        entry.setDescription(playerPoolId);
     }
 
     private boolean isUpcoming(Match match, int numberOfDaysTillMatch, ChronoUnit days) {
@@ -109,13 +109,7 @@ public class ScheduleRepository {
                 event.getSummary(),
                 asJavaDateTime(event.getStart().getDateTime(), getTimezone(event)),
                 asJavaDateTime(event.getEnd().getDateTime(), getTimezone(event)),
-                Location.fromString(event.getLocation()),
-                getMatchWorkflow(event));
-    }
-
-    private MatchWorkflow getMatchWorkflow(Event event) {
-        final String description = event.getDescription();
-        return new MatchWorkflow(description);
+                Location.fromString(event.getLocation()));
     }
 
     private TimeZone getTimezone(Event event) {
@@ -126,7 +120,7 @@ public class ScheduleRepository {
     private Calendar addCalendar(String summary, String playerPoolId) throws IOException {
         final Calendar entry = new Calendar();
         entry.setSummary(summary);
-        entry.set(PLAYER_POOL_FIELD, playerPoolId);
+        entry.setDescription("Players : " + playerPoolId);
         return getCalendars().insert(entry).execute();
     }
 

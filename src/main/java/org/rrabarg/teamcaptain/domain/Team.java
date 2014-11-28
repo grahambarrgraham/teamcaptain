@@ -8,4 +8,9 @@ public class Team extends PoolOfPlayers {
         super(poolId, players);
     }
 
+    @Override
+    public String toString() {
+        return "Team " + players;
+    }
+
 }

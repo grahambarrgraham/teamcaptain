@@ -6,9 +6,6 @@ import java.util.Collection;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
 @Entity
 public class PoolOfPlayers {
 
@@ -46,6 +43,6 @@ public class PoolOfPlayers {
 
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.NO_FIELD_NAMES_STYLE);
+        return "Pool " + players;
     }
 }
