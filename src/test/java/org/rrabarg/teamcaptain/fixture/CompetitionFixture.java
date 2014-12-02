@@ -1,6 +1,9 @@
 package org.rrabarg.teamcaptain.fixture;
 
 import static java.time.temporal.ChronoUnit.HOURS;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -9,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.stream.Stream;
 
 import org.rrabarg.teamcaptain.Inbox;
 import org.rrabarg.teamcaptain.TestClockFactory;
@@ -52,11 +56,11 @@ public class CompetitionFixture {
     @Autowired
     Inbox inbox;
 
-    private final Player joe = new Player("Joe", "Ninety", Gender.Male, null, null);
+    private final Player joe = new Player("Joe", "Ninety", Gender.Male, "joeninety@nomail.com", "3456");
 
-    private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, null, null);
+    private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, "stacyfignorks@nomail.com", "2345");
 
-    private final Player peter = new Player("Peter", "Pan", Gender.Male, null, null);
+    private final Player peter = new Player("Peter", "Pan", Gender.Male, "peterpan@nomail.com", "1234");
 
     private Competition competition;
 
@@ -99,33 +103,25 @@ public class CompetitionFixture {
         competitionService.saveCompetition(competition);
     }
 
-    public boolean checkAllCanYouPlayNotificationsWereSent() {
-        final boolean b = validateEmail(joe, Kind.CanYouPlay) &&
-                validateEmail(stacy, Kind.CanYouPlay) &&
-                validateEmail(peter, Kind.CanYouPlay);
-
-        if (!b) {
-            throw new RuntimeException("Emails didn't pass");
-        }
-
-        return true;
+    public void checkAllCanYouPlayNotificationsWereSent() {
+        Stream.of(joe, stacy, peter).forEach(player -> assertEmailIsCorrect(player, Kind.CanYouPlay));
     }
 
-    private boolean validateEmail(Player player, Kind kind) {
-        return validate(match, player, inbox.pop(player.getEmailAddress()), kind);
+    private void assertEmailIsCorrect(Player player, Kind kind) {
+        assertEmailIsCorrect(match, player, inbox.pop(player.getEmailAddress()), kind);
     }
 
-    private boolean validate(Match match, Player player, EmailNotification email, Kind kindOfEmail) {
+    private void assertEmailIsCorrect(Match match, Player player, EmailNotification email, Kind kindOfEmail) {
 
-        if (!((email != null)
-                && email.getSubject().contains(match.getTitle())
-                && email.getBody().contains(player.getFirstname()))) {
-            return false;
-        }
+        assertThat("Email must not be null", email, notNullValue());
+        assertThat("Email Subject mismatch", email.getSubject(), containsString(match.getTitle()));
+        assertThat("Email Body mismatch", email.getBody(), containsString(getStringFor(kindOfEmail)));
+    }
 
+    private String getStringFor(Kind kindOfEmail) {
         switch (kindOfEmail) {
         case CanYouPlay:
-            return email.getBody().contains("Can you play");
+            return "Can you play";
         case Confirmation:
             break;
         case Reminder:
@@ -137,8 +133,7 @@ public class CompetitionFixture {
         default:
             break;
         }
-
-        return false;
+        return null;
     }
 
     private Competition standardCompetition() {

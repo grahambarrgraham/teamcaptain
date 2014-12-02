@@ -36,7 +36,7 @@ public class EmailNotificationRenderer {
                     .append(notification.getPlayer().getFirstname())
                     .append(NEW_LINE)
                     .append(NEW_LINE)
-                    .append("Are you able to play in this match on ")
+                    .append("Can you play in this match on ")
                     .append(notification.getMatch().getStartDateTime()
                             .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)))
                     .append(".")
@@ -48,7 +48,7 @@ public class EmailNotificationRenderer {
                     .append(NEW_LINE)
                     .append(notification.getOrganiserFirstName());
 
-            return new EmailNotification(emailAddress, title, bob.toString());
+            return new EmailNotification(title, emailAddress, bob.toString());
         }
     }
 

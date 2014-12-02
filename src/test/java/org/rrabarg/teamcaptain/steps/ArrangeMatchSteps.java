@@ -56,8 +56,8 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @Then("an availability notification is sent to the first pick members")
-    public boolean thenAnAvailabilityNotificationIsSentToTheFirstPickMembers() {
-        return competitionFixture.checkAllCanYouPlayNotificationsWereSent();
+    public void thenAnAvailabilityNotificationIsSentToTheFirstPickMembers() {
+        competitionFixture.checkAllCanYouPlayNotificationsWereSent();
     }
 
     @Given("notifications have been sent out to the proposed team members")

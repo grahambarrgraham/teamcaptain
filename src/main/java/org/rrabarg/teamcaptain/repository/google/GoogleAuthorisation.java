@@ -123,6 +123,7 @@ public class GoogleAuthorisation {
                 Arrays.asList(scopes))
                 .setDataStoreFactory(
                         dataStoreFactory())
+                .setAccessType("offline")
                 .addRefreshListener(
                         new DataStoreCredentialRefreshListener(clientSecrets.getDetails().getClientId(),
                                 dataStoreFactory())).build();
