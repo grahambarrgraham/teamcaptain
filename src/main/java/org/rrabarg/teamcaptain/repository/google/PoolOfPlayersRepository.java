@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.repository.google;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

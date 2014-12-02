@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.service;
 
 @SuppressWarnings("serial")
 public class ScheduleException extends RuntimeException {

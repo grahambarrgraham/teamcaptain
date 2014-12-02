@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.fixture;
+package org.rrabarg.teamcaptain;
 
 
 public class ConfigureGoogleLogging {

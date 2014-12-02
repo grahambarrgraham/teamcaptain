@@ -10,16 +10,19 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
-import org.rrabarg.teamcaptain.CompetitionService;
-import org.rrabarg.teamcaptain.MatchBuilder;
+import org.rrabarg.teamcaptain.Inbox;
 import org.rrabarg.teamcaptain.TestClockFactory;
-import org.rrabarg.teamcaptain.WorkflowService;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Player;
+import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
 import org.rrabarg.teamcaptain.domain.Schedule;
+import org.rrabarg.teamcaptain.service.CompetitionService;
+import org.rrabarg.teamcaptain.service.EmailNotification;
+import org.rrabarg.teamcaptain.service.MatchBuilder;
+import org.rrabarg.teamcaptain.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,9 @@ public class CompetitionFixture {
     @Autowired
     TestClockFactory clockFactory;
 
+    @Autowired
+    Inbox inbox;
+
     private final Player joe = new Player("Joe", "Ninety", Gender.Male, null, null);
 
     private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, null, null);
@@ -53,6 +59,8 @@ public class CompetitionFixture {
     private final Player peter = new Player("Peter", "Pan", Gender.Male, null, null);
 
     private Competition competition;
+
+    private Match match;
 
     public void clearCompetition() {
 
@@ -91,8 +99,46 @@ public class CompetitionFixture {
         competitionService.saveCompetition(competition);
     }
 
-    public void checkAllNotificationsWereSent() {
-        // TODO Auto-generated method stub
+    public boolean checkAllCanYouPlayNotificationsWereSent() {
+        final boolean b = validateEmail(joe, Kind.CanYouPlay) &&
+                validateEmail(stacy, Kind.CanYouPlay) &&
+                validateEmail(peter, Kind.CanYouPlay);
+
+        if (!b) {
+            throw new RuntimeException("Emails didn't pass");
+        }
+
+        return true;
+    }
+
+    private boolean validateEmail(Player player, Kind kind) {
+        return validate(match, player, inbox.pop(player.getEmailAddress()), kind);
+    }
+
+    private boolean validate(Match match, Player player, EmailNotification email, Kind kindOfEmail) {
+
+        if (!((email != null)
+                && email.getSubject().contains(match.getTitle())
+                && email.getBody().contains(player.getFirstname()))) {
+            return false;
+        }
+
+        switch (kindOfEmail) {
+        case CanYouPlay:
+            return email.getBody().contains("Can you play");
+        case Confirmation:
+            break;
+        case Reminder:
+            break;
+        case StandBy:
+            break;
+        case StandDown:
+            break;
+        default:
+            break;
+        }
+
+        return false;
     }
 
     private Competition standardCompetition() {
@@ -106,7 +152,8 @@ public class CompetitionFixture {
     }
 
     private Schedule standardSchedule(String scheduleName) {
-        return new Schedule(standardMatch());
+        match = standardMatch();
+        return new Schedule(match);
     }
 
     private String getTestCompetitionName() {

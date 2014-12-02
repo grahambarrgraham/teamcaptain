@@ -1,10 +1,11 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.service;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Schedule;
+import org.rrabarg.teamcaptain.repository.google.ScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,8 +14,12 @@ public class ReactorConfig {
 
     @Bean
     public Reactor rootReactor(Environment env) {
-        // implicit Environment is injected into bean def method
-        return Reactors.reactor().env(env).get();
+        return Reactors.reactor().env(env).synchronousDispatcher().get();
+    }
+
+    @Bean
+    Environment env() {
+        return new Environment();
     }
 
 }

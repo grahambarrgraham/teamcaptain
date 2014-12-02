@@ -1,8 +1,9 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.service;
 
 import java.io.IOException;
 
 import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
+import org.rrabarg.teamcaptain.repository.google.PoolOfPlayersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
