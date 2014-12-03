@@ -61,21 +61,19 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @Given("notifications have been sent out to the proposed team members")
-    @Pending
-    public void givenNotificationsHaveBeenSentOutToTheProposedTeamMembers() {
-        // PENDING
+    public void givenNotificationsHaveBeenSentOutToTheProposedTeamMembers() throws IOException {
+        whenItIs10DaysBeforeTheMatch();
+        competitionFixture.checkAllCanYouPlayNotificationsWereSent();
     }
 
     @When("a team member acknowledges their availability")
-    @Pending
     public void whenATeamMemberAcknowledgesTheirAvailability() {
-        // PENDING
+        competitionFixture.aPlayerInThePoolSaysTheyCanPlay();
     }
 
     @Then("they are assigned to the match")
-    @Pending
     public void thenTheyAreAssignedToTheMatch() {
-        // PENDING
+        competitionFixture.checkThatTheWhoSaidTheyCouldPlayIsAssignedToTheMatch();
     }
 
     @Then("an acknowledgement notification goes to the player")

@@ -2,11 +2,11 @@ package org.rrabarg.teamcaptain.workflow;
 
 public class Definition {
 
-    enum MatchState {
+    public enum MatchState {
         InWindow, FirstPickPlayersNotified, Substitutions, MatchFulfilled, UnfulfilledAlert, DetailsPublished, MatchOutOfWindow
     };
 
-    enum PlayerState {
+    public enum PlayerState {
         InWindow, Notified, Accepted, Declined, FailedToRespond, OnStandby, StoodDown, Confirmed, OutOfWindow
     };
 

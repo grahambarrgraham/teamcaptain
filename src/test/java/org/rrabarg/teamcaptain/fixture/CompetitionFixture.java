@@ -12,10 +12,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.rrabarg.teamcaptain.Inbox;
 import org.rrabarg.teamcaptain.TestClockFactory;
+import org.rrabarg.teamcaptain.TestMailbox;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Match;
@@ -24,9 +25,12 @@ import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
 import org.rrabarg.teamcaptain.domain.Schedule;
 import org.rrabarg.teamcaptain.service.CompetitionService;
-import org.rrabarg.teamcaptain.service.EmailNotification;
+import org.rrabarg.teamcaptain.service.Email;
 import org.rrabarg.teamcaptain.service.MatchBuilder;
+import org.rrabarg.teamcaptain.service.ScheduleService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
+import org.rrabarg.teamcaptain.workflow.Definition.MatchState;
+import org.rrabarg.teamcaptain.workflow.Definition.PlayerState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +58,10 @@ public class CompetitionFixture {
     TestClockFactory clockFactory;
 
     @Autowired
-    Inbox inbox;
+    ScheduleService scheduleService;
+
+    @Autowired
+    TestMailbox mailbox;
 
     private final Player joe = new Player("Joe", "Ninety", Gender.Male, "joeninety@nomail.com", "3456");
 
@@ -65,6 +72,8 @@ public class CompetitionFixture {
     private Competition competition;
 
     private Match match;
+
+    private Player playerThatCanPlayInMatch;
 
     public void clearCompetition() {
 
@@ -104,15 +113,14 @@ public class CompetitionFixture {
     }
 
     public void checkAllCanYouPlayNotificationsWereSent() {
-        Stream.of(joe, stacy, peter).forEach(player -> assertEmailIsCorrect(player, Kind.CanYouPlay));
+        Stream.of(joe, stacy, peter).forEach(player -> assertOutboundEmailIsCorrect(player, Kind.CanYouPlay));
     }
 
-    private void assertEmailIsCorrect(Player player, Kind kind) {
-        assertEmailIsCorrect(match, player, inbox.pop(player.getEmailAddress()), kind);
+    private void assertOutboundEmailIsCorrect(Player player, Kind kind) {
+        assertEmailIsCorrect(match, player, mailbox.pop(player.getEmailAddress()), kind);
     }
 
-    private void assertEmailIsCorrect(Match match, Player player, EmailNotification email, Kind kindOfEmail) {
-
+    private void assertEmailIsCorrect(Match match, Player player, Email email, Kind kindOfEmail) {
         assertThat("Email must not be null", email, notNullValue());
         assertThat("Email Subject mismatch", email.getSubject(), containsString(match.getTitle()));
         assertThat("Email Body mismatch", email.getBody(), containsString(getStringFor(kindOfEmail)));
@@ -161,5 +169,21 @@ public class CompetitionFixture {
         } catch (final UnknownHostException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void aPlayerInThePoolSaysTheyCanPlay() {
+        playerThatCanPlayInMatch = joe;
+        mailbox.email().from(playerThatCanPlayInMatch.getEmailAddress()).subject("any text").body("Yes").send();
+    }
+
+    public void checkThatTheWhoSaidTheyCouldPlayIsAssignedToTheMatch() {
+        final Optional<Match> thematch = scheduleService.findByName(competition.getName()).getUpcomingMatches()
+                .stream().findFirst();
+
+        assertThat("The match must exist", thematch.isPresent());
+        assertThat("The match must be in notified state", MatchState.FirstPickPlayersNotified == thematch.get()
+                .getState());
+        assertThat("The match must be in notified state", PlayerState.Accepted == thematch.get()
+                .getPlayerState(joe));
     }
 }

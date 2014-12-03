@@ -3,14 +3,14 @@ package org.rrabarg.teamcaptain.service;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-public class EmailNotification {
+public class Email {
     private final String address;
     private final String subject;
     private final String body;
 
-    public EmailNotification(String subject, String address, String body) {
+    public Email(String subject, String toAddress, String fromAddress, String body) {
         this.subject = subject;
-        this.address = address;
+        this.address = toAddress;
         this.body = body;
     }
 

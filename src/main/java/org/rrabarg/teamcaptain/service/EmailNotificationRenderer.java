@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmailNotificationRenderer {
 
-    public EmailNotification render(PlayerNotification notification) {
+    public Email render(PlayerNotification notification) {
         return renderer(notification).build();
     }
 
@@ -26,8 +26,8 @@ public class EmailNotificationRenderer {
             this.notification = notification;
         }
 
-        EmailNotification build() {
-            final String emailAddress = notification.getPlayer().getEmailAddress();
+        Email build() {
+            final String toAddress = notification.getPlayer().getEmailAddress();
             final String title = notification.getMatch().getTitle();
 
             final StringBuilder bob = new StringBuilder();
@@ -48,7 +48,11 @@ public class EmailNotificationRenderer {
                     .append(NEW_LINE)
                     .append(notification.getOrganiserFirstName());
 
-            return new EmailNotification(title, emailAddress, bob.toString());
+            return new Email(title, toAddress, getOutboundEmailAddress(), bob.toString());
+        }
+
+        private String getOutboundEmailAddress() {
+            return "grahambarrgraham@gmail.com";
         }
     }
 

@@ -43,13 +43,13 @@ public class ScheduleRepository {
             return null;
         }
 
-        final CalendarListEntry calendar = getCalendarEntryById(scheduleId);
+        final CalendarListEntry calendar = getCalendarById(scheduleId);
 
         return new Schedule(scheduleId, calendar.getDescription(),
                 getUpcomingMatches(scheduleId, 10, ChronoUnit.DAYS));
     }
 
-    private CalendarListEntry getCalendarEntryById(final String calendarId) throws IOException {
+    private CalendarListEntry getCalendarById(final String calendarId) throws IOException {
         return googleCalendarClient.calendarList().get(calendarId).execute();
     }
 

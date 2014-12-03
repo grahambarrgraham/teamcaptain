@@ -52,6 +52,10 @@ public class Player {
 
     @Override
     public String toString() {
+        return getKey();
+    }
+
+    public String getKey() {
         return getFirstname() + " " + getSurname();
     }
 
