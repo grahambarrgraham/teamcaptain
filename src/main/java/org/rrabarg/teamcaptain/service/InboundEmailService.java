@@ -5,6 +5,7 @@ import static reactor.event.selector.Selectors.$;
 import javax.annotation.PostConstruct;
 
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.PlayerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,23 +21,27 @@ public class InboundEmailService implements Consumer<Event<Email>> {
     static Logger log = LoggerFactory.getLogger(InboundEmailService.class);
 
     @Autowired
-    Reactor reactor;
+    private Reactor reactor;
+
+    @Autowired
+    private NotificationMatcherService matcherService;
 
     @PostConstruct
     public void configure() {
-        reactor.on($(ReactorMessageKind.InboundEmail.toString()), this);
+        reactor.on($(ReactorMessageKind.InboundEmail), this);
     }
 
     @Override
     public void accept(Event<Email> event) {
 
-        // match email to match listener?
-
-        // send to match listener? (notification service needs to set up listener?) or workflow service??
-
-        // update state of player in match
-
-        log.info("To be implemented!!! Email service received event " + event);
+        final PlayerResponse match = matcherService.getMatch(event.getData());
+        if (match != null) {
+            reactor.notify(ReactorMessageKind.InboundPlayerResponse, new Event<>(match));
+        } else {
+            // do something sensible, e.g. call the events error consumer, or notify on an unmatched email channel
+            log.warn("Unmatched incoming email from " + event.getData().getFromAddress() + " with subject "
+                    + event.getData().getSubject());
+        }
     }
 
 }

@@ -67,4 +67,8 @@ public class ScheduleService {
         scheduleRepository.clearSchedule(schedule.getId());
     }
 
+    public void updateMatch(Match match) throws IOException {
+        scheduleRepository.updateMatch(match);
+    }
+
 }

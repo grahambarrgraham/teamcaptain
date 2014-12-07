@@ -4,13 +4,15 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 public class Email {
-    private final String address;
+    private final String toAddress;
     private final String subject;
     private final String body;
+    private final String fromAddress;
 
     public Email(String subject, String toAddress, String fromAddress, String body) {
         this.subject = subject;
-        this.address = toAddress;
+        this.toAddress = toAddress;
+        this.fromAddress = fromAddress;
         this.body = body;
     }
 
@@ -18,8 +20,12 @@ public class Email {
         return subject;
     }
 
-    public String getAddress() {
-        return address;
+    public String getToAddress() {
+        return toAddress;
+    }
+
+    public String getFromAddress() {
+        return fromAddress;
     }
 
     public String getBody() {

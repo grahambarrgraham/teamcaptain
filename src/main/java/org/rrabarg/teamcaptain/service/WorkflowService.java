@@ -1,12 +1,15 @@
 package org.rrabarg.teamcaptain.service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchWorkflow;
+import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,23 +26,45 @@ public class WorkflowService {
     @Autowired
     Provider<MatchWorkflow> provider;
 
-    public void checkForUpcomingMatches(String competitionName) throws IOException {
+    @Autowired
+    ScheduleService scheduleService;
+
+    Map<Match, MatchWorkflow> workflowMap = new HashMap<>();
+
+    public void refresh(String competitionName) throws IOException {
         final Competition competition = competitionService.findCompetitionByName(competitionName);
 
         if (competition != null) {
             competition.getSchedule().getUpcomingMatches().stream()
                     .parallel()
-                    .peek(match -> log.info("Notify workflow for match \"" + match + "\""))
-                    .map(match -> getWorkflow(competition, match))
-                    .forEach(workflow -> workflow.canYouPlay());
+                    .peek(match -> log.info("Loaded \"" + match + "\""))
+                    .map(match -> createOrUpdateWorkflow(competition.getPlayerPool(), match))
+                    .peek(workflow -> workflowMap.put(workflow.getMatch(), workflow))
+                    .forEach(workflow -> workflow.pump());
         } else {
             log.info("No upcoming matches for competition " + competitionName);
         }
     }
 
-    private MatchWorkflow getWorkflow(Competition competition, Match match) {
-        final MatchWorkflow matchWorkflow = provider.get();
-        matchWorkflow.setup(competition, match);
-        return matchWorkflow;
+    private MatchWorkflow createOrUpdateWorkflow(PoolOfPlayers pool, Match match) {
+
+        final MatchWorkflow flow = workflowMap.get(match);
+
+        if (flow == null) {
+            final MatchWorkflow matchWorkflow = provider.get();
+            matchWorkflow.setup(pool, match);
+            return matchWorkflow;
+        } else {
+            flow.update(pool, match);
+        }
+        return flow;
+    }
+
+    public MatchWorkflow getWorkflow(Match match) {
+        return workflowMap.get(match);
+    }
+
+    public void recordWorkflow(MatchWorkflow matchWorkflow) throws IOException {
+        scheduleService.updateMatch(matchWorkflow.getMatch());
     }
 }

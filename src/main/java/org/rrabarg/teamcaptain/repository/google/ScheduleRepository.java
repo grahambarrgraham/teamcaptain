@@ -15,8 +15,9 @@ import javax.inject.Provider;
 import org.rrabarg.teamcaptain.domain.Location;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Schedule;
+import org.rrabarg.teamcaptain.repository.WorkflowStateSerialisationHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar.Calendars;
@@ -27,7 +28,7 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 
-@Component
+@Repository
 public class ScheduleRepository {
 
     @Autowired
@@ -35,6 +36,9 @@ public class ScheduleRepository {
 
     @Autowired
     private com.google.api.services.calendar.Calendar googleCalendarClient;
+
+    @Autowired
+    private WorkflowStateSerialisationHelper serialisationHelper;
 
     public Schedule getScheduleByName(String competitionName) throws IOException {
         final String scheduleId = getScheduleId(competitionName);
@@ -63,7 +67,9 @@ public class ScheduleRepository {
 
     public String scheduleMatch(String scheduleId, Match match)
             throws IOException {
-        return getEvents().insert(scheduleId, asEvent(match)).execute().getId();
+        final String id = getEvents().insert(scheduleId, asEvent(match)).execute().getId();
+        match.init(id, scheduleId);
+        return id;
     }
 
     public void clearSchedule(String scheduleId) throws IOException {
@@ -84,7 +90,7 @@ public class ScheduleRepository {
 
     public List<Match> getUpcomingMatches(String scheduleId,
             int numberOfDaysTillMatch, ChronoUnit days) throws IOException {
-        return getEventsForSchedule(scheduleId).getItems().stream().map(event -> asMatch(event))
+        return getEventsForSchedule(scheduleId).getItems().stream().map(event -> asMatch(scheduleId, event))
                 .filter(match -> isUpcoming(match, numberOfDaysTillMatch, days)).collect(Collectors.toList());
     }
 
@@ -102,14 +108,14 @@ public class ScheduleRepository {
         return Instant.now(clock.get()).plus(numberOfDaysTillMatch, days).isAfter(match.getStartDateTime().toInstant());
     }
 
-    private Match asMatch(Event event) {
-
+    private Match asMatch(String scheduleId, Event event) {
         return new Match(
                 event.getId(),
+                scheduleId,
                 event.getSummary(),
                 asJavaDateTime(event.getStart().getDateTime(), getTimezone(event)),
-                asJavaDateTime(event.getEnd().getDateTime(), getTimezone(event)),
-                Location.fromString(event.getLocation()));
+                asJavaDateTime(event.getEnd().getDateTime(), getTimezone(event)), Location.fromString(event
+                        .getLocation()), serialisationHelper.fromString(event.getDescription()));
     }
 
     private TimeZone getTimezone(Event event) {
@@ -135,6 +141,7 @@ public class ScheduleRepository {
         event.setStart(new EventDateTime().setDateTime(start));
         event.setEnd(new EventDateTime().setDateTime(end));
         event.setLocation(match.getLocation().toString());
+        event.setDescription(serialisationHelper.toString(match.getWorkflowState()));
 
         return event;
     }
@@ -161,6 +168,10 @@ public class ScheduleRepository {
 
     private com.google.api.services.calendar.Calendar.Events getEvents() {
         return googleCalendarClient.events();
+    }
+
+    public void updateMatch(Match match) throws IOException {
+        getEvents().update(match.getScheduleId(), match.getId(), asEvent(match)).execute();
     }
 
 }

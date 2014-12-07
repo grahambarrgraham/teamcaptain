@@ -1,34 +1,48 @@
 package org.rrabarg.teamcaptain.domain;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.persistence.Entity;
 
-import org.rrabarg.teamcaptain.workflow.Definition.MatchState;
-import org.rrabarg.teamcaptain.workflow.Definition.PlayerState;
-
 @Entity
 public class Match {
+
+    private String id;
+    private String scheduleId;
 
     private final String title;
     private final ZonedDateTime startDateTime;
     private final ZonedDateTime endDateTime;
     private final Location location;
+    private final WorkflowState workflowState;
 
-    private MatchState matchState = MatchState.InWindow;
-    private final Map<String, PlayerState> playerStates = new HashMap<>();
-
+    /**
+     * Constructor used for inception
+     */
     public Match(String title, ZonedDateTime startDateTime, ZonedDateTime endDateTime, Location location) {
-        this(null, title, startDateTime, endDateTime, location);
+        this(null, null, title, startDateTime, endDateTime, location, null);
     }
 
-    public Match(String id, String title, ZonedDateTime startDateTime, ZonedDateTime endDateTime, Location location) {
+    /**
+     * Constructor used for load from persistent store
+     */
+    public Match(String id, String scheduleId, String title, ZonedDateTime startDateTime, ZonedDateTime endDateTime,
+            Location location, WorkflowState workflowState) {
+        this.id = id;
         this.title = title;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.location = location;
+        this.workflowState = workflowState == null ? new WorkflowState() : workflowState;
+        this.scheduleId = scheduleId;
+    }
+
+    /**
+     * Used by save to persistent store
+     */
+    public void init(String id, String scheduleId) {
+        this.scheduleId = scheduleId;
+        this.id = id;
     }
 
     public String getTitle() {
@@ -52,19 +66,62 @@ public class Match {
         return title;
     }
 
-    public MatchState getState() {
-        return matchState;
+    public PlayerState getPlayerState(Player player) {
+        return workflowState.getPlayerState(player);
     }
 
-    public PlayerState getPlayerState(Player joe) {
-        return null;
+    public MatchState getMatchState() {
+        return workflowState.getMatchState();
     }
 
     public void setMatchState(MatchState matchState) {
-        this.matchState = matchState;
+        workflowState.setMatchState(matchState);
     }
 
     public void setPlayerState(Player player, PlayerState playerState) {
-        playerStates.put(player.getKey(), playerState);
+        workflowState.setPlayerState(player, playerState);
     }
+
+    public WorkflowState getWorkflowState() {
+        return workflowState;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((title == null) ? 0 : title.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Match other = (Match) obj;
+        if (title == null) {
+            if (other.title != null) {
+                return false;
+            }
+        } else if (!title.equals(other.title)) {
+            return false;
+        }
+        return true;
+    }
+
+    public String getScheduleId() {
+        return scheduleId;
+    }
+
+    public String getId() {
+        return id;
+    }
+
 }

@@ -17,6 +17,8 @@ public class Schedule {
 
     private String poolId;
 
+    private Competition competition;
+
     /**
      * Used for entity creation
      */
@@ -60,5 +62,9 @@ public class Schedule {
     @Override
     public String toString() {
         return "Schedule " + matches;
+    }
+
+    public void setCompetition(Competition competition) {
+        this.competition = competition;
     }
 }

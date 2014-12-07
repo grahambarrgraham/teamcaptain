@@ -52,7 +52,7 @@ public class ArrangeMatchSteps extends Steps {
     @When("it is 10 days before the match")
     public void whenItIs10DaysBeforeTheMatch() throws IOException {
         competitionFixture.fixDateTimeBeforeMatch(10, ChronoUnit.DAYS);
-        competitionFixture.nudgeScheduler();
+        competitionFixture.refreshWorkflows();
     }
 
     @Then("an availability notification is sent to the first pick members")
@@ -73,7 +73,7 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("they are assigned to the match")
     public void thenTheyAreAssignedToTheMatch() {
-        competitionFixture.checkThatTheWhoSaidTheyCouldPlayIsAssignedToTheMatch();
+        competitionFixture.checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch();
     }
 
     @Then("an acknowledgement notification goes to the player")

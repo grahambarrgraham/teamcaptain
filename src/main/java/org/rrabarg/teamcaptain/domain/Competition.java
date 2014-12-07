@@ -13,6 +13,7 @@ public class Competition {
         this.schedule = schedule;
         this.playerPool = playerPool;
         this.name = name;
+        this.schedule.setCompetition(this);
     }
 
     public Schedule getSchedule() {

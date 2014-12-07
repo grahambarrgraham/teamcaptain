@@ -41,11 +41,11 @@ public class TestMailbox implements Consumer<Event<Email>> {
 
         final Email data = event.getData();
 
-        Stack<Email> stack = notificationMap.get(data.getAddress());
+        Stack<Email> stack = notificationMap.get(data.getToAddress());
 
         if (stack == null) {
             stack = new Stack<>();
-            notificationMap.put(data.getAddress(), stack);
+            notificationMap.put(data.getToAddress(), stack);
         }
 
         stack.add(data);
@@ -53,7 +53,7 @@ public class TestMailbox implements Consumer<Event<Email>> {
 
     public Email pop(String address) {
         final Stack<Email> stack = notificationMap.get(address);
-        return stack == null ? null : stack.pop();
+        return (stack == null) || stack.isEmpty() ? null : stack.pop();
     }
 
     public void clear() {
@@ -67,6 +67,7 @@ public class TestMailbox implements Consumer<Event<Email>> {
     public class TestEmailBuilder {
         private String subject;
         private String fromAddress;
+        private String toAddress;
         private String body;
 
         public TestEmailBuilder subject(String subject) {
@@ -79,13 +80,18 @@ public class TestMailbox implements Consumer<Event<Email>> {
             return this;
         }
 
+        public TestEmailBuilder to(String to) {
+            this.toAddress = to;
+            return this;
+        }
+
         public TestEmailBuilder body(String body) {
             this.body = body;
             return this;
         }
 
         public Email build() {
-            return new Email(subject, null, fromAddress, body);
+            return new Email(subject, toAddress, fromAddress, body);
         }
 
         public void send() {

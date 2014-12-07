@@ -20,8 +20,10 @@ import org.rrabarg.teamcaptain.TestMailbox;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.domain.MatchState;
 import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
+import org.rrabarg.teamcaptain.domain.PlayerState;
 import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
 import org.rrabarg.teamcaptain.domain.Schedule;
 import org.rrabarg.teamcaptain.service.CompetitionService;
@@ -29,8 +31,6 @@ import org.rrabarg.teamcaptain.service.Email;
 import org.rrabarg.teamcaptain.service.MatchBuilder;
 import org.rrabarg.teamcaptain.service.ScheduleService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
-import org.rrabarg.teamcaptain.workflow.Definition.MatchState;
-import org.rrabarg.teamcaptain.workflow.Definition.PlayerState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,8 +103,8 @@ public class CompetitionFixture {
         clockFactory.fixInstant(aDate.atTime(aTime).minus(amount, unit).atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    public void nudgeScheduler() throws IOException {
-        workflowService.checkForUpcomingMatches(competition.getName());
+    public void refreshWorkflows() throws IOException {
+        workflowService.refresh(competition.getName());
     }
 
     public void createCompetition() {
@@ -176,14 +176,14 @@ public class CompetitionFixture {
         mailbox.email().from(playerThatCanPlayInMatch.getEmailAddress()).subject("any text").body("Yes").send();
     }
 
-    public void checkThatTheWhoSaidTheyCouldPlayIsAssignedToTheMatch() {
+    public void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch() {
         final Optional<Match> thematch = scheduleService.findByName(competition.getName()).getUpcomingMatches()
                 .stream().findFirst();
 
         assertThat("The match must exist", thematch.isPresent());
         assertThat("The match must be in notified state", MatchState.FirstPickPlayersNotified == thematch.get()
-                .getState());
-        assertThat("The match must be in notified state", PlayerState.Accepted == thematch.get()
+                .getMatchState());
+        assertThat("The player should be in the accepted state", PlayerState.Accepted == thematch.get()
                 .getPlayerState(joe));
     }
 }
