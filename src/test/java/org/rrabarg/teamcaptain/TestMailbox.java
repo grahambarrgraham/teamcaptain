@@ -35,9 +35,7 @@ public class TestMailbox implements Consumer<Event<Email>> {
     private final Map<String, Stack<Email>> notificationMap = new HashMap<>();
 
     @Override
-    public void accept(Event<Email> event) {
-
-        log.debug("Inbox received event " + event);
+    public synchronized void accept(Event<Email> event) {
 
         final Email data = event.getData();
 
@@ -51,7 +49,7 @@ public class TestMailbox implements Consumer<Event<Email>> {
         stack.add(data);
     }
 
-    public Email pop(String address) {
+    public synchronized Email pop(String address) {
         final Stack<Email> stack = notificationMap.get(address);
         return (stack == null) || stack.isEmpty() ? null : stack.pop();
     }

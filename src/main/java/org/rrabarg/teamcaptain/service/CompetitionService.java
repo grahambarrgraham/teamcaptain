@@ -1,6 +1,7 @@
 package org.rrabarg.teamcaptain.service;
 
 import org.rrabarg.teamcaptain.domain.Competition;
+import org.rrabarg.teamcaptain.domain.CompetitionState;
 import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
 import org.rrabarg.teamcaptain.domain.Schedule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,8 @@ public class CompetitionService {
         try {
             final String name = competition.getName();
             final String poolId = playerPoolService.savePlayerPool(name, competition.getPlayerPool());
-            return scheduleService.saveSchedule(name, poolId, competition.getSchedule());
+            return scheduleService.saveSchedule(name, competition.getSchedule(), poolId,
+                    competition.getSelectionStrategy());
         } catch (final Exception e) {
             throw new RuntimeException("Failed to save competition " + competition, e);
         }
@@ -34,18 +36,22 @@ public class CompetitionService {
                 return null;
             }
 
-            return new Competition(competitionName, schedule, findPlayerPool(competitionName, schedule));
+            final CompetitionState competitionState = schedule.getCompetitionState();
+
+            return new Competition(competitionName, schedule, findPlayerPool(competitionName, competitionState),
+                    competitionState.getSelectionStrategy());
+
         } catch (final Exception e) {
             throw new RuntimeException("Failure whilst try to find competition with name " + competitionName, e);
         }
     }
 
-    private PoolOfPlayers findPlayerPool(String competitionName, final Schedule schedule) {
-        final PoolOfPlayers pool = playerPoolService.findById(schedule.getPlayerPoolId());
+    private PoolOfPlayers findPlayerPool(String competitionName, final CompetitionState state) {
+        final PoolOfPlayers pool = playerPoolService.findById(state.getPlayerPoolId());
 
         if (pool == null) {
             throw new RuntimeException("Competition " + competitionName
-                    + " in invalid state, could not find player pool " + schedule.getPlayerPoolId());
+                    + " in invalid state, could not find player pool " + state.getPlayerPoolId());
         }
         return pool;
     }

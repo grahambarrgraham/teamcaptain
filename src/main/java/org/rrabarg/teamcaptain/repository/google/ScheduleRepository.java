@@ -12,9 +12,11 @@ import java.util.stream.Collectors;
 
 import javax.inject.Provider;
 
+import org.rrabarg.teamcaptain.domain.CompetitionState;
 import org.rrabarg.teamcaptain.domain.Location;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Schedule;
+import org.rrabarg.teamcaptain.repository.CompetitionStateSerialisationHelper;
 import org.rrabarg.teamcaptain.repository.WorkflowStateSerialisationHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -38,7 +40,10 @@ public class ScheduleRepository {
     private com.google.api.services.calendar.Calendar googleCalendarClient;
 
     @Autowired
-    private WorkflowStateSerialisationHelper serialisationHelper;
+    private WorkflowStateSerialisationHelper workflowStateSerialisationHelper;
+
+    @Autowired
+    private CompetitionStateSerialisationHelper competitionStateSerialisationHelper;
 
     public Schedule getScheduleByName(String competitionName) throws IOException {
         final String scheduleId = getScheduleId(competitionName);
@@ -49,7 +54,9 @@ public class ScheduleRepository {
 
         final CalendarListEntry calendar = getCalendarById(scheduleId);
 
-        return new Schedule(scheduleId, calendar.getDescription(),
+        return new Schedule(
+                scheduleId,
+                competitionStateSerialisationHelper.fromString(calendar.getDescription()),
                 getUpcomingMatches(scheduleId, 10, ChronoUnit.DAYS));
     }
 
@@ -57,8 +64,8 @@ public class ScheduleRepository {
         return googleCalendarClient.calendarList().get(calendarId).execute();
     }
 
-    public String addSchedule(String scheduleTitle, String playerPoolId) throws IOException {
-        return addCalendar(scheduleTitle, playerPoolId).getId();
+    public String addSchedule(String scheduleTitle, CompetitionState state) throws IOException {
+        return addCalendar(scheduleTitle, state).getId();
     }
 
     public void deleteSchedule(String sheduleId) throws IOException {
@@ -94,14 +101,10 @@ public class ScheduleRepository {
                 .filter(match -> isUpcoming(match, numberOfDaysTillMatch, days)).collect(Collectors.toList());
     }
 
-    public Calendar setPlayerPoolId(String scheduleId, String playerPoolId) throws IOException {
+    public Calendar setCompetitionState(String scheduleId, CompetitionState state) throws IOException {
         final Calendar entry = getCalendars().get(scheduleId).execute();
-        setPlayerPoolData(playerPoolId, entry);
+        entry.setDescription(competitionStateSerialisationHelper.toString(state));
         return getCalendars().update(scheduleId, entry).execute();
-    }
-
-    private void setPlayerPoolData(String playerPoolId, final Calendar entry) {
-        entry.setDescription(playerPoolId);
     }
 
     private boolean isUpcoming(Match match, int numberOfDaysTillMatch, ChronoUnit days) {
@@ -115,7 +118,7 @@ public class ScheduleRepository {
                 event.getSummary(),
                 asJavaDateTime(event.getStart().getDateTime(), getTimezone(event)),
                 asJavaDateTime(event.getEnd().getDateTime(), getTimezone(event)), Location.fromString(event
-                        .getLocation()), serialisationHelper.fromString(event.getDescription()));
+                        .getLocation()), workflowStateSerialisationHelper.fromString(event.getDescription()));
     }
 
     private TimeZone getTimezone(Event event) {
@@ -123,10 +126,10 @@ public class ScheduleRepository {
         return timeZone == null ? TimeZone.getDefault() : TimeZone.getTimeZone(timeZone);
     }
 
-    private Calendar addCalendar(String summary, String playerPoolId) throws IOException {
+    private Calendar addCalendar(String summary, CompetitionState state) throws IOException {
         final Calendar entry = new Calendar();
         entry.setSummary(summary);
-        entry.setDescription("Players : " + playerPoolId);
+        entry.setDescription(competitionStateSerialisationHelper.toString(state));
         return getCalendars().insert(entry).execute();
     }
 
@@ -141,7 +144,7 @@ public class ScheduleRepository {
         event.setStart(new EventDateTime().setDateTime(start));
         event.setEnd(new EventDateTime().setDateTime(end));
         event.setLocation(match.getLocation().toString());
-        event.setDescription(serialisationHelper.toString(match.getWorkflowState()));
+        event.setDescription(workflowStateSerialisationHelper.toString(match.getWorkflowState()));
 
         return event;
     }

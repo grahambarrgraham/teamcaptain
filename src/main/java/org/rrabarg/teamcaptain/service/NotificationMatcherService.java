@@ -40,7 +40,18 @@ public class NotificationMatcherService {
     }
 
     private Kind getKind(org.rrabarg.teamcaptain.domain.PlayerNotification.Kind kind, Email data) {
-        return Kind.ICanPlay;
+        switch (kind) {
+        case CanYouPlay:
+        case StandBy:
+            if (data.getBody().toLowerCase().contains("yes")) {
+                return Kind.ICanPlay;
+            }
+            if (data.getBody().toLowerCase().contains("no")) {
+                return Kind.ICantPlay;
+            }
+        default:
+            return Kind.Information;
+        }
     }
 
     private PlayerNotification getLatestNotification(final List<PlayerNotification> matchingNotifications) {

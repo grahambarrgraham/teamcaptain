@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.inject.Provider;
 
+import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchWorkflow;
@@ -35,10 +36,15 @@ public class WorkflowService {
         final Competition competition = competitionService.findCompetitionByName(competitionName);
 
         if (competition != null) {
-            competition.getSchedule().getUpcomingMatches().stream()
+            competition
+                    .getSchedule()
+                    .getUpcomingMatches()
+                    .stream()
                     .parallel()
                     .peek(match -> log.info("Loaded \"" + match + "\""))
-                    .map(match -> createOrUpdateWorkflow(competition.getPlayerPool(), match))
+                    .map(match ->
+                            createOrUpdateWorkflow(competition.getPlayerPool(), match,
+                                    competition.getSelectionStrategy()))
                     .peek(workflow -> workflowMap.put(workflow.getMatch(), workflow))
                     .forEach(workflow -> workflow.pump());
         } else {
@@ -46,17 +52,15 @@ public class WorkflowService {
         }
     }
 
-    private MatchWorkflow createOrUpdateWorkflow(PoolOfPlayers pool, Match match) {
+    private MatchWorkflow createOrUpdateWorkflow(PoolOfPlayers pool, Match match, SelectionStrategy strategy) {
 
-        final MatchWorkflow flow = workflowMap.get(match);
+        MatchWorkflow flow = workflowMap.get(match);
 
         if (flow == null) {
-            final MatchWorkflow matchWorkflow = provider.get();
-            matchWorkflow.setup(pool, match);
-            return matchWorkflow;
-        } else {
-            flow.update(pool, match);
+            flow = provider.get();
         }
+
+        flow.setup(pool, match, strategy);
         return flow;
     }
 

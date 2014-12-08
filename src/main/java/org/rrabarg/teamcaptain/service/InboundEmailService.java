@@ -34,8 +34,12 @@ public class InboundEmailService implements Consumer<Event<Email>> {
     @Override
     public void accept(Event<Email> event) {
 
+        log.debug("Receive email from " + event.getData().getFromAddress());
+
         final PlayerResponse match = matcherService.getMatch(event.getData());
+
         if (match != null) {
+            log.debug("Matched it to : " + match.getKind());
             reactor.notify(ReactorMessageKind.InboundPlayerResponse, new Event<>(match));
         } else {
             // do something sensible, e.g. call the events error consumer, or notify on an unmatched email channel

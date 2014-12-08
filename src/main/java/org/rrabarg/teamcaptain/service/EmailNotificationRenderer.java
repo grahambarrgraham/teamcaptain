@@ -30,6 +30,32 @@ public class EmailNotificationRenderer {
             final String toAddress = notification.getPlayer().getEmailAddress();
             final String title = notification.getMatch().getTitle();
 
+            StringBuilder bob = null;
+
+            switch (notification.getKind()) {
+            case CanYouPlay:
+                bob = canYouPlay();
+                break;
+            case ConfirmationOfAcceptance:
+                bob = confirmAcceptance();
+                break;
+            case ConfirmationOfDecline:
+                bob = confirmDecline();
+                break;
+            case Reminder:
+                break;
+            case StandBy:
+                break;
+            case StandDown:
+                break;
+            default:
+                break;
+            }
+
+            return new Email(title, toAddress, getOutboundEmailAddress(), bob.toString());
+        }
+
+        private StringBuilder canYouPlay() {
             final StringBuilder bob = new StringBuilder();
             bob
                     .append("Hi ")
@@ -47,8 +73,37 @@ public class EmailNotificationRenderer {
                     .append("Thanks")
                     .append(NEW_LINE)
                     .append(notification.getOrganiserFirstName());
+            return bob;
+        }
 
-            return new Email(title, toAddress, getOutboundEmailAddress(), bob.toString());
+        private StringBuilder confirmAcceptance() {
+            final StringBuilder bob = new StringBuilder();
+            bob
+                    .append("Hi ")
+                    .append(notification.getPlayer().getFirstname())
+                    .append(NEW_LINE)
+                    .append(NEW_LINE)
+                    .append("Brilliant, your in. I'll be in touch shortly with all the match details once I've got a full team.")
+                    .append(NEW_LINE)
+                    .append("Thanks")
+                    .append(NEW_LINE)
+                    .append(notification.getOrganiserFirstName());
+            return bob;
+        }
+
+        private StringBuilder confirmDecline() {
+            final StringBuilder bob = new StringBuilder();
+            bob
+                    .append("Hi ")
+                    .append(notification.getPlayer().getFirstname())
+                    .append(NEW_LINE)
+                    .append(NEW_LINE)
+                    .append("Sorry you couldn't play, hope too see you in future matches.")
+                    .append(NEW_LINE)
+                    .append("Thanks")
+                    .append(NEW_LINE)
+                    .append(notification.getOrganiserFirstName());
+            return bob;
         }
 
         private String getOutboundEmailAddress() {

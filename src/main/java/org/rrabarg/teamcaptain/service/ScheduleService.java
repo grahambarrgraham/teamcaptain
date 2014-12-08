@@ -3,6 +3,8 @@ package org.rrabarg.teamcaptain.service;
 import java.io.IOException;
 import java.util.List;
 
+import org.rrabarg.teamcaptain.SelectionStrategy;
+import org.rrabarg.teamcaptain.domain.CompetitionState;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Schedule;
 import org.rrabarg.teamcaptain.repository.google.ScheduleRepository;
@@ -23,20 +25,14 @@ public class ScheduleService {
         }
     }
 
-    public String createMatch(String scheduleId, Match match) {
-        try {
-            return scheduleRepository.scheduleMatch(scheduleId, match);
-        } catch (final IOException ioe) {
-            throw new ScheduleException("Failed to create match " + match
-                    + " on schedule " + scheduleId, ioe);
-        }
-    }
+    public String saveSchedule(String name, Schedule schedule, String playerPoolId, SelectionStrategy selectionStrategy)
+            throws IOException, InterruptedException {
 
-    public String saveSchedule(String name, String poolId, Schedule schedule) throws IOException, InterruptedException {
+        final CompetitionState competitionState = new CompetitionState(playerPoolId, selectionStrategy);
         String scheduleId = schedule.getId();
 
         if (scheduleId == null) {
-            scheduleId = getOrCreateScheduleId(name, poolId);
+            scheduleId = getOrCreateScheduleId(name, competitionState);
             schedule.setId(scheduleId);
         }
 
@@ -45,19 +41,20 @@ public class ScheduleService {
             scheduleRepository.scheduleMatch(scheduleId, match);
         }
 
-        schedule.setPlayerPoolId(poolId);
+        schedule.setState(competitionState);
 
         return scheduleId;
     }
 
-    private String getOrCreateScheduleId(String scheduleName, String poolId) throws IOException, InterruptedException {
+    private String getOrCreateScheduleId(String scheduleName, CompetitionState state)
+            throws IOException, InterruptedException {
 
         String scheduleId = scheduleRepository.getScheduleId(scheduleName);
 
         if (scheduleId == null) {
-            scheduleId = scheduleRepository.addSchedule(scheduleName, poolId);
+            scheduleId = scheduleRepository.addSchedule(scheduleName, state);
         } else {
-            scheduleRepository.setPlayerPoolId(scheduleId, poolId);
+            scheduleRepository.setCompetitionState(scheduleId, state);
         }
 
         return scheduleId;

@@ -39,7 +39,7 @@ public class JBehaveRunner extends JUnitStories {
 
     public JBehaveRunner() {
         configuredEmbedder().embedderControls().doGenerateViewAfterStories(true).doIgnoreFailureInStories(true)
-                .doIgnoreFailureInView(true).useThreads(2).useStoryTimeoutInSecs(360);
+                .doIgnoreFailureInView(true).useThreads(1).useStoryTimeoutInSecs(360);
     }
 
     @Override

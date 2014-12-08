@@ -76,28 +76,29 @@ public class ArrangeMatchSteps extends Steps {
         competitionFixture.checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch();
     }
 
-    @Then("an acknowledgement notification goes to the player")
-    @Pending
+    @Then("an acceptance acknowledgement notification goes to the player")
     public void thenAnAcknowledgementNotificationGoesToThePlayer() {
-        // PENDING
+        competitionFixture.checkAcknowledgementGoesToPlayerWhoAccepted();
     }
 
     @Given("notifications have been sent out to the first pick players")
-    @Pending
-    public void givenNotificationsHaveBeenSentOutToTheFirstPickPlayers() {
-        // PENDING
+    public void givenNotificationsHaveBeenSentOutToTheFirstPickPlayers() throws IOException {
+        givenNotificationsHaveBeenSentOutToTheProposedTeamMembers();
     }
 
     @When("a player responds that they are not available")
-    @Pending
     public void whenAPlayerRespondsThatTheyAreNotAvailable() {
-        // PENDING
+        competitionFixture.aPlayerInThePoolSaysTheyCannotPlay();
     }
 
     @Then("a notification goes out to the next appropriate player in the pool")
-    @Pending
     public void thenANotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        // PENDING
+        competitionFixture.nextAppropriatePlayerInThePoolIsNotified();
+    }
+
+    @Then("a decline acknowledgement notification goes to the player")
+    public void thenADeclineAcknowledgementNotificationGoesToThePlayer() {
+        competitionFixture.checkAcknowledgementGoesToPlayerWhoDeclined();
     }
 
     @Given("it is at least 4 days before the match")

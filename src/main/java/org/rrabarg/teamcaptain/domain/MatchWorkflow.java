@@ -2,6 +2,7 @@ package org.rrabarg.teamcaptain.domain;
 
 import java.io.IOException;
 
+import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.service.NotificationService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
@@ -30,6 +31,8 @@ public class MatchWorkflow {
 
     private PoolOfPlayers poolOfPlayers;
 
+    private SelectionStrategy selectionStrategy;
+
     public MatchWorkflow pump() {
         if (MatchState.InWindow == match.getMatchState()) {
             notifyFirstPickPlayers();
@@ -46,8 +49,8 @@ public class MatchWorkflow {
     }
 
     private MatchWorkflow notifyFirstPickPlayers() {
-        poolOfPlayers
-                .getPlayers()
+
+        selectionStrategy.firstPick(poolOfPlayers)
                 .stream()
                 .peek(player -> log.debug("notifying " + player + " for " + match + " for " + Kind.CanYouPlay))
                 .forEach(
@@ -56,13 +59,22 @@ public class MatchWorkflow {
     }
 
     @Required
-    public void setup(PoolOfPlayers pool, Match match) {
+    public void setup(PoolOfPlayers pool, Match match, SelectionStrategy strategy) {
         this.match = match;
         this.poolOfPlayers = pool;
+        this.selectionStrategy = strategy;
     }
 
     public void iCanPlay(Player player) throws IOException {
         match.setPlayerState(player, PlayerState.Accepted);
+        notificationService.notify(match, player, Kind.ConfirmationOfAcceptance);
+        pump();
+    }
+
+    private void iCannotPlay(Player player) {
+        match.setPlayerState(player, PlayerState.Declined);
+        notificationService.notify(match, player, Kind.ConfirmationOfDecline);
+        notificationService.notify(match, selectionStrategy.nextPick(poolOfPlayers, player), Kind.CanYouPlay);
         pump();
     }
 
@@ -70,16 +82,15 @@ public class MatchWorkflow {
         return this.match;
     }
 
-    public void update(PoolOfPlayers pool, Match match) {
-        this.poolOfPlayers = pool;
-        this.match = match;
-    }
-
     public void notify(Event<PlayerResponse> playerResponse) {
         try {
             switch (playerResponse.getData().getKind()) {
             case ICanPlay:
                 iCanPlay(playerResponse.getData().getPlayer());
+                break;
+            case ICantPlay:
+                iCannotPlay(playerResponse.getData().getPlayer());
+                break;
             default:
                 break;
             }

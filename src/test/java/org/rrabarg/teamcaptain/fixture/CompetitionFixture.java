@@ -15,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.TestClockFactory;
 import org.rrabarg.teamcaptain.TestMailbox;
 import org.rrabarg.teamcaptain.domain.Competition;
@@ -26,6 +27,7 @@ import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.domain.PlayerState;
 import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
 import org.rrabarg.teamcaptain.domain.Schedule;
+import org.rrabarg.teamcaptain.domain.SimpleGenderedStrategy;
 import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.Email;
 import org.rrabarg.teamcaptain.service.MatchBuilder;
@@ -75,6 +77,10 @@ public class CompetitionFixture {
 
     private Player playerThatCanPlayInMatch;
 
+    private Player playerThatCannotPlayInMatch;
+
+    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1);
+
     public void clearCompetition() {
 
         if (competition == null) {
@@ -113,7 +119,7 @@ public class CompetitionFixture {
     }
 
     public void checkAllCanYouPlayNotificationsWereSent() {
-        Stream.of(joe, stacy, peter).forEach(player -> assertOutboundEmailIsCorrect(player, Kind.CanYouPlay));
+        Stream.of(joe, stacy).forEach(player -> assertOutboundEmailIsCorrect(player, Kind.CanYouPlay));
     }
 
     private void assertOutboundEmailIsCorrect(Player player, Kind kind) {
@@ -130,8 +136,10 @@ public class CompetitionFixture {
         switch (kindOfEmail) {
         case CanYouPlay:
             return "Can you play";
-        case Confirmation:
-            break;
+        case ConfirmationOfAcceptance:
+            return "Brilliant, your in";
+        case ConfirmationOfDecline:
+            return "Sorry you couldn't play";
         case Reminder:
             break;
         case StandBy:
@@ -147,7 +155,8 @@ public class CompetitionFixture {
     private Competition standardCompetition() {
         return new Competition(getTestCompetitionName(),
                 standardSchedule(getTestCompetitionName()),
-                standardPoolOfPlayers(getTestCompetitionName()));
+                standardPoolOfPlayers(getTestCompetitionName()),
+                testStrategy);
     }
 
     private PoolOfPlayers standardPoolOfPlayers(String competitionName) {
@@ -172,7 +181,7 @@ public class CompetitionFixture {
     }
 
     public void aPlayerInThePoolSaysTheyCanPlay() {
-        playerThatCanPlayInMatch = joe;
+        playerThatCanPlayInMatch = stacy;
         mailbox.email().from(playerThatCanPlayInMatch.getEmailAddress()).subject("any text").body("Yes").send();
     }
 
@@ -184,6 +193,26 @@ public class CompetitionFixture {
         assertThat("The match must be in notified state", MatchState.FirstPickPlayersNotified == thematch.get()
                 .getMatchState());
         assertThat("The player should be in the accepted state", PlayerState.Accepted == thematch.get()
-                .getPlayerState(joe));
+                .getPlayerState(stacy));
+    }
+
+    public void checkAcknowledgementGoesToPlayerWhoAccepted() {
+        assertEmailIsCorrect(match, playerThatCanPlayInMatch, mailbox.pop(playerThatCanPlayInMatch.getEmailAddress()),
+                Kind.ConfirmationOfAcceptance);
+    }
+
+    public void aPlayerInThePoolSaysTheyCannotPlay() {
+        playerThatCannotPlayInMatch = joe;
+        mailbox.email().from(playerThatCannotPlayInMatch.getEmailAddress()).subject("any text").body("No").send();
+    }
+
+    public void checkAcknowledgementGoesToPlayerWhoDeclined() {
+        assertEmailIsCorrect(match, playerThatCannotPlayInMatch,
+                mailbox.pop(playerThatCannotPlayInMatch.getEmailAddress()),
+                Kind.ConfirmationOfDecline);
+    }
+
+    public void nextAppropriatePlayerInThePoolIsNotified() {
+        assertOutboundEmailIsCorrect(peter, Kind.CanYouPlay);
     }
 }

@@ -41,8 +41,13 @@ public class OutboundEmailService implements Consumer<Event<PlayerNotification>>
     }
 
     public void notify(Match match, Player player, Kind kind) {
+
+        final PlayerNotification notification = new PlayerNotification(match, player, kind);
+
+        log.debug("Sending email : " + notification);
+
         reactor.notify(ReactorMessageKind.OutboundEmail,
-                new Event<>(renderer.render(new PlayerNotification(match, player, kind))));
+                new Event<>(renderer.render(notification)));
     }
 
 }

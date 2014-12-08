@@ -18,7 +18,12 @@ public final class PlayerNotification {
 
     public enum Kind {
 
-        CanYouPlay(true), Reminder(true), StandBy(true), StandDown(false), Confirmation(false);
+        CanYouPlay(true),
+        Reminder(true),
+        StandBy(true),
+        StandDown(false),
+        ConfirmationOfAcceptance(false),
+        ConfirmationOfDecline(false);
 
         private final boolean expectsResponse;
 
@@ -51,4 +56,8 @@ public final class PlayerNotification {
         return timestamp;
     }
 
+    @Override
+    public String toString() {
+        return player.getKey() + " : " + kind + " for " + match.getTitle();
+    }
 }

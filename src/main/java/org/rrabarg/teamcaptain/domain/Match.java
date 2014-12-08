@@ -18,6 +18,9 @@ public class Match {
 
     /**
      * Constructor used for inception
+     *
+     * @param strategy
+     *            TODO
      */
     public Match(String title, ZonedDateTime startDateTime, ZonedDateTime endDateTime, Location location) {
         this(null, null, title, startDateTime, endDateTime, location, null);

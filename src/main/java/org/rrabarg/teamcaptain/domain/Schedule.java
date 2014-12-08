@@ -7,6 +7,8 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import org.rrabarg.teamcaptain.SelectionStrategy;
+
 @Entity
 public class Schedule {
 
@@ -15,9 +17,7 @@ public class Schedule {
 
     private final List<Match> matches;
 
-    private String poolId;
-
-    private Competition competition;
+    private CompetitionState state;
 
     /**
      * Used for entity creation
@@ -29,10 +29,10 @@ public class Schedule {
     /**
      * Used for load from persistent store
      */
-    public Schedule(String scheduleId, String playerPoolId, List<Match> matches) {
+    public Schedule(String scheduleId, CompetitionState state, List<Match> matches) {
         this.id = scheduleId;
         this.matches = matches;
-        this.poolId = playerPoolId;
+        this.state = state;
     }
 
     public List<Match> getMatches() {
@@ -40,7 +40,7 @@ public class Schedule {
     }
 
     public String getPlayerPoolId() {
-        return poolId;
+        return state.getPlayerPoolId();
     }
 
     public String getId() {
@@ -49,10 +49,6 @@ public class Schedule {
 
     public void setId(String scheduleId) {
         this.id = scheduleId;
-    }
-
-    public void setPlayerPoolId(String poolId) {
-        this.poolId = poolId;
     }
 
     public Collection<Match> getUpcomingMatches() {
@@ -64,7 +60,15 @@ public class Schedule {
         return "Schedule " + matches;
     }
 
-    public void setCompetition(Competition competition) {
-        this.competition = competition;
+    public void setState(CompetitionState state) {
+        this.state = state;
+    }
+
+    public SelectionStrategy getSelectionStrategy() {
+        return state.getSelectionStrategy();
+    }
+
+    public CompetitionState getCompetitionState() {
+        return state;
     }
 }
