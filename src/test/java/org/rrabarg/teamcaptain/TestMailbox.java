@@ -37,21 +37,45 @@ public class TestMailbox implements Consumer<Event<Email>> {
     @Override
     public synchronized void accept(Event<Email> event) {
 
-        final Email data = event.getData();
+        log.debug("Test mailbox intercepting outgoing email to " + event.getData().getToAddress());
 
-        Stack<Email> stack = notificationMap.get(data.getToAddress());
+        final Email email = event.getData();
+
+        Stack<Email> stack = notificationMap.get(email.getToAddress());
 
         if (stack == null) {
+            log.debug("Test mailbox adding stack for " + email.getToAddress());
             stack = new Stack<>();
-            notificationMap.put(data.getToAddress(), stack);
+            notificationMap.put(email.getToAddress(), stack);
         }
 
-        stack.add(data);
+        stack.add(email);
     }
 
     public synchronized Email pop(String address) {
+
+        for (int i = 0; i < 5; i++) {
+            final Email popper = popper(address);
+
+            if (popper == null) {
+                try {
+                    Thread.sleep(100);
+                } catch (final InterruptedException e) {
+                }
+            }
+            if (popper != null) {
+                return popper;
+            }
+        }
+        return null;
+    }
+
+    private Email popper(String address) {
         final Stack<Email> stack = notificationMap.get(address);
-        return (stack == null) || stack.isEmpty() ? null : stack.pop();
+        final Email email = (stack == null) || stack.isEmpty() ? null : stack.pop();
+        log.debug("Test mailbox check stack for " + address + ". Null stack : " + (stack == null) + " Null email : "
+                + (email == null));
+        return email;
     }
 
     public void clear() {

@@ -28,10 +28,21 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
 
         final Map<Gender, List<Player>> groupedByGender = groupedByGender(pool);
 
-        result.addAll(groupedByGender.get(Gender.Male).subList(0, numberOfGents));
-        result.addAll(groupedByGender.get(Gender.Female).subList(0, numberOfLadies));
+        result.addAll(gentFirstPick(groupedByGender, Gender.Male, numberOfGents));
+        result.addAll(gentFirstPick(groupedByGender, Gender.Female, numberOfLadies));
 
         return result;
+    }
+
+    private List<Player> gentFirstPick(final Map<Gender, List<Player>> groupedByGender, Gender male, int max) {
+        final List<Player> gents = groupedByGender.get(male);
+        sortPlayers(gents);
+        return gents.subList(0, max);
+    }
+
+    private void sortPlayers(final List<Player> gents) {
+        // trivial alphabetic
+        gents.sort((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
     }
 
     private Map<Gender, List<Player>> groupedByGender(PoolOfPlayers pool) {
@@ -43,6 +54,7 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
     @Override
     public Player nextPick(PoolOfPlayers pool, Player decline) {
         final List<Player> list = groupedByGender(pool).get(decline.getGender());
+        sortPlayers(list);
         final int indexOfNextPlayer = list.indexOf(decline) + 1;
         return (indexOfNextPlayer) >= list.size() ? null : list.get(indexOfNextPlayer);
     }
