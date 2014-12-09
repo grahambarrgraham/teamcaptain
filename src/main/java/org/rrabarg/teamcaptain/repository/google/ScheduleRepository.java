@@ -2,6 +2,7 @@ package org.rrabarg.teamcaptain.repository.google;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -54,10 +55,16 @@ public class ScheduleRepository {
 
         final CalendarListEntry calendar = getCalendarById(scheduleId);
 
+        final CompetitionState competitionState =
+                competitionStateSerialisationHelper.fromString(calendar.getDescription());
+
+        final int daysTillMatchForNotifications = competitionState.getSelectionStrategy()
+                .getDaysTillMatchForNotifications();
+
         return new Schedule(
                 scheduleId,
-                competitionStateSerialisationHelper.fromString(calendar.getDescription()),
-                getUpcomingMatches(scheduleId, 10, ChronoUnit.DAYS));
+                competitionState,
+                getUpcomingMatches(scheduleId, daysTillMatchForNotifications, ChronoUnit.DAYS));
     }
 
     private CalendarListEntry getCalendarById(final String calendarId) throws IOException {
@@ -97,7 +104,8 @@ public class ScheduleRepository {
 
     public List<Match> getUpcomingMatches(String scheduleId,
             int numberOfDaysTillMatch, ChronoUnit days) throws IOException {
-        return getEventsForSchedule(scheduleId).getItems().stream().map(event -> asMatch(scheduleId, event))
+        final List<Event> items = getEventsForSchedule(scheduleId).getItems();
+        return items.stream().map(event -> asMatch(scheduleId, event))
                 .filter(match -> isUpcoming(match, numberOfDaysTillMatch, days)).collect(Collectors.toList());
     }
 
@@ -108,7 +116,7 @@ public class ScheduleRepository {
     }
 
     private boolean isUpcoming(Match match, int numberOfDaysTillMatch, ChronoUnit days) {
-        return Instant.now(clock.get()).plus(numberOfDaysTillMatch, days).isAfter(match.getStartDateTime().toInstant());
+        return Duration.between(clock.get().instant(), match.getStartDateTime().toInstant()).toDays() <= 10;
     }
 
     private Match asMatch(String scheduleId, Event event) {

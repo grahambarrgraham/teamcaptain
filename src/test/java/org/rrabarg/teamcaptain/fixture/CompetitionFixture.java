@@ -8,6 +8,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -15,6 +17,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.TestClockFactory;
 import org.rrabarg.teamcaptain.TestMailbox;
@@ -79,7 +84,9 @@ public class CompetitionFixture {
 
     private Player playerThatCannotPlayInMatch;
 
-    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1);
+    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1, 7, 10);
+
+    private Player playerThatDidNotRespond;
 
     public void clearCompetition() {
 
@@ -105,7 +112,7 @@ public class CompetitionFixture {
         clearCompetition();
     }
 
-    public void fixDateTimeBeforeMatch(int amount, ChronoUnit unit) {
+    public void fixDateTimeBeforeMatch(long amount, ChronoUnit unit) {
         clockFactory.fixInstant(aDate.atTime(aTime).minus(amount, unit).atZone(ZoneId.systemDefault()).toInstant());
     }
 
@@ -123,13 +130,18 @@ public class CompetitionFixture {
     }
 
     private void assertOutboundEmailIsCorrect(Player player, Kind kind) {
-        assertEmailIsCorrect(match, player, mailbox.pop(player.getEmailAddress()), kind);
+        assertEmailIsCorrect(match, player, mailbox.pop(player.getEmailAddress()), kind, null);
     }
 
-    private void assertEmailIsCorrect(Match match, Player player, Email email, Kind kindOfEmail) {
-        assertThat("Email must not be null", email, notNullValue());
-        assertThat("Email Subject mismatch", email.getSubject(), containsString(match.getTitle()));
-        assertThat("Email Body mismatch", email.getBody(), containsString(getStringFor(kindOfEmail)));
+    private void assertEmailIsCorrect(Match match, Player player, Email email, Kind kindOfEmail, Integer daysBeforeMatch) {
+        assertThat("Email must not be null for player " + player, email, notNullValue());
+        assertThat("Email Subject mismatch for player " + player, email.getSubject(), containsString(match.getTitle()));
+        assertThat("Email Body mismatch for player " + player, email.getBody(),
+                containsString(getStringFor(kindOfEmail)));
+        if (daysBeforeMatch != null) {
+            assertThat("Email Date is not correct for player " + player, email.getTimestamp(),
+                    isDaysBeforeMatch(daysBeforeMatch));
+        }
     }
 
     private String getStringFor(Kind kindOfEmail) {
@@ -141,7 +153,7 @@ public class CompetitionFixture {
         case ConfirmationOfDecline:
             return "Sorry you couldn't play";
         case Reminder:
-            break;
+            return "Sorry to bother you again";
         case StandBy:
             break;
         case StandDown:
@@ -198,7 +210,7 @@ public class CompetitionFixture {
 
     public void checkAcknowledgementGoesToPlayerWhoAccepted() {
         assertEmailIsCorrect(match, playerThatCanPlayInMatch, mailbox.pop(playerThatCanPlayInMatch.getEmailAddress()),
-                Kind.ConfirmationOfAcceptance);
+                Kind.ConfirmationOfAcceptance, null);
     }
 
     public void aPlayerInThePoolSaysTheyCannotPlay() {
@@ -209,10 +221,77 @@ public class CompetitionFixture {
     public void checkAcknowledgementGoesToPlayerWhoDeclined() {
         assertEmailIsCorrect(match, playerThatCannotPlayInMatch,
                 mailbox.pop(playerThatCannotPlayInMatch.getEmailAddress()),
-                Kind.ConfirmationOfDecline);
+                Kind.ConfirmationOfDecline, null);
     }
 
     public void nextAppropriatePlayerInThePoolIsNotified() {
         assertOutboundEmailIsCorrect(peter, Kind.CanYouPlay);
     }
+
+    public void pumpWorkflows() {
+        workflowService.pump();
+    }
+
+    public void pumpWorkflowsTillXDaysBeforeMatch(final int daysTillMatchToStartReminders) {
+        long daysTillMatch = getDaysTillMatch();
+        while (--daysTillMatch >= daysTillMatchToStartReminders) {
+            fixDateTimeBeforeMatch(daysTillMatch, ChronoUnit.DAYS);
+            pumpWorkflows();
+        }
+    }
+
+    private Instant getMatchInstant() {
+        return aDate.atTime(aTime).atZone(ZoneId.systemDefault()).toInstant();
+    }
+
+    public void allButOneFirstPickPlayersRespond() {
+        assertOutboundEmailIsCorrect(stacy, Kind.CanYouPlay);
+        aPlayerInThePoolSaysTheyCanPlay();
+        playerThatDidNotRespond = joe;
+    }
+
+    public void checkDailyReminderIsSentForDaysBeforeMatch(int daysBeforeMatch) {
+        for (int i = 0; i < daysBeforeMatch; i++) {
+            checkReminderOnDay(i);
+        }
+    }
+
+    private void checkReminderOnDay(int daysBeforeMatch) {
+        assertEmailIsCorrect(
+                match,
+                playerThatDidNotRespond,
+                mailbox.pop(playerThatDidNotRespond.getEmailAddress()),
+                Kind.Reminder,
+                daysBeforeMatch);
+    }
+
+    private Matcher<Instant> isDaysBeforeMatch(Integer daysBeforeMatch) {
+        return new BaseMatcher<Instant>() {
+
+            @Override
+            public boolean matches(Object item) {
+
+                if ((item == null) || (!(item instanceof Instant))) {
+                    return false;
+                }
+
+                return getDaysTillMatch((Instant) item) == daysBeforeMatch;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("days till match " + daysBeforeMatch + " for match on "
+                        + match.getStartDateTime());
+            }
+        };
+    }
+
+    private long getDaysTillMatch() {
+        return getDaysTillMatch(clockFactory.clock().instant());
+    }
+
+    private long getDaysTillMatch(Instant instant) {
+        return Duration.between(instant, getMatchInstant()).toDays();
+    }
+
 }

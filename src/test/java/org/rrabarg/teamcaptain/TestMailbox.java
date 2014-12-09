@@ -2,6 +2,7 @@ package org.rrabarg.teamcaptain;
 
 import static reactor.event.selector.Selectors.$;
 
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -26,6 +27,9 @@ public class TestMailbox implements Consumer<Event<Email>> {
 
     @Autowired
     Reactor reactor;
+
+    @Autowired
+    Clock clock;
 
     @PostConstruct
     public void configure() {
@@ -53,21 +57,7 @@ public class TestMailbox implements Consumer<Event<Email>> {
     }
 
     public synchronized Email pop(String address) {
-
-        for (int i = 0; i < 5; i++) {
-            final Email popper = popper(address);
-
-            if (popper == null) {
-                try {
-                    Thread.sleep(100);
-                } catch (final InterruptedException e) {
-                }
-            }
-            if (popper != null) {
-                return popper;
-            }
-        }
-        return null;
+        return popper(address);
     }
 
     private Email popper(String address) {
@@ -113,7 +103,7 @@ public class TestMailbox implements Consumer<Event<Email>> {
         }
 
         public Email build() {
-            return new Email(subject, toAddress, fromAddress, body);
+            return new Email(subject, toAddress, fromAddress, body, clock.instant());
         }
 
         public void send() {

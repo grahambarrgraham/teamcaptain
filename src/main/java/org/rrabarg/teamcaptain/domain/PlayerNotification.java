@@ -1,6 +1,5 @@
 package org.rrabarg.teamcaptain.domain;
 
-import java.time.Clock;
 import java.time.Instant;
 
 public final class PlayerNotification {
@@ -9,11 +8,11 @@ public final class PlayerNotification {
     private final Kind kind;
     private final Instant timestamp;
 
-    public PlayerNotification(Match match, Player player, Kind kind) {
+    public PlayerNotification(Match match, Player player, Kind kind, Instant timestamp) {
         this.match = match;
         this.player = player;
         this.kind = kind;
-        this.timestamp = Clock.systemDefaultZone().instant();
+        this.timestamp = timestamp;
     }
 
     public enum Kind {
@@ -58,6 +57,6 @@ public final class PlayerNotification {
 
     @Override
     public String toString() {
-        return player.getKey() + " : " + kind + " for " + match.getTitle();
+        return player.getKey() + " : " + kind + " for " + match.getTitle() + " with timestamp " + timestamp;
     }
 }

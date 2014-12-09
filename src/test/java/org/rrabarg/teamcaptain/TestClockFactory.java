@@ -6,6 +6,7 @@ import java.time.ZoneId;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 /**
  * Class which exists for test purposes to fix the clock on an instant.
@@ -16,6 +17,7 @@ public class TestClockFactory {
     private Clock testClock;
 
     @Bean
+    @Scope("prototype")
     public Clock clock() {
         return testClock == null ? Clock.systemDefaultZone() : testClock;
     }

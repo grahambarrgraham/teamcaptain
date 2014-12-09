@@ -2,7 +2,10 @@ package org.rrabarg.teamcaptain.service;
 
 import static reactor.event.selector.Selectors.$;
 
+import java.time.Clock;
+
 import javax.annotation.PostConstruct;
+import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.rrabarg.teamcaptain.domain.Match;
@@ -29,6 +32,9 @@ public class OutboundEmailService implements Consumer<Event<PlayerNotification>>
     @Autowired
     EmailNotificationRenderer renderer;
 
+    @Autowired
+    Provider<Clock> clock;
+
     @PostConstruct
     public void configure() {
         reactor.on($(ReactorMessageKind.OutboundPlayerNotification), this);
@@ -42,7 +48,7 @@ public class OutboundEmailService implements Consumer<Event<PlayerNotification>>
 
     public void notify(Match match, Player player, Kind kind) {
 
-        final PlayerNotification notification = new PlayerNotification(match, player, kind);
+        final PlayerNotification notification = new PlayerNotification(match, player, kind, clock.get().instant());
 
         log.debug("Sending email : " + notification);
 

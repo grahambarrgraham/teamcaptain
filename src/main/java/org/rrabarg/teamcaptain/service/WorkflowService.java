@@ -71,4 +71,8 @@ public class WorkflowService {
     public void recordWorkflow(MatchWorkflow matchWorkflow) throws IOException {
         scheduleService.updateMatch(matchWorkflow.getMatch());
     }
+
+    public void pump() {
+        workflowMap.values().forEach(a -> a.pump());
+    }
 }

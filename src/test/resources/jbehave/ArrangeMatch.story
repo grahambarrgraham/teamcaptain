@@ -16,3 +16,12 @@ And notifications have been sent out to the first pick players
 When a player responds that they are not available
 Then a notification goes out to the next appropriate player in the pool
 And a decline acknowledgement notification goes to the player
+
+Scenario: a player does not respond
+Given a match is scheduled
+And it is 10 days before the match
+And all but one first pick players responds
+When times elapses till the match
+Then a daily reminder is sent to the non-responding player from 7 days before the match  
+
+

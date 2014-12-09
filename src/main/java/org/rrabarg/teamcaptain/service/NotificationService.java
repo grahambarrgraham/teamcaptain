@@ -2,7 +2,11 @@ package org.rrabarg.teamcaptain.service;
 
 import static reactor.event.selector.Selectors.$;
 
+import java.time.Clock;
+import java.util.stream.Stream;
+
 import javax.annotation.PostConstruct;
+import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.rrabarg.teamcaptain.domain.Match;
@@ -30,13 +34,16 @@ public class NotificationService implements Consumer<Event<PlayerResponse>> {
     @Autowired
     PlayerNotificationRepository notificationRepository;
 
+    @Autowired
+    Provider<Clock> clock;
+
     @PostConstruct
     public void configure() {
         reactor.on($(ReactorMessageKind.InboundPlayerResponse), this);
     }
 
     public void notify(Match match, Player player, Kind kind) {
-        final PlayerNotification notification = new PlayerNotification(match, player, kind);
+        final PlayerNotification notification = new PlayerNotification(match, player, kind, clock.get().instant());
 
         reactor.notify(ReactorMessageKind.OutboundPlayerNotification,
                 new Event<>(notification));
@@ -44,6 +51,11 @@ public class NotificationService implements Consumer<Event<PlayerResponse>> {
         if (kind.expectsResponse()) {
             notificationRepository.add(notification);
         }
+    }
+
+    public Stream<PlayerNotification> getPendingNotifications(Match match) {
+        return notificationRepository.getPendingNotifications()
+                .stream().filter(n -> n.getMatch().equals(match));
     }
 
     @Override

@@ -10,15 +10,20 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import org.rrabarg.teamcaptain.SelectionStrategy;
 
 public class SimpleGenderedStrategy implements SelectionStrategy {
-
     private final int numberOfGents;
     private final int numberOfLadies;
+    private final int daysTillMatchForReminders;
+    private final int daysTillMatchForNotifications;
 
     public SimpleGenderedStrategy(
             @JsonProperty("numberOfGents") int numberOfGents,
-            @JsonProperty("numberOfLadies") int numberOfLadies) {
+            @JsonProperty("numberOfLadies") int numberOfLadies,
+            @JsonProperty("daysTillMatchForReminders") int daysTillMatchForReminders,
+            @JsonProperty("daysTillMatchForNotifications") int daysTillMatchForNotifications) {
         this.numberOfGents = numberOfGents;
         this.numberOfLadies = numberOfLadies;
+        this.daysTillMatchForReminders = daysTillMatchForReminders;
+        this.daysTillMatchForNotifications = daysTillMatchForNotifications;
     }
 
     @Override
@@ -65,6 +70,16 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
 
     public int getNumberOfLadies() {
         return numberOfLadies;
+    }
+
+    @Override
+    public int getDaysTillMatchForReminders() {
+        return daysTillMatchForReminders;
+    }
+
+    @Override
+    public int getDaysTillMatchForNotifications() {
+        return daysTillMatchForNotifications;
     }
 
 }

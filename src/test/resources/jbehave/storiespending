@@ -1,12 +1,13 @@
 
---
 
-Scenario: a player does not respond
+--
+Scenario: a player responds after being reminded
 Given a match is scheduled
-And it is at least 4 days before the match  
-And more than 1 day has elapsed since a notification was sent to the player
-When a team member fails to acknowledges their availability 
-Then a reminder notification is sent to the player
+And it is 10 days before the match
+And all but one first pick players responds
+And times elapses till the 5 days before the match
+When the remaining team member acknowledges their availability
+Then no further reminders are sent to the player till the match  
 
 Scenario: a player continues not to respond
 Given a match is scheduled

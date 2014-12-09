@@ -101,28 +101,24 @@ public class ArrangeMatchSteps extends Steps {
         competitionFixture.checkAcknowledgementGoesToPlayerWhoDeclined();
     }
 
-    @Given("it is at least 4 days before the match")
-    @Pending
-    public void givenItIsAtLeast4DaysBeforeTheMatch() {
-        // PENDING
+    @Given("it is 10 days before the match")
+    public void givenItIs10DaysBeforeTheMatch() throws IOException {
+        whenItIs10DaysBeforeTheMatch();
     }
 
-    @Given("more than 1 day has elapsed since a notification was sent to the player")
-    @Pending
-    public void givenMoreThan1DayHasElapsedSinceANotificationWasSentToThePlayer() {
-        // PENDING
+    @Given("all but one first pick players responds")
+    public void givenAllButOneFirstPickPlayersResponds() throws IOException {
+        competitionFixture.allButOneFirstPickPlayersRespond();
     }
 
-    @When("a team member fails to acknowledges their availability")
-    @Pending
-    public void whenATeamMemberFailsToAcknowledgesTheirAvailability() {
-        // PENDING
+    @When("times elapses till the match")
+    public void whenTimesElapsesTillTheMatch() {
+        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(0);
     }
 
-    @Then("a reminder notification is sent to the player")
-    @Pending
-    public void thenAReminderNotificationIsSentToThePlayer() {
-        // PENDING
+    @Then("a daily reminder is sent to the non-responding player from 7 days before the match")
+    public void thenADailyReminderIsSentToTheNonrespondingPlayerFrom7DaysBeforeTheMatch() {
+        competitionFixture.checkDailyReminderIsSentForDaysBeforeMatch(7);
     }
 
     @Given("it is less than 4 days before the match")

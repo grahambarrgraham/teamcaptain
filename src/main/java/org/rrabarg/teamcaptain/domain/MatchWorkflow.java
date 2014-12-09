@@ -1,6 +1,11 @@
 package org.rrabarg.teamcaptain.domain;
 
 import java.io.IOException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+
+import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
@@ -27,6 +32,9 @@ public class MatchWorkflow {
     @Autowired
     WorkflowService workflowService;
 
+    @Autowired
+    Provider<Clock> clockProvider;
+
     private Match match;
 
     private PoolOfPlayers poolOfPlayers;
@@ -39,6 +47,11 @@ public class MatchWorkflow {
             match.setMatchState(MatchState.FirstPickPlayersNotified);
         }
 
+        if ((MatchState.FirstPickPlayersNotified == match.getMatchState()) &&
+                (getDaysTillMatch() <= selectionStrategy.getDaysTillMatchForReminders())) {
+            sendReminders();
+        }
+
         try {
             workflowService.recordWorkflow(this);
         } catch (final IOException e) {
@@ -46,6 +59,12 @@ public class MatchWorkflow {
         }
 
         return this;
+    }
+
+    private long getDaysTillMatch() {
+        return Duration.between(
+                now(),
+                match.getStartDateTime().toInstant()).toDays();
     }
 
     private MatchWorkflow notifyFirstPickPlayers() {
@@ -56,6 +75,14 @@ public class MatchWorkflow {
                 .forEach(
                         player -> notificationService.notify(match, player, Kind.CanYouPlay));
         return this;
+    }
+
+    private void sendReminders() {
+        notificationService.getPendingNotifications(match)
+                .filter(m -> isMoreThanADayAgo(m.getTimestamp()))
+                .map(m -> m.getPlayer())
+                .distinct()
+                .forEach(player -> notificationService.notify(match, player, Kind.Reminder));
     }
 
     @Required
@@ -98,4 +125,13 @@ public class MatchWorkflow {
             throw new RuntimeException("Failed to update workflow state " + this + " with " + playerResponse);
         }
     }
+
+    private boolean isMoreThanADayAgo(Instant timestamp) {
+        return Duration.between(timestamp, now()).toDays() > 1;
+    }
+
+    private Instant now() {
+        return clockProvider.get().instant();
+    }
+
 }

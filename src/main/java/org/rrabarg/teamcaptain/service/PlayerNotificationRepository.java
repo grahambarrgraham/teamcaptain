@@ -1,7 +1,6 @@
 package org.rrabarg.teamcaptain.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
@@ -21,7 +20,7 @@ public class PlayerNotificationRepository {
     List<PlayerNotification> playerNotifications = new ArrayList<>();
 
     public List<PlayerNotification> getPendingNotifications() {
-        return Collections.<PlayerNotification> unmodifiableList(playerNotifications);
+        return new ArrayList<PlayerNotification>(playerNotifications);
     }
 
     public void removeAll(List<PlayerNotification> notifications) {

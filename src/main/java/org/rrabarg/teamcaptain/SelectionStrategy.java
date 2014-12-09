@@ -16,4 +16,8 @@ public interface SelectionStrategy {
 
     Player nextPick(PoolOfPlayers pool, Player decline);
 
+    int getDaysTillMatchForReminders();
+
+    int getDaysTillMatchForNotifications();
+
 }
