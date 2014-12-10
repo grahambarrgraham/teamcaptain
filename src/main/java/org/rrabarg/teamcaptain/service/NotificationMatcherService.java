@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.rrabarg.teamcaptain.domain.Notification;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
 import org.rrabarg.teamcaptain.domain.PlayerResponse;
 import org.rrabarg.teamcaptain.domain.PlayerResponse.Kind;
@@ -42,10 +43,16 @@ public class NotificationMatcherService {
     private Kind getKind(org.rrabarg.teamcaptain.domain.PlayerNotification.Kind kind, Email data) {
         switch (kind) {
         case CanYouPlay:
-        case StandBy:
         case Reminder:
             if (data.getBody().toLowerCase().contains("yes")) {
                 return Kind.ICanPlay;
+            }
+            if (data.getBody().toLowerCase().contains("no")) {
+                return Kind.ICantPlay;
+            }
+        case StandBy:
+            if (data.getBody().toLowerCase().contains("yes")) {
+                return Kind.ICanStandby;
             }
             if (data.getBody().toLowerCase().contains("no")) {
                 return Kind.ICantPlay;
@@ -81,7 +88,7 @@ public class NotificationMatcherService {
         return false;
     }
 
-    private MatchStrength matchKind(Email email, PlayerNotification playerNotification) {
+    private MatchStrength matchKind(Email email, Notification playerNotification) {
         return MatchStrength.Medium;
     }
 
@@ -90,7 +97,7 @@ public class NotificationMatcherService {
                 : MatchStrength.None;
     }
 
-    private MatchStrength matchNotificationId(Email email, PlayerNotification playerNotification) {
+    private MatchStrength matchNotificationId(Email email, Notification playerNotification) {
         return MatchStrength.None;
     }
 

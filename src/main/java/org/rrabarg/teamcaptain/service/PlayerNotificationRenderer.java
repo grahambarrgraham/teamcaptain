@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmailNotificationRenderer {
+public class PlayerNotificationRenderer {
 
     @Autowired
     Provider<Clock> clock;
@@ -49,6 +49,10 @@ public class EmailNotificationRenderer {
                 subjectBuilder = subject().matchTitle();
                 contentBuilder = content().confirmAcceptance();
                 break;
+            case ConfirmationOfStandby:
+                subjectBuilder = subject().matchTitle();
+                contentBuilder = content().confirmStandby();
+                break;
             case ConfirmationOfDecline:
                 subjectBuilder = subject().matchTitle();
                 contentBuilder = content().confirmDecline();
@@ -58,6 +62,8 @@ public class EmailNotificationRenderer {
                 contentBuilder = content().reminder();
                 break;
             case StandBy:
+                subjectBuilder = subject().matchTitle();
+                contentBuilder = content().canYouStandby();
                 break;
             case StandDown:
                 break;
@@ -90,6 +96,28 @@ public class EmailNotificationRenderer {
 
             public SubjectBuilder add(String s) {
                 builder.append(s);
+                return this;
+            }
+
+            public SubjectBuilder canYouStandby() {
+                this
+                        .hello()
+                        .append("Can you standby for the match on ")
+                        .theMatch()
+                        .append(".")
+                        .newline()
+                        .answerYesOrNo()
+                        .add(". If yes, I'll be in touch shortly to confirm once I've contacted all the players.")
+                        .signoff();
+                return this;
+            }
+
+            public SubjectBuilder confirmStandby() {
+                this
+                        .hello()
+                        .append("Brilliant, thanks, I'll be in touch shortly to confirm.")
+                        .append(NEW_LINE)
+                        .signoff();
                 return this;
             }
 

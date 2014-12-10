@@ -14,7 +14,7 @@ public final class PlayerResponse {
     }
 
     public enum Kind {
-        ICanPlay, ICantPlay, Information, Alert
+        ICanPlay, ICantPlay, Information, Alert, ICanStandby
     }
 
     public Match getMatch() {

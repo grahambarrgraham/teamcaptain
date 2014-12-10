@@ -8,10 +8,9 @@ import javax.annotation.PostConstruct;
 import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
-import org.rrabarg.teamcaptain.domain.Match;
-import org.rrabarg.teamcaptain.domain.Player;
+import org.rrabarg.teamcaptain.domain.AdminAlert;
+import org.rrabarg.teamcaptain.domain.Notification;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
-import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,7 @@ import reactor.event.Event;
 import reactor.function.Consumer;
 
 @Service
-public class OutboundEmailService implements Consumer<Event<PlayerNotification>> {
+public class OutboundEmailService implements Consumer<Event<Notification>> {
 
     static Logger log = LoggerFactory.getLogger(OutboundEmailService.class);
 
@@ -30,7 +29,10 @@ public class OutboundEmailService implements Consumer<Event<PlayerNotification>>
     Reactor reactor;
 
     @Autowired
-    EmailNotificationRenderer renderer;
+    PlayerNotificationRenderer playerNotificationRenderer;
+
+    @Autowired
+    AdminAlertRenderer adminAlertRenderer;
 
     @Autowired
     Provider<Clock> clock;
@@ -38,22 +40,22 @@ public class OutboundEmailService implements Consumer<Event<PlayerNotification>>
     @PostConstruct
     public void configure() {
         reactor.on($(ReactorMessageKind.OutboundPlayerNotification), this);
+        reactor.on($(ReactorMessageKind.OutboundAdminAlert), this);
     }
 
     @Override
-    public void accept(Event<PlayerNotification> event) {
-        final PlayerNotification notification = event.getData();
-        notify(notification.getMatch(), notification.getPlayer(), notification.getKind());
-    }
-
-    public void notify(Match match, Player player, Kind kind) {
-
-        final PlayerNotification notification = new PlayerNotification(match, player, kind, clock.get().instant());
+    public void accept(Event<Notification> event) {
+        final Notification notification = event.getData();
 
         log.debug("Sending email : " + notification);
 
-        reactor.notify(ReactorMessageKind.OutboundEmail,
-                new Event<>(renderer.render(notification)));
+        if (notification instanceof AdminAlert) {
+            reactor.notify(ReactorMessageKind.OutboundEmail,
+                    new Event<>(adminAlertRenderer.render((AdminAlert) notification)));
+        } else {
+            reactor.notify(ReactorMessageKind.OutboundEmail,
+                    new Event<>(playerNotificationRenderer.render((PlayerNotification) notification)));
+        }
     }
 
 }

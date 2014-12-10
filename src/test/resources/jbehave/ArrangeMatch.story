@@ -32,3 +32,11 @@ And times elapses till the 5 days before the match
 When the remaining team member acknowledges their availability
 Then no further reminders are sent to the player  
 
+Scenario: a player continues not to respond
+Given a match is scheduled
+And it is 10 days before the match
+And all but one first pick players responds
+When times elapses till the 4 days before the match
+Then a standby notification goes out to the next appropriate player in the pool
+And an administrator alert is raised
+

@@ -2,17 +2,14 @@ package org.rrabarg.teamcaptain.domain;
 
 import java.time.Instant;
 
-public final class PlayerNotification {
-    private final Match match;
+public final class PlayerNotification extends Notification {
     private final Player player;
     private final Kind kind;
-    private final Instant timestamp;
 
     public PlayerNotification(Match match, Player player, Kind kind, Instant timestamp) {
-        this.match = match;
+        super(timestamp, match);
         this.player = player;
         this.kind = kind;
-        this.timestamp = timestamp;
     }
 
     public enum Kind {
@@ -22,7 +19,8 @@ public final class PlayerNotification {
         StandBy(true),
         StandDown(false),
         ConfirmationOfAcceptance(false),
-        ConfirmationOfDecline(false);
+        ConfirmationOfDecline(false),
+        ConfirmationOfStandby(false);
 
         private final boolean expectsResponse;
 
@@ -33,10 +31,6 @@ public final class PlayerNotification {
         public boolean expectsResponse() {
             return expectsResponse;
         }
-    }
-
-    public Match getMatch() {
-        return match;
     }
 
     public Player getPlayer() {
@@ -50,10 +44,6 @@ public final class PlayerNotification {
     public String getOrganiserFirstName() {
         return "Graham";
     };
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
 
     @Override
     public String toString() {

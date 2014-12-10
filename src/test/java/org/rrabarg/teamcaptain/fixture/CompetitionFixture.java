@@ -54,6 +54,7 @@ public class CompetitionFixture {
     LocalTime aEndTime = aTime.plus(3, HOURS);
     String aLocationFirstLine = "1 some street";
     String aLocationPostcode = "EH1 1YA";
+    String adminstratorEmailAddress = "grahambarrgraham@gmail.com";
 
     @Autowired
     CompetitionService competitionService;
@@ -84,7 +85,7 @@ public class CompetitionFixture {
 
     private Player playerThatCannotPlayInMatch;
 
-    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1, 7, 10);
+    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1, 7, 10, 4);
 
     private Player playerThatDidNotRespond;
 
@@ -157,7 +158,7 @@ public class CompetitionFixture {
         case Reminder:
             return "Sorry to bother you again";
         case StandBy:
-            break;
+            return "Can you standby";
         case StandDown:
             break;
         default:
@@ -228,6 +229,10 @@ public class CompetitionFixture {
         assertEmailIsCorrect(match, playerThatCannotPlayInMatch,
                 mailbox.pop(playerThatCannotPlayInMatch.getEmailAddress()),
                 Kind.ConfirmationOfDecline, null);
+    }
+
+    public void nextAppropriatePlayerInThePoolIsNotifiedOfStandby() {
+        assertOutboundEmailIsCorrect(peter, Kind.StandBy);
     }
 
     public void nextAppropriatePlayerInThePoolIsNotified() {
@@ -308,6 +313,12 @@ public class CompetitionFixture {
 
     private long getDaysTillMatch(Instant instant) {
         return Duration.between(instant, getMatchInstant()).toDays();
+    }
+
+    public void checkAnAdminstratorAlertIsRaised() {
+        final Email email = mailbox.pop(adminstratorEmailAddress);
+        assertThat("Admin Email must not be null", email, notNullValue());
+        assertThat("Admin alert should be ", email.getSubject().toLowerCase(), containsString("standby"));
     }
 
 }

@@ -46,7 +46,6 @@ public class ArrangeMatchSteps extends Steps {
     @Given("a match is scheduled")
     public void givenAMatchIsScheduled() throws IOException, ServiceException, InterruptedException {
         competitionFixture.createCompetition();
-        log.info("a match was scheduled");
     }
 
     @When("it is 10 days before the match")
@@ -137,22 +136,19 @@ public class ArrangeMatchSteps extends Steps {
         competitionFixture.checkThereAreNoRemindersForPlayersThatDidNotRespond();
     }
 
-    @Given("it is less than 4 days before the match")
-    @Pending
-    public void givenItIsLessThan4DaysBeforeTheMatch() {
-        // PENDING
+    @When("times elapses till the 4 days before the match")
+    public void whenTimesElapsesTillThe4DaysBeforeTheMatch() {
+        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(4);
     }
 
-    @Then("a reserve notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void thenAReserveNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        // PENDING
+    @Then("a standby notification goes out to the next appropriate player in the pool")
+    public void thenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
+        competitionFixture.nextAppropriatePlayerInThePoolIsNotifiedOfStandby();
     }
 
     @Then("an administrator alert is raised")
-    @Pending
     public void thenAnAdministratorAlertIsRaised() {
-        // PENDING
+        competitionFixture.checkAnAdminstratorAlertIsRaised();
     }
 
     @When("sufficient players are assigned to the match")

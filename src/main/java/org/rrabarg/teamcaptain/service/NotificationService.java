@@ -3,12 +3,14 @@ package org.rrabarg.teamcaptain.service;
 import static reactor.event.selector.Selectors.$;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.AdminAlert;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchWorkflow;
 import org.rrabarg.teamcaptain.domain.Player;
@@ -43,7 +45,7 @@ public class NotificationService implements Consumer<Event<PlayerResponse>> {
     }
 
     public void notify(Match match, Player player, Kind kind) {
-        final PlayerNotification notification = new PlayerNotification(match, player, kind, clock.get().instant());
+        final PlayerNotification notification = new PlayerNotification(match, player, kind, now());
 
         reactor.notify(ReactorMessageKind.OutboundPlayerNotification,
                 new Event<>(notification));
@@ -65,4 +67,13 @@ public class NotificationService implements Consumer<Event<PlayerResponse>> {
             workflow.notify(playerResponse);
         }
     }
+
+    public void adminAlert(Match match, AdminAlert.Kind kind) {
+        reactor.notify(ReactorMessageKind.OutboundAdminAlert, new Event<>(new AdminAlert(match, kind, now())));
+    }
+
+    private Instant now() {
+        return clock.get().instant();
+    }
+
 }

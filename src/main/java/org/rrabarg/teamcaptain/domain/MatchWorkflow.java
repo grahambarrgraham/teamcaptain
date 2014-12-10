@@ -52,6 +52,12 @@ public class MatchWorkflow {
             sendReminders();
         }
 
+        if ((MatchState.FirstPickPlayersNotified == match.getMatchState()) &&
+                (getDaysTillMatch() <= selectionStrategy.getDaysTillMatchForStandbys())) {
+            sendStandbys();
+            notificationService.adminAlert(match, AdminAlert.Kind.StandbyPlayersNotified);
+        }
+
         try {
             workflowService.recordWorkflow(this);
         } catch (final IOException e) {
@@ -59,6 +65,18 @@ public class MatchWorkflow {
         }
 
         return this;
+    }
+
+    private void sendStandbys() {
+        notificationService
+                .getPendingNotifications(match)
+                .filter(m -> m.getKind() == Kind.CanYouPlay)
+                .map(m -> m.getPlayer())
+                .distinct()
+                .forEach(
+                        player ->
+                        notificationService.notify(match, selectionStrategy.nextPick(poolOfPlayers, player),
+                                Kind.StandBy));
     }
 
     private long getDaysTillMatch() {
@@ -98,6 +116,12 @@ public class MatchWorkflow {
         pump();
     }
 
+    private void iCanStandby(Player player) {
+        match.setPlayerState(player, PlayerState.OnStandby);
+        notificationService.notify(match, player, Kind.ConfirmationOfStandby);
+        pump();
+    }
+
     private void iCannotPlay(Player player) {
         match.setPlayerState(player, PlayerState.Declined);
         notificationService.notify(match, player, Kind.ConfirmationOfDecline);
@@ -114,6 +138,9 @@ public class MatchWorkflow {
             switch (playerResponse.getData().getKind()) {
             case ICanPlay:
                 iCanPlay(playerResponse.getData().getPlayer());
+                break;
+            case ICanStandby:
+                iCanStandby(playerResponse.getData().getPlayer());
                 break;
             case ICantPlay:
                 iCannotPlay(playerResponse.getData().getPlayer());

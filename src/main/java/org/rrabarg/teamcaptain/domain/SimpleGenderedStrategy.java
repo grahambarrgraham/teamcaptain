@@ -14,16 +14,19 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
     private final int numberOfLadies;
     private final int daysTillMatchForReminders;
     private final int daysTillMatchForNotifications;
+    private final int daysTillMatchForStandbys;
 
     public SimpleGenderedStrategy(
             @JsonProperty("numberOfGents") int numberOfGents,
             @JsonProperty("numberOfLadies") int numberOfLadies,
             @JsonProperty("daysTillMatchForReminders") int daysTillMatchForReminders,
-            @JsonProperty("daysTillMatchForNotifications") int daysTillMatchForNotifications) {
+            @JsonProperty("daysTillMatchForNotifications") int daysTillMatchForNotifications,
+            @JsonProperty("daysTillMatchForStandbys") int daysTillMatchForStandbys) {
         this.numberOfGents = numberOfGents;
         this.numberOfLadies = numberOfLadies;
         this.daysTillMatchForReminders = daysTillMatchForReminders;
         this.daysTillMatchForNotifications = daysTillMatchForNotifications;
+        this.daysTillMatchForStandbys = daysTillMatchForStandbys;
     }
 
     @Override
@@ -80,6 +83,11 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
     @Override
     public int getDaysTillMatchForNotifications() {
         return daysTillMatchForNotifications;
+    }
+
+    @Override
+    public long getDaysTillMatchForStandbys() {
+        return daysTillMatchForStandbys;
     }
 
 }

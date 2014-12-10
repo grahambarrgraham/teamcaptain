@@ -20,4 +20,6 @@ public interface SelectionStrategy {
 
     int getDaysTillMatchForNotifications();
 
+    long getDaysTillMatchForStandbys();
+
 }

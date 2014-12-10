@@ -1,5 +1,5 @@
 package org.rrabarg.teamcaptain.config;
 
 public enum ReactorMessageKind {
-    OutboundEmail, InboundEmail, InboundPlayerResponse, OutboundPlayerNotification;
+    OutboundEmail, InboundEmail, InboundPlayerResponse, OutboundPlayerNotification, OutboundAdminAlert;
 }
