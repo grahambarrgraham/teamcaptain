@@ -24,4 +24,11 @@ And all but one first pick players responds
 When times elapses till the match
 Then a daily reminder is sent to the non-responding player from 7 days before the match  
 
+Scenario: a player responds after being reminded
+Given a match is scheduled
+And it is 10 days before the match
+And all but one first pick players responds
+And times elapses till the 5 days before the match
+When the remaining team member acknowledges their availability
+Then no further reminders are sent to the player  
 

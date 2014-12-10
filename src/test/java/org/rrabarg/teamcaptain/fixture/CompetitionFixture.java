@@ -114,6 +114,8 @@ public class CompetitionFixture {
 
     public void fixDateTimeBeforeMatch(long amount, ChronoUnit unit) {
         clockFactory.fixInstant(aDate.atTime(aTime).minus(amount, unit).atZone(ZoneId.systemDefault()).toInstant());
+        log.debug("Fixing time to " + amount + " days before the match " + clockFactory.clock().instant());
+
     }
 
     public void refreshWorkflows() throws IOException {
@@ -192,6 +194,10 @@ public class CompetitionFixture {
         }
     }
 
+    public void theRemainingPlayersSayTheyCanPlay() {
+        mailbox.email().from(playerThatDidNotRespond.getEmailAddress()).subject("any text").body("Yes").send();
+    }
+
     public void aPlayerInThePoolSaysTheyCanPlay() {
         playerThatCanPlayInMatch = stacy;
         mailbox.email().from(playerThatCanPlayInMatch.getEmailAddress()).subject("any text").body("Yes").send();
@@ -229,6 +235,7 @@ public class CompetitionFixture {
     }
 
     public void pumpWorkflows() {
+        log.debug("Pumping the workflow");
         workflowService.pump();
     }
 
@@ -245,9 +252,18 @@ public class CompetitionFixture {
     }
 
     public void allButOneFirstPickPlayersRespond() {
+        log.debug("All but one first pick players respond");
         assertOutboundEmailIsCorrect(stacy, Kind.CanYouPlay);
         aPlayerInThePoolSaysTheyCanPlay();
         playerThatDidNotRespond = joe;
+    }
+
+    public void checkThereAreNoRemindersForPlayersThatDidNotRespond() {
+
+        final Optional<Email> findAnyReminder = mailbox.viewAll(playerThatDidNotRespond.getEmailAddress())
+                .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp())).findFirst();
+
+        assertThat(findAnyReminder.get().getTimestamp(), isDaysBeforeMatch(5));
     }
 
     public void checkDailyReminderIsSentForDaysBeforeMatch(int daysBeforeMatch) {

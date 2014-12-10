@@ -121,6 +121,22 @@ public class ArrangeMatchSteps extends Steps {
         competitionFixture.checkDailyReminderIsSentForDaysBeforeMatch(7);
     }
 
+    @Given("times elapses till the 5 days before the match")
+    public void givenTimesElapsesTillThe5DaysBeforeTheMatch() {
+        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(5);
+    }
+
+    @When("the remaining team member acknowledges their availability")
+    public void whenTheRemainingTeamMemberAcknowledgesTheirAvailability() {
+        competitionFixture.theRemainingPlayersSayTheyCanPlay();
+    }
+
+    @Then("no further reminders are sent to the player")
+    public void thenNoFurtherRemindersAreSentToThePlayer() {
+        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(0);
+        competitionFixture.checkThereAreNoRemindersForPlayersThatDidNotRespond();
+    }
+
     @Given("it is less than 4 days before the match")
     @Pending
     public void givenItIsLessThan4DaysBeforeTheMatch() {

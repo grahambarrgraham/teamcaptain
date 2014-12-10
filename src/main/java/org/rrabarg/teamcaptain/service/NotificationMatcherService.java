@@ -16,15 +16,15 @@ public class NotificationMatcherService {
     @Autowired
     PlayerNotificationRepository notificationRepository;
 
-    public PlayerResponse getMatch(Email data) {
-        final List<PlayerNotification> matchingNotifications = getMatchingNotifications(data);
+    public PlayerResponse getMatch(Email email) {
+        final List<PlayerNotification> matchingNotifications = getMatchingNotifications(email);
         notificationRepository.removeAll(matchingNotifications);
         final PlayerNotification notification = getLatestNotification(matchingNotifications);
         return new PlayerResponse(
                 notification.getMatch(),
                 notification.getPlayer(),
-                getKind(notification.getKind(), data),
-                data.getBody());
+                getKind(notification.getKind(), email),
+                email.getBody());
     }
 
     private List<PlayerNotification> getMatchingNotifications(Email email) {
@@ -43,6 +43,7 @@ public class NotificationMatcherService {
         switch (kind) {
         case CanYouPlay:
         case StandBy:
+        case Reminder:
             if (data.getBody().toLowerCase().contains("yes")) {
                 return Kind.ICanPlay;
             }

@@ -6,6 +6,7 @@ import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
@@ -57,15 +58,13 @@ public class TestMailbox implements Consumer<Event<Email>> {
     }
 
     public synchronized Email pop(String address) {
-        return popper(address);
+        final Stack<Email> stack = notificationMap.get(address);
+        return (stack == null) || stack.isEmpty() ? null : stack.pop();
     }
 
-    private Email popper(String address) {
+    public synchronized Stream<Email> viewAll(String address) {
         final Stack<Email> stack = notificationMap.get(address);
-        final Email email = (stack == null) || stack.isEmpty() ? null : stack.pop();
-        log.debug("Test mailbox check stack for " + address + ". Null stack : " + (stack == null) + " Null email : "
-                + (email == null));
-        return email;
+        return (stack == null) || stack.isEmpty() ? Stream.empty() : stack.stream();
     }
 
     public void clear() {

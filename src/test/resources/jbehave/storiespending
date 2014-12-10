@@ -1,5 +1,4 @@
 
-
 --
 Scenario: a player responds after being reminded
 Given a match is scheduled

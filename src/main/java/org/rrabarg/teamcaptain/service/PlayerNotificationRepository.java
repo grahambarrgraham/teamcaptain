@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class PlayerNotificationRepository {
+
+    static Logger log = LoggerFactory.getLogger(PlayerNotificationRepository.class);
 
     // trivial volatile single server implementation
 
@@ -24,7 +28,9 @@ public class PlayerNotificationRepository {
     }
 
     public void removeAll(List<PlayerNotification> notifications) {
+        log.debug("Removing pending notifications : " + notifications);
         playerNotifications.removeAll(notifications);
+        log.debug("Remaining pending notifications : " + playerNotifications);
     }
 
     public void add(PlayerNotification notification) {
