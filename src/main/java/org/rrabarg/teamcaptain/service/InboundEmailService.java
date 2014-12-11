@@ -34,17 +34,23 @@ public class InboundEmailService implements Consumer<Event<Email>> {
     @Override
     public void accept(Event<Email> event) {
 
-        log.debug("Receive email from " + event.getData().getFromAddress());
+        try {
 
-        final PlayerResponse match = matcherService.getMatch(event.getData());
+            log.debug("Receive email from " + event.getData().getFromAddress());
 
-        if (match != null) {
-            log.debug("Matched it to : " + match.getKind());
-            reactor.notify(ReactorMessageKind.InboundPlayerResponse, new Event<>(match));
-        } else {
-            // do something sensible, e.g. call the events error consumer, or notify on an unmatched email channel
-            log.warn("Unmatched incoming email from " + event.getData().getFromAddress() + " with subject "
-                    + event.getData().getSubject());
+            final PlayerResponse match = matcherService.getMatch(event.getData());
+
+            if (match != null) {
+                log.debug("Matched it to : " + match.getKind());
+                reactor.notify(ReactorMessageKind.InboundPlayerResponse, new Event<>(match));
+            } else {
+                // do something sensible, e.g. call the events error consumer, or notify on an unmatched email channel
+                log.warn("Unmatched incoming email from " + event.getData().getFromAddress() + " with subject "
+                        + event.getData().getSubject());
+            }
+        } catch (final Exception e) {
+            log.error("wow", e);
+            throw new RuntimeException(e);
         }
     }
 

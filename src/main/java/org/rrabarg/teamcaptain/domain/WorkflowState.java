@@ -41,4 +41,9 @@ public class WorkflowState {
         this.playerStates = playerStates;
     }
 
+    public void substitute(Player player, Player substitute, PlayerState state) {
+        playerStates.put(substitute.getKey(), state);
+        playerStates.remove(player.getKey());
+    }
+
 }

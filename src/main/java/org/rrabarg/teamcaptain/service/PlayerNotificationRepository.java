@@ -1,6 +1,7 @@
 package org.rrabarg.teamcaptain.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
@@ -21,7 +22,7 @@ public class PlayerNotificationRepository {
 
     // there's an option to use a distributed cache as optimisation
 
-    List<PlayerNotification> playerNotifications = new ArrayList<>();
+    List<PlayerNotification> playerNotifications = Collections.synchronizedList(new ArrayList<>());
 
     public List<PlayerNotification> getPendingNotifications() {
         return new ArrayList<PlayerNotification>(playerNotifications);
@@ -34,6 +35,15 @@ public class PlayerNotificationRepository {
     }
 
     public void add(PlayerNotification notification) {
+        log.info("Added notification: " + notification);
         playerNotifications.add(notification);
+        log.debug("Notifications now contains: " + playerNotifications);
+    }
+
+    public void clear() {
+        log.info("Clearing all notifications (was): " + playerNotifications);
+        playerNotifications.clear();
+        log.info("Cleared all notifications: " + playerNotifications);
+
     }
 }

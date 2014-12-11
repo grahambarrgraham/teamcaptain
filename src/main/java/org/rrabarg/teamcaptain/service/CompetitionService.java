@@ -4,11 +4,15 @@ import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.CompetitionState;
 import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
 import org.rrabarg.teamcaptain.domain.Schedule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CompetitionService {
+
+    Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
     ScheduleService scheduleService;
@@ -37,6 +41,9 @@ public class CompetitionService {
             }
 
             final CompetitionState competitionState = schedule.getCompetitionState();
+
+            schedule.getMatches().stream().map(a -> a.getWorkflowState())
+                    .forEach(a -> log.debug("Schedule " + schedule.getId() + " loaded match state " + a));
 
             return new Competition(competitionName, schedule, findPlayerPool(competitionName, competitionState),
                     competitionState.getSelectionStrategy());

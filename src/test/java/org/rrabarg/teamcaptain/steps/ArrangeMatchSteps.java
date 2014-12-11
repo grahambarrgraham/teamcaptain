@@ -29,12 +29,12 @@ public class ArrangeMatchSteps extends Steps {
     @BeforeScenario
     public void slowTheTestDownToKeepInApiQuota() throws IOException,
             InterruptedException {
-        Thread.sleep(10); // slow down comms with google
+        Thread.sleep(1); // slow down comms with google
     }
 
     @BeforeScenario
     public void setup() throws IOException, InterruptedException {
-        competitionFixture.setup();
+        competitionFixture.setupScenario();
     }
 
     @AfterStories

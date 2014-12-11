@@ -42,9 +42,14 @@ public class MatchWorkflow {
     private SelectionStrategy selectionStrategy;
 
     public MatchWorkflow pump() {
+
         if (MatchState.InWindow == match.getMatchState()) {
             notifyFirstPickPlayers();
             match.setMatchState(MatchState.FirstPickPlayersNotified);
+        }
+
+        if (getState().getPlayerStates().values().stream().allMatch(a -> a == PlayerState.Accepted)) {
+            match.setMatchState(MatchState.MatchFulfilled);
         }
 
         if ((MatchState.FirstPickPlayersNotified == match.getMatchState()) &&
@@ -75,8 +80,18 @@ public class MatchWorkflow {
                 .distinct()
                 .forEach(
                         player ->
-                        notificationService.notify(match, selectionStrategy.nextPick(poolOfPlayers, player),
-                                Kind.StandBy));
+                        sendStandbyRequestIfPossible(player));
+    }
+
+    private void sendStandbyRequestIfPossible(Player player) {
+        final Player nextPick = selectionStrategy.nextPick(poolOfPlayers, player);
+
+        if (nextPick == null) {
+            log.info("No available player to standby for " + player);
+            return;
+        }
+
+        notificationService.notify(match, nextPick, Kind.StandBy);
     }
 
     private long getDaysTillMatch() {
@@ -90,6 +105,7 @@ public class MatchWorkflow {
         selectionStrategy.firstPick(poolOfPlayers)
                 .stream()
                 .peek(player -> log.debug("notifying " + player + " for " + match + " for " + Kind.CanYouPlay))
+                .peek(player -> getState().setPlayerState(player, PlayerState.Notified))
                 .forEach(
                         player -> notificationService.notify(match, player, Kind.CanYouPlay));
         return this;
@@ -113,6 +129,7 @@ public class MatchWorkflow {
     public void iCanPlay(Player player) throws IOException {
         match.setPlayerState(player, PlayerState.Accepted);
         notificationService.notify(match, player, Kind.ConfirmationOfAcceptance);
+
         pump();
     }
 
@@ -125,8 +142,14 @@ public class MatchWorkflow {
     private void iCannotPlay(Player player) {
         match.setPlayerState(player, PlayerState.Declined);
         notificationService.notify(match, player, Kind.ConfirmationOfDecline);
-        notificationService.notify(match, selectionStrategy.nextPick(poolOfPlayers, player), Kind.CanYouPlay);
+        final Player nextPick = selectionStrategy.nextPick(poolOfPlayers, player);
+        notificationService.notify(match, nextPick, Kind.CanYouPlay);
+        getState().substitute(player, nextPick, PlayerState.Notified);
         pump();
+    }
+
+    private WorkflowState getState() {
+        return match.getWorkflowState();
     }
 
     public Match getMatch() {

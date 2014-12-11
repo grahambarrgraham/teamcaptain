@@ -36,6 +36,7 @@ import org.rrabarg.teamcaptain.domain.SimpleGenderedStrategy;
 import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.Email;
 import org.rrabarg.teamcaptain.service.MatchBuilder;
+import org.rrabarg.teamcaptain.service.PlayerNotificationRepository;
 import org.rrabarg.teamcaptain.service.ScheduleService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
 import org.slf4j.Logger;
@@ -71,6 +72,9 @@ public class CompetitionFixture {
     @Autowired
     TestMailbox mailbox;
 
+    @Autowired
+    PlayerNotificationRepository playerNotificationRepository;
+
     private final Player joe = new Player("Joe", "Ninety", Gender.Male, "joeninety@nomail.com", "3456");
 
     private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, "stacyfignorks@nomail.com", "2345");
@@ -105,12 +109,18 @@ public class CompetitionFixture {
                 .withLocation(aLocationFirstLine, aLocationPostcode).build();
     }
 
-    public void setup() {
+    public void setupScenario() {
         clearCompetition();
+        clearScenarioState();
     }
 
     public void teardown() {
         clearCompetition();
+    }
+
+    public void clearScenarioState() {
+        mailbox.clear();
+        playerNotificationRepository.clear();
     }
 
     public void fixDateTimeBeforeMatch(long amount, ChronoUnit unit) {
