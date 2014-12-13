@@ -1,6 +1,7 @@
 package org.rrabarg.teamcaptain;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.rrabarg.teamcaptain.domain.Player;
@@ -15,6 +16,8 @@ public interface SelectionStrategy {
     Collection<Player> firstPick(PoolOfPlayers pool);
 
     Player nextPick(PoolOfPlayers pool, Player decline);
+
+    boolean isViable(List<Player> acceptedPlayers);
 
     int getDaysTillMatchForReminders();
 

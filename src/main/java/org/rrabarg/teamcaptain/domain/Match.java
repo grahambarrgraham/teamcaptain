@@ -1,6 +1,8 @@
 package org.rrabarg.teamcaptain.domain;
 
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
 
@@ -127,4 +129,22 @@ public class Match {
         return id;
     }
 
+    public String getTravelDetails() {
+        return workflowState.getTravelDetails();
+    }
+
+    public List<Player> getAcceptedPlayers(PoolOfPlayers pool) {
+        return getPlayersInState(PlayerState.Accepted, pool);
+    }
+
+    public List<Player> getConfirmedPlayers(PoolOfPlayers pool) {
+        return getPlayersInState(PlayerState.Accepted, pool);
+    }
+
+    private List<Player> getPlayersInState(PlayerState playerState, PoolOfPlayers pool) {
+        final List<Player> playerKeys = workflowState.getPlayerStates().entrySet().stream()
+                .filter(e -> e.getValue() == playerState)
+                .map(e -> e.getKey()).map(k -> pool.getPlayerForKey(k)).collect(Collectors.toList());
+        return playerKeys;
+    }
 }

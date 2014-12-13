@@ -90,4 +90,19 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
         return daysTillMatchForStandbys;
     }
 
+    @Override
+    public boolean isViable(List<Player> acceptedPlayers) {
+
+        final Map<Gender, List<Player>> collect = acceptedPlayers.stream().collect(
+                Collectors.groupingBy(p -> p.getGender()));
+
+        return ((getNumberOfPlayersOfGender(collect, Gender.Female) == numberOfLadies) && (getNumberOfPlayersOfGender(
+                collect, Gender.Male) == numberOfGents));
+
+    }
+
+    public int getNumberOfPlayersOfGender(final Map<Gender, List<Player>> collect, Gender female) {
+        final int size = collect.get(female) == null ? 0 : collect.get(female).size();
+        return size;
+    }
 }

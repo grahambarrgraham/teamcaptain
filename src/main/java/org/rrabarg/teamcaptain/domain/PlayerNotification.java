@@ -6,8 +6,8 @@ public final class PlayerNotification extends Notification {
     private final Player player;
     private final Kind kind;
 
-    public PlayerNotification(Match match, Player player, Kind kind, Instant timestamp) {
-        super(timestamp, match);
+    public PlayerNotification(PoolOfPlayers poolOfPlayers, Match match, Player player, Kind kind, Instant timestamp) {
+        super(poolOfPlayers, timestamp, match);
         this.player = player;
         this.kind = kind;
     }
@@ -20,7 +20,8 @@ public final class PlayerNotification extends Notification {
         StandDown(false),
         ConfirmationOfAcceptance(false),
         ConfirmationOfDecline(false),
-        ConfirmationOfStandby(false);
+        ConfirmationOfStandby(false),
+        MatchConfirmation(false);
 
         private final boolean expectsResponse;
 

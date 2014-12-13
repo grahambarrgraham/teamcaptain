@@ -40,3 +40,10 @@ When times elapses till the 4 days before the match
 Then a standby notification goes out to the next appropriate player in the pool
 And an administrator alert is raised
 
+Scenario: a team is confirmed
+Given a match is scheduled
+When sufficient players are assigned to the match  
+Then a match confirmation notification is sent out to all notified players 
+And the confirmation contains the list of players assigned to the match 
+And the confirmation contains the match details
+And an administration confirmation notification is raised

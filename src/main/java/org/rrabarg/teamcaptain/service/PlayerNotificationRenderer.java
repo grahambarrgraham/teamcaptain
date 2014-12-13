@@ -7,6 +7,7 @@ import java.time.format.FormatStyle;
 
 import javax.inject.Provider;
 
+import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -61,6 +62,10 @@ public class PlayerNotificationRenderer {
                 subjectBuilder = subject().add("REMINDER: ").matchTitle();
                 contentBuilder = content().reminder();
                 break;
+            case MatchConfirmation:
+                subjectBuilder = subject().add("Match confirmed: ").matchTitle();
+                contentBuilder = content().matchConfirmation();
+                break;
             case StandBy:
                 subjectBuilder = subject().matchTitle();
                 contentBuilder = content().canYouStandby();
@@ -99,11 +104,52 @@ public class PlayerNotificationRenderer {
                 return this;
             }
 
+            public SubjectBuilder matchConfirmation() {
+                this
+                        .hello()
+                        .append("Here's the details for ")
+                        .matchTitle()
+                        .append(".")
+                        .newline()
+                        .matchDetails()
+                        .newline()
+                        .travelDetails()
+                        .newline()
+                        .signoff();
+                return this;
+            }
+
+            private SubjectBuilder travelDetails() {
+                return this.append(getMatch().getTravelDetails());
+            }
+
+            private SubjectBuilder matchDetails() {
+                this.append("The match is at ")
+                        .append(getMatch().getLocation().toString())
+                        .append(" and starts at ")
+                        .matchStartTime()
+                        .append(".")
+                        .newline()
+                        .teamForMatch();
+                return this;
+            }
+
+            private SubjectBuilder teamForMatch() {
+                this.append("The team for this match will be : ");
+                this.append(getMatch().getConfirmedPlayers(notification.getPoolOfPlayers()).toString());
+                return this;
+            }
+
+            private SubjectBuilder matchStartTime() {
+                return this.append(getMatch().getStartDateTime()
+                        .format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)));
+            }
+
             public SubjectBuilder canYouStandby() {
                 this
                         .hello()
                         .append("Can you standby for the match on ")
-                        .theMatch()
+                        .theMatchDate()
                         .append(".")
                         .newline()
                         .answerYesOrNo()
@@ -131,15 +177,19 @@ public class PlayerNotificationRenderer {
             }
 
             public SubjectBuilder matchTitle() {
-                builder.append(notification.getMatch().getTitle());
+                builder.append(getMatch().getTitle());
                 return this;
+            }
+
+            private Match getMatch() {
+                return notification.getMatch();
             }
 
             public SubjectBuilder reminder() {
                 this
                         .hello()
-                        .append("Sorry to bother you again, but its getting close to the match date and we really need to know whether you can play. The match is : ")
-                        .theMatch()
+                        .append("Sorry to bother you again, but its getting close to the match date and we really need to know whether you can play. The match is on : ")
+                        .theMatchDate()
                         .append(".")
                         .newline()
                         .answerYesOrNo()
@@ -151,7 +201,7 @@ public class PlayerNotificationRenderer {
                 this
                         .hello()
                         .append("Can you play in this match on ")
-                        .theMatch()
+                        .theMatchDate()
                         .append(".")
                         .newline()
                         .answerYesOrNo()
@@ -181,9 +231,9 @@ public class PlayerNotificationRenderer {
                 return this;
             }
 
-            private SubjectBuilder theMatch() {
-                this.append(notification.getMatch().getStartDateTime()
-                        .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+            private SubjectBuilder theMatchDate() {
+                this.append(getMatch().getStartDateTime()
+                        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
                 return this;
             }
 

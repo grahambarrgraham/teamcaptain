@@ -27,12 +27,6 @@ public class ArrangeMatchSteps extends Steps {
     Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @BeforeScenario
-    public void slowTheTestDownToKeepInApiQuota() throws IOException,
-            InterruptedException {
-        Thread.sleep(1); // slow down comms with google
-    }
-
-    @BeforeScenario
     public void setup() throws IOException, InterruptedException {
         competitionFixture.setupScenario();
     }
@@ -152,15 +146,14 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @When("sufficient players are assigned to the match")
-    @Pending
-    public void whenSufficientPlayersAreAssignedToTheMatch() {
-        // PENDING
+    public void whenSufficientPlayersAreAssignedToTheMatch() throws IOException {
+        givenNotificationsHaveBeenSentOutToTheProposedTeamMembers();
+        competitionFixture.allFirstPickPlayersConfirmTheyCanPlay();
     }
 
     @Then("a match confirmation notification is sent out to all notified players")
-    @Pending
     public void thenAMatchConfirmationNotificationIsSentOutToAllNotifiedPlayers() {
-        // PENDING
+        competitionFixture.matchConfirmationSentToAllConfirmedPlayers();
     }
 
     @Then("the confirmation contains the list of players assigned to the match")
@@ -175,9 +168,9 @@ public class ArrangeMatchSteps extends Steps {
         // PENDING
     }
 
-    @Then("an administration notification is raised")
+    @Then("an administration confirmation notification is raised")
     @Pending
-    public void thenAnAdministrationNotificationIsRaised() {
+    public void thenAnAdministrationConfirmationNotificationIsRaised() {
         // PENDING
     }
 
