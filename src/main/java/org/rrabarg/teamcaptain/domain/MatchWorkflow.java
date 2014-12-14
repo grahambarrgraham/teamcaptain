@@ -49,10 +49,12 @@ public class MatchWorkflow {
             match.setMatchState(MatchState.FirstPickPlayersNotified);
         }
 
-        final List<Player> acceptedPlayerKeys = match.getAcceptedPlayers(poolOfPlayers);
-        if (selectionStrategy.isViable(acceptedPlayerKeys)) {
-            sendConfirmationEmailsToPlayer(acceptedPlayerKeys);
+        final List<Player> team = match.getAcceptedPlayers(poolOfPlayers);
+        if (selectionStrategy.isViable(team)) {
+            sendConfirmationEmailsToPlayer(team);
             sendAdminAlert(AdminAlert.Kind.MatchFulfilled);
+
+            team.stream().forEach(player -> getState().setPlayerState(player, PlayerState.Confirmed));
             match.setMatchState(MatchState.MatchFulfilled);
         }
 
@@ -83,7 +85,6 @@ public class MatchWorkflow {
     private void sendConfirmationEmailsToPlayer(List<Player> team) {
         team.stream()
                 .peek(player -> log.debug("notifying " + player + " for " + match + " for " + Kind.MatchConfirmation))
-                .peek(player -> getState().setPlayerState(player, PlayerState.Confirmed))
                 .forEach(
                         player -> sendNotification(player, Kind.MatchConfirmation));
     }

@@ -13,6 +13,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,27 +52,32 @@ import org.springframework.stereotype.Component;
 @Component
 public class CompetitionFixture {
 
-    Logger log = LoggerFactory.getLogger(this.getClass());
+    private static Logger log = LoggerFactory.getLogger(CompetitionFixture.class);
 
-    String aTitle = "A test match";
-    LocalDate aDate = LocalDate.of(2014, 3, 20);
-    LocalTime aTime = LocalTime.of(20, 00);
-    LocalTime aEndTime = aTime.plus(3, HOURS);
-    String aLocationFirstLine = "1 some street";
-    String aLocationPostcode = "EH1 1YA";
-    String adminstratorEmailAddress = "grahambarrgraham@gmail.com";
+    private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, "stacyfignorks@nomail.com", "2345");
+    private final Player joe = new Player("Joe", "Ninety", Gender.Male, "joeninety@nomail.com", "3456");
+    private final Player peter = new Player("Peter", "Pan", Gender.Male, "peterpan@nomail.com", "1234");
+    private final Player[] firstPickPlayers = new Player[] { joe, stacy };
+    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1, 7, 10, 4);
+    private final LocalDate aDate = LocalDate.of(2014, 3, 20);
+    private final String adminstratorEmailAddress = "grahambarrgraham@gmail.com";
+    private final LocalTime aTime = LocalTime.of(20, 00);
+    private final LocalTime aEndTime = aTime.plus(3, HOURS);
+    private final String aLocationFirstLine = "1 some street";
+    private final String aLocationPostcode = "EH1 1YA";
+    private final String aTitle = "A test match";
 
-    @Autowired
-    CompetitionService competitionService;
-
-    @Autowired
-    WorkflowService workflowService;
+    private List<Player> allConfirmedPlayers = new ArrayList<Player>();
+    private Competition competition;
+    private Match match;
+    private Player playerThatCannotPlayInMatch;
+    private Player playerThatDidNotRespond;
 
     @Autowired
     TestClockFactory clockFactory;
 
     @Autowired
-    ScheduleService scheduleService;
+    CompetitionService competitionService;
 
     @Autowired
     TestMailbox mailbox;
@@ -78,25 +85,92 @@ public class CompetitionFixture {
     @Autowired
     PlayerNotificationRepository playerNotificationRepository;
 
-    private final Player joe = new Player("Joe", "Ninety", Gender.Male, "joeninety@nomail.com", "3456");
+    @Autowired
+    ScheduleService scheduleService;
 
-    private final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, "stacyfignorks@nomail.com", "2345");
+    @Autowired
+    WorkflowService workflowService;
 
-    private final Player peter = new Player("Peter", "Pan", Gender.Male, "peterpan@nomail.com", "1234");
+    public void allButOneFirstPickPlayersRespond() {
+        log.debug("All but one first pick players respond");
+        assertOutboundEmailIsCorrect(stacy, Kind.CanYouPlay);
+        aPlayerInThePoolSaysTheyCanPlay();
+        playerThatDidNotRespond = joe;
+    }
 
-    private Competition competition;
+    public void allFirstPickPlayersConfirmTheyCanPlay() {
+        allConfirmedPlayers = Arrays.asList(firstPickPlayers);
+        Stream.of(firstPickPlayers).forEach(player -> aPlayerRespondsWith(player, "Yes"));
+    }
 
-    private Match match;
+    public void aPlayerInThePoolSaysTheyCannotPlay() {
+        playerThatCannotPlayInMatch = joe;
+        aPlayerRespondsWith(joe, "No");
+    }
 
-    private Player playerThatCannotPlayInMatch;
+    public void aPlayerInThePoolSaysTheyCanPlay() {
+        allConfirmedPlayers.add(stacy);
+        aPlayerRespondsWith(stacy, "Yes");
+    }
 
-    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1, 7, 10, 4);
+    public void checkAcknowledgementGoesToPlayerWhoAccepted() {
+        allConfirmedPlayers.forEach(player ->
+                assertEmailIsCorrect(match, player,
+                        mailbox.pop(player.getEmailAddress()),
+                        Kind.ConfirmationOfAcceptance, null));
+    }
 
-    private Player playerThatDidNotRespond;
+    public void checkAcknowledgementGoesToPlayerWhoDeclined() {
+        assertEmailIsCorrect(match, playerThatCannotPlayInMatch,
+                mailbox.pop(playerThatCannotPlayInMatch.getEmailAddress()),
+                Kind.ConfirmationOfDecline, null);
+    }
 
-    private final Player[] firstPickPlayers = new Player[] { joe, stacy };
+    public void checkAllCanYouPlayNotificationsWereSent() {
+        Stream.of(firstPickPlayers).forEach(player -> assertOutboundEmailIsCorrect(player, Kind.CanYouPlay));
+    }
 
-    private List<Player> allConfirmedPlayers = new ArrayList<Player>();
+    public void checkAnAdministratorMatchConfirmationIsRaised() {
+        final Email email = mailbox.peek(adminstratorEmailAddress);
+        assertThat("While checking that outbound admin email confirmation, found email null", email, notNullValue());
+        assertThat("While checking that outbound admin email confirmation body, found body null", email.getBody(),
+                notNullValue());
+        assertThat("Subject should contain string 'confirmation'", email.getSubject().toLowerCase(),
+                containsString("confirmation"));
+        assertOutboundEmailContainsListOfPlayers(email);
+        assertOutboundEmailContainsMatchDetails(email);
+    }
+
+    public void checkAnAdminstratorAlertIsRaised() {
+        final Email email = mailbox.pop(adminstratorEmailAddress);
+        assertThat("Admin Email must not be null", email, notNullValue());
+        assertThat("Admin alert should be ", email.getSubject().toLowerCase(), containsString("standby"));
+    }
+
+    public void checkDailyReminderIsSentForDaysBeforeMatch(int daysBeforeMatch) {
+        for (int i = 0; i < daysBeforeMatch; i++) {
+            checkReminderOnDay(i);
+        }
+    }
+
+    public void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch() {
+        final Optional<Match> thematch = scheduleService.findByName(competition.getName()).getUpcomingMatches()
+                .stream().findFirst();
+
+        assertThat("The match must exist", thematch.isPresent());
+        assertThat("The match must be in notified state", MatchState.FirstPickPlayersNotified == thematch.get()
+                .getMatchState());
+        assertThat("The player should be in the accepted state", PlayerState.Accepted == thematch.get()
+                .getPlayerState(stacy));
+    }
+
+    public void checkThereAreNoRemindersForPlayersThatDidNotRespond() {
+
+        final Optional<Email> findAnyReminder = mailbox.viewAll(playerThatDidNotRespond.getEmailAddress())
+                .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp())).findFirst();
+
+        assertThat(findAnyReminder.get().getTimestamp(), isDaysBeforeMatch(5));
+    }
 
     public void clearCompetition() {
 
@@ -107,11 +181,59 @@ public class CompetitionFixture {
         competitionService.clearCompetition(competition);
     }
 
-    private Match standardMatch() {
-        return new MatchBuilder().withTitle(aTitle)
-                .withStart(aDate, aTime)
-                .withEnd(aDate, aEndTime)
-                .withLocation(aLocationFirstLine, aLocationPostcode).build();
+    public void clearScenarioState() {
+        mailbox.clear();
+        playerNotificationRepository.clear();
+    }
+
+    public void createCompetition() {
+        competition = standardCompetition();
+        competitionService.saveCompetition(competition);
+    }
+
+    public void fixDateTimeBeforeMatch(long amount, ChronoUnit unit) {
+        clockFactory.fixInstant(aDate.atTime(aTime).minus(amount, unit).atZone(ZoneId.systemDefault()).toInstant());
+        log.debug("Fixing time to " + amount + " days before the match " + clockFactory.clock().instant());
+
+    }
+
+    public void matchConfirmationContainsListOfPlayerInTeam() {
+        allConfirmedPlayers.stream().forEach(
+                player -> assertOutboundEmailContainsListOfPlayers(mailbox.peek(player.getEmailAddress())));
+    }
+
+    public void matchConfirmationContainsTheMatchDetails() {
+        allConfirmedPlayers.stream().forEach(
+                player -> assertOutboundEmailContainsMatchDetails(mailbox.peek(player.getEmailAddress())));
+    }
+
+    public void matchConfirmationSentToAllConfirmedPlayers() {
+        allConfirmedPlayers.stream().forEach(player -> assertOutboundEmailIsCorrect(player, Kind.MatchConfirmation));
+    }
+
+    public void nextAppropriatePlayerInThePoolIsNotified() {
+        assertOutboundEmailIsCorrect(peter, Kind.CanYouPlay);
+    }
+
+    public void nextAppropriatePlayerInThePoolIsNotifiedOfStandby() {
+        assertOutboundEmailIsCorrect(peter, Kind.StandBy);
+    }
+
+    public void pumpWorkflows() {
+        log.debug("Pumping the workflow");
+        workflowService.pump();
+    }
+
+    public void pumpWorkflowsTillXDaysBeforeMatch(final int daysTillMatchToStartReminders) {
+        long daysTillMatch = getDaysTillMatch();
+        while (--daysTillMatch >= daysTillMatchToStartReminders) {
+            fixDateTimeBeforeMatch(daysTillMatch, ChronoUnit.DAYS);
+            pumpWorkflows();
+        }
+    }
+
+    public void refreshWorkflows() throws IOException {
+        workflowService.refresh(competition.getName());
     }
 
     public void setupScenario() {
@@ -124,32 +246,12 @@ public class CompetitionFixture {
         clearCompetition();
     }
 
-    public void clearScenarioState() {
-        mailbox.clear();
-        playerNotificationRepository.clear();
+    public void theRemainingPlayersSayTheyCanPlay() {
+        aPlayerRespondsWith(playerThatDidNotRespond, "Yes");
     }
 
-    public void fixDateTimeBeforeMatch(long amount, ChronoUnit unit) {
-        clockFactory.fixInstant(aDate.atTime(aTime).minus(amount, unit).atZone(ZoneId.systemDefault()).toInstant());
-        log.debug("Fixing time to " + amount + " days before the match " + clockFactory.clock().instant());
-
-    }
-
-    public void refreshWorkflows() throws IOException {
-        workflowService.refresh(competition.getName());
-    }
-
-    public void createCompetition() {
-        competition = standardCompetition();
-        competitionService.saveCompetition(competition);
-    }
-
-    public void checkAllCanYouPlayNotificationsWereSent() {
-        Stream.of(firstPickPlayers).forEach(player -> assertOutboundEmailIsCorrect(player, Kind.CanYouPlay));
-    }
-
-    private void assertOutboundEmailIsCorrect(Player player, Kind kind) {
-        assertEmailIsCorrect(match, player, mailbox.pop(player.getEmailAddress()), kind, null);
+    private void aPlayerRespondsWith(Player player, String response) {
+        mailbox.email().from(player.getEmailAddress()).subject("any text").body(response).send();
     }
 
     private void assertEmailIsCorrect(Match match, Player player, Email email, Kind kindOfEmail, Integer daysBeforeMatch) {
@@ -161,6 +263,72 @@ public class CompetitionFixture {
             assertThat("Email Date is not correct for player " + player, email.getTimestamp(),
                     isDaysBeforeMatch(daysBeforeMatch));
         }
+    }
+
+    private void assertOutboundEmailContainsListOfPlayers(Email email) {
+        assertThat("While checking that outbound email contained list of team's players, found email null", email,
+                notNullValue());
+        allConfirmedPlayers.stream().forEach(
+                player -> assertThat("Email body must contain the players name", email.getBody(),
+                        containsString(player.getKey())));
+    }
+
+    private void assertOutboundEmailContainsMatchDetails(Email email) {
+        assertThat("While checking that outbound email contained match details, found email null", email,
+                notNullValue());
+        
+        assertThat("Email body must contain the match location", email.getBody(),
+                containsString(match.getLocation().toString()));
+        
+        assertThat("Email body must contain the match title", email.getBody(),
+                containsString(match.getTitle().toString()));
+        
+        assertThat("Email body must contain the match date", email.getBody(),
+                containsString(match.getStartDateTime().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))));
+        
+        assertThat("Email body must contain the match start time", email.getBody(),
+                containsString(match.getStartDateTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM))));
+        
+        if (match.getTravelDetails() != null) {
+            assertThat("Email body must contain the match travel details", email.getBody(),
+                    containsString(match.getTravelDetails()));
+        }
+    }
+
+    private void assertOutboundEmailIsCorrect(Player player, Kind kind) {
+        assertEmailIsCorrect(match, player, mailbox.peek(player.getEmailAddress()), kind, null);
+    }
+
+    private void checkMatchDetails(Email email) {
+
+        assertThat("While checking that outbound email contained match details, found email null", email,
+                notNullValue());
+
+        assertThat("Email body must contain the match location", email.getBody(),
+                containsString(match.getLocation().toString()));
+
+        assertThat("Email body must contain the match title", email.getBody(),
+                containsString(match.getTitle().toString()));
+
+        assertThat("Email body must contain the match date", email.getBody(),
+                containsString(match.getStartDateTime().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))));
+
+        assertThat("Email body must contain the match start time", email.getBody(),
+                containsString(match.getStartDateTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM))));
+
+        if (match.getTravelDetails() != null) {
+            assertThat("Email body must contain the match travel details", email.getBody(),
+                    containsString(match.getTravelDetails()));
+        }
+    }
+
+    private void checkReminderOnDay(int daysBeforeMatch) {
+        assertEmailIsCorrect(
+                match,
+                playerThatDidNotRespond,
+                mailbox.pop(playerThatDidNotRespond.getEmailAddress()),
+                Kind.Reminder,
+                daysBeforeMatch);
     }
 
     private String getContentStringFor(Kind kindOfEmail) {
@@ -186,20 +354,16 @@ public class CompetitionFixture {
         return null;
     }
 
-    private Competition standardCompetition() {
-        return new Competition(getTestCompetitionName(),
-                standardSchedule(getTestCompetitionName()),
-                standardPoolOfPlayers(getTestCompetitionName()),
-                testStrategy);
+    private long getDaysTillMatch() {
+        return getDaysTillMatch(clockFactory.clock().instant());
     }
 
-    private PoolOfPlayers standardPoolOfPlayers(String competitionName) {
-        return new PoolOfPlayers(joe, stacy, peter);
+    private long getDaysTillMatch(Instant instant) {
+        return Duration.between(instant, getMatchInstant()).toDays();
     }
 
-    private Schedule standardSchedule(String scheduleName) {
-        match = standardMatch();
-        return new Schedule(match);
+    private Instant getMatchInstant() {
+        return aDate.atTime(aTime).atZone(ZoneId.systemDefault()).toInstant();
     }
 
     private String getTestCompetitionName() {
@@ -214,101 +378,14 @@ public class CompetitionFixture {
         }
     }
 
-    public void theRemainingPlayersSayTheyCanPlay() {
-        aPlayerRespondsWith(playerThatDidNotRespond, "Yes");
-    }
-
-    public void aPlayerInThePoolSaysTheyCanPlay() {
-        allConfirmedPlayers.add(stacy);
-        aPlayerRespondsWith(stacy, "Yes");
-    }
-
-    public void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch() {
-        final Optional<Match> thematch = scheduleService.findByName(competition.getName()).getUpcomingMatches()
-                .stream().findFirst();
-
-        assertThat("The match must exist", thematch.isPresent());
-        assertThat("The match must be in notified state", MatchState.FirstPickPlayersNotified == thematch.get()
-                .getMatchState());
-        assertThat("The player should be in the accepted state", PlayerState.Accepted == thematch.get()
-                .getPlayerState(stacy));
-    }
-
-    public void checkAcknowledgementGoesToPlayerWhoAccepted() {
-        allConfirmedPlayers.forEach(player ->
-                assertEmailIsCorrect(match, player,
-                        mailbox.pop(player.getEmailAddress()),
-                        Kind.ConfirmationOfAcceptance, null));
-    }
-
-    public void aPlayerInThePoolSaysTheyCannotPlay() {
-        playerThatCannotPlayInMatch = joe;
-        aPlayerRespondsWith(joe, "No");
-    }
-
-    public void checkAcknowledgementGoesToPlayerWhoDeclined() {
-        assertEmailIsCorrect(match, playerThatCannotPlayInMatch,
-                mailbox.pop(playerThatCannotPlayInMatch.getEmailAddress()),
-                Kind.ConfirmationOfDecline, null);
-    }
-
-    public void nextAppropriatePlayerInThePoolIsNotifiedOfStandby() {
-        assertOutboundEmailIsCorrect(peter, Kind.StandBy);
-    }
-
-    public void nextAppropriatePlayerInThePoolIsNotified() {
-        assertOutboundEmailIsCorrect(peter, Kind.CanYouPlay);
-    }
-
-    public void pumpWorkflows() {
-        log.debug("Pumping the workflow");
-        workflowService.pump();
-    }
-
-    public void pumpWorkflowsTillXDaysBeforeMatch(final int daysTillMatchToStartReminders) {
-        long daysTillMatch = getDaysTillMatch();
-        while (--daysTillMatch >= daysTillMatchToStartReminders) {
-            fixDateTimeBeforeMatch(daysTillMatch, ChronoUnit.DAYS);
-            pumpWorkflows();
-        }
-    }
-
-    private Instant getMatchInstant() {
-        return aDate.atTime(aTime).atZone(ZoneId.systemDefault()).toInstant();
-    }
-
-    public void allButOneFirstPickPlayersRespond() {
-        log.debug("All but one first pick players respond");
-        assertOutboundEmailIsCorrect(stacy, Kind.CanYouPlay);
-        aPlayerInThePoolSaysTheyCanPlay();
-        playerThatDidNotRespond = joe;
-    }
-
-    public void checkThereAreNoRemindersForPlayersThatDidNotRespond() {
-
-        final Optional<Email> findAnyReminder = mailbox.viewAll(playerThatDidNotRespond.getEmailAddress())
-                .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp())).findFirst();
-
-        assertThat(findAnyReminder.get().getTimestamp(), isDaysBeforeMatch(5));
-    }
-
-    public void checkDailyReminderIsSentForDaysBeforeMatch(int daysBeforeMatch) {
-        for (int i = 0; i < daysBeforeMatch; i++) {
-            checkReminderOnDay(i);
-        }
-    }
-
-    private void checkReminderOnDay(int daysBeforeMatch) {
-        assertEmailIsCorrect(
-                match,
-                playerThatDidNotRespond,
-                mailbox.pop(playerThatDidNotRespond.getEmailAddress()),
-                Kind.Reminder,
-                daysBeforeMatch);
-    }
-
     private Matcher<Instant> isDaysBeforeMatch(Integer daysBeforeMatch) {
         return new BaseMatcher<Instant>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("days till match " + daysBeforeMatch + " for match on "
+                        + match.getStartDateTime());
+            }
 
             @Override
             public boolean matches(Object item) {
@@ -319,40 +396,29 @@ public class CompetitionFixture {
 
                 return getDaysTillMatch((Instant) item) == daysBeforeMatch;
             }
-
-            @Override
-            public void describeTo(Description description) {
-                description.appendText("days till match " + daysBeforeMatch + " for match on "
-                        + match.getStartDateTime());
-            }
         };
     }
 
-    private long getDaysTillMatch() {
-        return getDaysTillMatch(clockFactory.clock().instant());
+    private Competition standardCompetition() {
+        return new Competition(getTestCompetitionName(),
+                standardSchedule(getTestCompetitionName()),
+                standardPoolOfPlayers(getTestCompetitionName()),
+                testStrategy);
     }
 
-    private long getDaysTillMatch(Instant instant) {
-        return Duration.between(instant, getMatchInstant()).toDays();
+    private Match standardMatch() {
+        return new MatchBuilder().withTitle(aTitle)
+                .withStart(aDate, aTime)
+                .withEnd(aDate, aEndTime)
+                .withLocation(aLocationFirstLine, aLocationPostcode).build();
     }
 
-    public void checkAnAdminstratorAlertIsRaised() {
-        final Email email = mailbox.pop(adminstratorEmailAddress);
-        assertThat("Admin Email must not be null", email, notNullValue());
-        assertThat("Admin alert should be ", email.getSubject().toLowerCase(), containsString("standby"));
+    private PoolOfPlayers standardPoolOfPlayers(String competitionName) {
+        return new PoolOfPlayers(joe, stacy, peter);
     }
 
-    public void allFirstPickPlayersConfirmTheyCanPlay() {
-        allConfirmedPlayers = Arrays.asList(firstPickPlayers);
-        Stream.of(firstPickPlayers).forEach(player -> aPlayerRespondsWith(player, "Yes"));
+    private Schedule standardSchedule(String scheduleName) {
+        match = standardMatch();
+        return new Schedule(match);
     }
-
-    private void aPlayerRespondsWith(Player player, String response) {
-        mailbox.email().from(player.getEmailAddress()).subject("any text").body(response).send();
-    }
-
-    public void matchConfirmationSentToAllConfirmedPlayers() {
-        allConfirmedPlayers.stream().forEach(player -> assertOutboundEmailIsCorrect(player, Kind.MatchConfirmation));
-    }
-
 }

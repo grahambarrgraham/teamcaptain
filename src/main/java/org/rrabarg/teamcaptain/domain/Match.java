@@ -138,7 +138,7 @@ public class Match {
     }
 
     public List<Player> getConfirmedPlayers(PoolOfPlayers pool) {
-        return getPlayersInState(PlayerState.Accepted, pool);
+        return getPlayersInState(PlayerState.Confirmed, pool);
     }
 
     private List<Player> getPlayersInState(PlayerState playerState, PoolOfPlayers pool) {

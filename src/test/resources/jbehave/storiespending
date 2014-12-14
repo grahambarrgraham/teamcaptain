@@ -1,7 +1,3 @@
-Scenario: a notification email is sent out to the first pick players
-Given a match is scheduled
-When it is 10 days before the match
-
 --
 
 Scenario: a player is on holiday and is is not eligible to play

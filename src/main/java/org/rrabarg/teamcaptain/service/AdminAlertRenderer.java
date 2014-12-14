@@ -43,7 +43,7 @@ public class AdminAlertRenderer {
 
             switch (notification.getKind()) {
             case MatchFulfilled:
-                subjectBuilder = subject().add("Match confirmed: ").matchTitle();
+                subjectBuilder = subject().add("Match confirmation: ").matchTitle();
                 contentBuilder = content().matchConfirmation();
                 break;
             default:
@@ -91,7 +91,15 @@ public class AdminAlertRenderer {
             }
 
             public SubjectBuilder append(String s) {
-                builder.append(s);
+                if (s != null) {
+                    builder.append(s);
+                }
+                return this;
+            }
+
+            private SubjectBuilder matchDate() {
+                this.append(getMatch().getStartDateTime()
+                        .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
                 return this;
             }
 
@@ -121,6 +129,8 @@ public class AdminAlertRenderer {
                         .append(getMatch().getLocation().toString())
                         .append(" and starts at ")
                         .matchStartTime()
+                        .append(" on ")
+                        .matchDate()
                         .append(".")
                         .newline()
                         .teamForMatch();
@@ -129,7 +139,7 @@ public class AdminAlertRenderer {
 
             private SubjectBuilder teamForMatch() {
                 this.append("The team for this match will be : ");
-                this.append(getMatch().getConfirmedPlayers(notification.getPoolOfPlayers()).toString());
+                this.append(getMatch().getAcceptedPlayers(notification.getPoolOfPlayers()).toString());
                 return this;
             }
 

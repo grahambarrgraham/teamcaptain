@@ -157,21 +157,18 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @Then("the confirmation contains the list of players assigned to the match")
-    @Pending
     public void thenTheConfirmationContainsTheListOfPlayersAssignedToTheMatch() {
-        // PENDING
+        competitionFixture.matchConfirmationContainsListOfPlayerInTeam();
     }
 
     @Then("the confirmation contains the match details")
-    @Pending
     public void thenTheConfirmationContainsTheMatchDetails() {
-        // PENDING
+        competitionFixture.matchConfirmationContainsTheMatchDetails();
     }
 
     @Then("an administration confirmation notification is raised")
-    @Pending
     public void thenAnAdministrationConfirmationNotificationIsRaised() {
-        // PENDING
+        competitionFixture.checkAnAdministratorMatchConfirmationIsRaised();
     }
 
     @Given("a member of the pool is on holiday on the date of the match")

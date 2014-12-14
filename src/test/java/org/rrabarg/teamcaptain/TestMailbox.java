@@ -114,4 +114,9 @@ public class TestMailbox implements Consumer<Event<Email>> {
         reactor.notify(ReactorMessageKind.InboundEmail, new Event<>(inboundEmail));
     }
 
+    public Email peek(String emailAddress) {
+        final Stack<Email> stack = notificationMap.get(emailAddress);
+        return (stack == null) || stack.isEmpty() ? null : stack.peek();
+    }
+
 }

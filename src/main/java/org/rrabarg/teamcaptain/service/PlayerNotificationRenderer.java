@@ -128,6 +128,8 @@ public class PlayerNotificationRenderer {
                         .append(getMatch().getLocation().toString())
                         .append(" and starts at ")
                         .matchStartTime()
+                        .append(" on ")
+                        .matchDate()
                         .append(".")
                         .newline()
                         .teamForMatch();
@@ -136,7 +138,7 @@ public class PlayerNotificationRenderer {
 
             private SubjectBuilder teamForMatch() {
                 this.append("The team for this match will be : ");
-                this.append(getMatch().getConfirmedPlayers(notification.getPoolOfPlayers()).toString());
+                this.append(getMatch().getAcceptedPlayers(notification.getPoolOfPlayers()).toString());
                 return this;
             }
 
@@ -149,7 +151,7 @@ public class PlayerNotificationRenderer {
                 this
                         .hello()
                         .append("Can you standby for the match on ")
-                        .theMatchDate()
+                        .matchDate()
                         .append(".")
                         .newline()
                         .answerYesOrNo()
@@ -168,7 +170,9 @@ public class PlayerNotificationRenderer {
             }
 
             public SubjectBuilder append(String s) {
-                builder.append(s);
+                if (s != null) {
+                    builder.append(s);
+                }
                 return this;
             }
 
@@ -189,7 +193,7 @@ public class PlayerNotificationRenderer {
                 this
                         .hello()
                         .append("Sorry to bother you again, but its getting close to the match date and we really need to know whether you can play. The match is on : ")
-                        .theMatchDate()
+                        .matchDate()
                         .append(".")
                         .newline()
                         .answerYesOrNo()
@@ -201,7 +205,7 @@ public class PlayerNotificationRenderer {
                 this
                         .hello()
                         .append("Can you play in this match on ")
-                        .theMatchDate()
+                        .matchDate()
                         .append(".")
                         .newline()
                         .answerYesOrNo()
@@ -231,7 +235,7 @@ public class PlayerNotificationRenderer {
                 return this;
             }
 
-            private SubjectBuilder theMatchDate() {
+            private SubjectBuilder matchDate() {
                 this.append(getMatch().getStartDateTime()
                         .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
                 return this;
