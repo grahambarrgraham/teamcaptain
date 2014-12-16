@@ -116,11 +116,24 @@ public class PoolOfPlayersRepository {
     }
 
     private void deleteContact(ContactEntry entry) {
-        try {
-            contactService.delete(asUrl(entry.getEditLink()), entry.getEtag());
-        } catch (IOException | ServiceException e) {
-            throw new RuntimeException("Failed to delete contact with surname : "
-                    + entry.getName().getFamilyName().getValue(), e);
+        int tries = 0;
+        while (true) {
+            try {
+                contactService.delete(asUrl(entry.getEditLink()), entry.getEtag());
+                return;
+            } catch (IOException | ServiceException e) {
+                if (tries++ > 5) {
+                    throw new RuntimeException("Failed to delete contact with surname : "
+                            + entry.getName().getFamilyName().getValue(), e);
+                }
+                try {
+                    log.warn("Failed to delete contact " + entry.getId() + " for "
+                            + entry.getName().getFamilyName().getValue() + " sleep 50 and retrying..", e);
+                    Thread.sleep(50);
+                } catch (final InterruptedException e1) {
+                    //
+                }
+            }
         }
     }
 

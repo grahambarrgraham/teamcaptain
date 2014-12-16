@@ -10,7 +10,9 @@ import org.jbehave.core.annotations.Pending;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.jbehave.core.steps.Steps;
-import org.rrabarg.teamcaptain.fixture.CompetitionFixture;
+import org.rrabarg.teamcaptain.domain.Competition;
+import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.fixture.SimpleGenericCompetitionFixture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,41 +24,46 @@ import com.google.gdata.util.ServiceException;
 public class ArrangeMatchSteps extends Steps {
 
     @Autowired
-    CompetitionFixture competitionFixture;
+    SimpleGenericCompetitionFixture competitionFixture;
 
     Logger log = LoggerFactory.getLogger(getClass().getName());
 
+    Match match;
+
     @BeforeScenario
     public void setup() throws IOException, InterruptedException {
+        match = null;
         competitionFixture.setupScenario();
     }
 
     @AfterStories
     public void teardown() throws IOException, InterruptedException {
-        competitionFixture.teardown();
+        competitionFixture.teardownStory();
         log.info("teardown complete");
+        match = null;
     }
 
     @Given("a match is scheduled")
     public void givenAMatchIsScheduled() throws IOException, ServiceException, InterruptedException {
-        competitionFixture.createCompetition();
+        final Competition competition = competitionFixture.createCompetition();
+        match = competition.getSchedule().getMatches().get(0);
     }
 
     @When("it is 10 days before the match")
     public void whenItIs10DaysBeforeTheMatch() throws IOException {
-        competitionFixture.fixDateTimeBeforeMatch(10, ChronoUnit.DAYS);
+        competitionFixture.fixDateTimeBeforeMatch(10, ChronoUnit.DAYS, match);
         competitionFixture.refreshWorkflows();
     }
 
     @Then("an availability notification is sent to the first pick members")
     public void thenAnAvailabilityNotificationIsSentToTheFirstPickMembers() {
-        competitionFixture.checkAllCanYouPlayNotificationsWereSent();
+        competitionFixture.checkAllCanYouPlayNotificationsWereSent(match);
     }
 
     @Given("notifications have been sent out to the proposed team members")
     public void givenNotificationsHaveBeenSentOutToTheProposedTeamMembers() throws IOException {
         whenItIs10DaysBeforeTheMatch();
-        competitionFixture.checkAllCanYouPlayNotificationsWereSent();
+        competitionFixture.checkAllCanYouPlayNotificationsWereSent(match);
     }
 
     @When("a team member acknowledges their availability")
@@ -71,7 +78,7 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("an acceptance acknowledgement notification goes to the player")
     public void thenAnAcknowledgementNotificationGoesToThePlayer() {
-        competitionFixture.checkAcknowledgementGoesToPlayerWhoAccepted();
+        competitionFixture.checkAcknowledgementGoesToPlayerWhoAccepted(match);
     }
 
     @Given("notifications have been sent out to the first pick players")
@@ -86,12 +93,12 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("a notification goes out to the next appropriate player in the pool")
     public void thenANotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        competitionFixture.checkNotificationGoesToNextAppropriatePlayerInThePool();
+        competitionFixture.checkNotificationGoesToNextAppropriatePlayerInThePool(match);
     }
 
     @Then("a decline acknowledgement notification goes to the player")
     public void thenADeclineAcknowledgementNotificationGoesToThePlayer() {
-        competitionFixture.checkAcknowledgementGoesToPlayerWhoDeclined();
+        competitionFixture.checkAcknowledgementGoesToPlayerWhoDeclined(match);
     }
 
     @Given("it is 10 days before the match")
@@ -101,22 +108,22 @@ public class ArrangeMatchSteps extends Steps {
 
     @Given("all but one first pick players responds")
     public void givenAllButOneFirstPickPlayersResponds() throws IOException {
-        competitionFixture.allButOneFirstPickPlayersRespond();
+        competitionFixture.allButOneFirstPickPlayersRespond(match);
     }
 
     @When("times elapses till the match")
     public void whenTimesElapsesTillTheMatch() {
-        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(0);
+        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(0, match);
     }
 
     @Then("a daily reminder is sent to the non-responding player from 7 days before the match")
     public void thenADailyReminderIsSentToTheNonrespondingPlayerFrom7DaysBeforeTheMatch() {
-        competitionFixture.checkDailyReminderIsSentForDaysBeforeMatch(7);
+        competitionFixture.checkDailyReminderIsSentForDaysBeforeMatch(7, match);
     }
 
     @Given("times elapses till the 5 days before the match")
     public void givenTimesElapsesTillThe5DaysBeforeTheMatch() {
-        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(5);
+        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(5, match);
     }
 
     @When("the remaining team member acknowledges their availability")
@@ -126,18 +133,18 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("no further reminders are sent to the player")
     public void thenNoFurtherRemindersAreSentToThePlayer() {
-        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(0);
-        competitionFixture.checkThereAreNoRemindersForPlayersThatDidNotRespond();
+        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(0, match);
+        competitionFixture.checkThereAreNoRemindersForPlayersThatDidNotRespond(match);
     }
 
     @When("times elapses till the 4 days before the match")
     public void whenTimesElapsesTillThe4DaysBeforeTheMatch() {
-        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(4);
+        competitionFixture.pumpWorkflowsTillXDaysBeforeMatch(4, match);
     }
 
     @Then("a standby notification goes out to the next appropriate player in the pool")
     public void thenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        competitionFixture.checkNextAppropriatePlayerInThePoolIsNotifiedOfStandby();
+        competitionFixture.checkNextAppropriatePlayerInThePoolIsNotifiedOfStandby(match);
     }
 
     @Then("an administrator standby alert is raised")
@@ -153,7 +160,7 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("a match confirmation notification is sent out to all notified players")
     public void thenAMatchConfirmationNotificationIsSentOutToAllNotifiedPlayers() {
-        competitionFixture.checkMatchConfirmationSentToAllConfirmedPlayers();
+        competitionFixture.checkMatchConfirmationSentToAllConfirmedPlayers(match);
     }
 
     @Then("the confirmation contains the list of players assigned to the match")
@@ -163,23 +170,23 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("the confirmation contains the match details")
     public void thenTheConfirmationContainsTheMatchDetails() {
-        competitionFixture.checkMatchConfirmationContainsTheMatchDetails();
+        competitionFixture.checkMatchConfirmationContainsTheMatchDetails(match);
     }
 
     @Then("an administration confirmation notification is raised")
     public void thenAnAdministrationConfirmationNotificationIsRaised() {
-        competitionFixture.checkAnAdministratorMatchConfirmationIsRaised();
+        competitionFixture.checkAnAdministratorMatchConfirmationIsRaised(match);
     }
 
     @Given("a member of the pool is on holiday on the date of the match")
     public void givenAMemberOfThePoolIsOnHolidayOnTheDateOfTheMatch() throws IOException {
-        competitionFixture.aFirstPickPoolMemberHasAlreadyDeclined();
+        competitionFixture.aFirstPickPoolMemberHasAlreadyDeclined(match);
     }
 
     @Then("the player on holiday is not notified")
     public void thenThePlayerOnHolidayIsNotNotified() {
         competitionFixture.checkNotificationDoesNotGoToPlayerWhoDeclined();
-        competitionFixture.checkNotificationGoesToEligibleFirstPickPlayers();
+        competitionFixture.checkNotificationGoesToEligibleFirstPickPlayers(match);
     }
 
     @When("there are insufficient eligible players to fulfill the match")
