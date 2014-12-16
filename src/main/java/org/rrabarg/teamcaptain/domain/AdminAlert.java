@@ -13,7 +13,7 @@ public class AdminAlert extends Notification {
 
     public enum Kind {
 
-        StandbyPlayersNotified, MatchFulfilled;
+        StandbyPlayersNotified, MatchFulfilled, InsufficientPlayers;
     }
 
     public Kind getKind() {

@@ -15,11 +15,8 @@ public class PlayerNotificationRepository {
     static Logger log = LoggerFactory.getLogger(PlayerNotificationRepository.class);
 
     // trivial volatile single server implementation
-
     // considerations for multi-node system and no dedicated storage
-
     // could be stored with matches, but needs to be resurrected on machine start up
-
     // there's an option to use a distributed cache as optimisation
 
     List<PlayerNotification> playerNotifications = Collections.synchronizedList(new ArrayList<>());

@@ -38,7 +38,8 @@ public class WorkflowState {
     }
 
     public PlayerState getPlayerState(Player player) {
-        return playerStates.get(player.getKey());
+        final PlayerState playerState = playerStates.get(player.getKey());
+        return playerState == null ? PlayerState.None : playerState;
     }
 
     public Map<String, PlayerState> getPlayerStates() {

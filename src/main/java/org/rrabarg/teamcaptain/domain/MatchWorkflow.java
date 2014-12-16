@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Provider;
 
@@ -78,8 +82,8 @@ public class MatchWorkflow {
         return this;
     }
 
-    public void sendAdminAlert(org.rrabarg.teamcaptain.domain.AdminAlert.Kind standbyplayersnotified) {
-        notificationService.adminAlert(poolOfPlayers, match, standbyplayersnotified);
+    public void sendAdminAlert(org.rrabarg.teamcaptain.domain.AdminAlert.Kind kind) {
+        notificationService.adminAlert(poolOfPlayers, match, kind);
     }
 
     private void sendConfirmationEmailsToPlayer(List<Player> team) {
@@ -101,14 +105,15 @@ public class MatchWorkflow {
     }
 
     private void sendStandbyRequestIfPossible(Player player) {
-        final Player nextPick = selectionStrategy.nextPick(poolOfPlayers, player);
 
-        if (nextPick == null) {
+        final Substitute nextPick = getNextPickPlayer(player);
+
+        if (!nextPick.sub.isPresent()) {
             log.info("No available player to standby for " + player);
             return;
         }
 
-        sendNotification(nextPick, Kind.StandBy);
+        sendNotification(nextPick.sub.get(), Kind.StandBy);
     }
 
     private long getDaysTillMatch() {
@@ -119,13 +124,52 @@ public class MatchWorkflow {
 
     private MatchWorkflow notifyFirstPickPlayers() {
 
-        selectionStrategy.firstPick(poolOfPlayers)
-                .stream()
+        final Collection<Player> potentialFirstPick = selectionStrategy.firstPick(poolOfPlayers);
+
+        final List<Substitute> potentialSubstitutes =
+                potentialFirstPick.stream().filter(p -> match.getPlayerState(p) == PlayerState.Declined)
+                        .peek(p -> log.info("The first pick player " + p
+                                + " had previously declined this match so will be substituted"))
+                        .map(s -> getNextPickPlayer(s)).collect(Collectors.toList());
+
+        if (potentialSubstitutes.stream().filter(s -> !s.sub.isPresent()).findAny().isPresent()) {
+            sendAdminAlert(AdminAlert.Kind.InsufficientPlayers);
+        }
+
+        final Stream<Player> firstPick = potentialFirstPick.stream().filter(
+                p -> match.getPlayerState(p) != PlayerState.Declined);
+
+        final Stream<Player> substitutes = potentialSubstitutes.stream().filter(s -> s.sub.isPresent())
+                .map(s -> s.sub.get());
+
+        Stream.concat(substitutes, firstPick)
                 .peek(player -> log.debug("notifying " + player + " for " + match + " for " + Kind.CanYouPlay))
                 .peek(player -> getState().setPlayerState(player, PlayerState.Notified))
-                .forEach(
-                        player -> sendNotification(player, Kind.CanYouPlay));
+                .forEach(player -> sendNotification(player, Kind.CanYouPlay));
         return this;
+    }
+
+    class Substitute {
+        final Player original;
+        final Optional<Player> sub;
+
+        public Substitute(Player original, Optional<Player> sub) {
+            this.original = original;
+            this.sub = sub;
+        }
+    }
+
+    private Substitute getNextPickPlayer(Player p) {
+        do {
+            final Player nextPick = selectionStrategy.nextPick(poolOfPlayers, p);
+            if ((nextPick != null) && (match.getPlayerState(nextPick) != PlayerState.Declined)) {
+                return new Substitute(p, Optional.of(nextPick));
+            }
+
+            if (nextPick == null) {
+                return new Substitute(p, Optional.empty());
+            }
+        } while (true);
     }
 
     private void sendReminders() {
@@ -158,9 +202,16 @@ public class MatchWorkflow {
     private void iCannotPlay(Player player) {
         match.setPlayerState(player, PlayerState.Declined);
         sendNotification(player, Kind.ConfirmationOfDecline);
-        final Player nextPick = selectionStrategy.nextPick(poolOfPlayers, player);
-        sendNotification(nextPick, Kind.CanYouPlay);
-        getState().substitute(player, nextPick, PlayerState.Notified);
+
+        final Substitute sub = getNextPickPlayer(player);
+
+        if (!sub.sub.isPresent()) {
+            sendAdminAlert(AdminAlert.Kind.InsufficientPlayers);
+            return;
+        }
+
+        sendNotification(sub.sub.get(), Kind.CanYouPlay);
+        getState().substitute(player, sub.sub.get(), PlayerState.Notified);
         pump();
     }
 

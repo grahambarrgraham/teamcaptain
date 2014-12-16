@@ -1,22 +1,5 @@
---
 
-Scenario: a player is on holiday and is is not eligible to play
-Given a match is scheduled
-And a member of the pool is on holiday on the date of the match
-When players are notified
-Then the player on holiday is not notified 
-   
-Scenario: a player is injured and so is not eligible to play
-Given a match is scheduled
-And a member of the pool is injured
-When players are notified
-Then the injured player is not notified 
- 
-Scenario: there are insufficient eligible players
-Given a match is scheduled
-And an there are insufficient eligible players to fulfill the match
-When it is 10 days before the match
-Then an administrator alert is raised
+--
 
 Scenario: Cambridge League Mixed Badminton
 Given a mixed doubles match is scheduled

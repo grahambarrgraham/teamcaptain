@@ -86,7 +86,7 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("a notification goes out to the next appropriate player in the pool")
     public void thenANotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        competitionFixture.nextAppropriatePlayerInThePoolIsNotified();
+        competitionFixture.checkNotificationGoesToNextAppropriatePlayerInThePool();
     }
 
     @Then("a decline acknowledgement notification goes to the player")
@@ -137,12 +137,12 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("a standby notification goes out to the next appropriate player in the pool")
     public void thenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        competitionFixture.nextAppropriatePlayerInThePoolIsNotifiedOfStandby();
+        competitionFixture.checkNextAppropriatePlayerInThePoolIsNotifiedOfStandby();
     }
 
-    @Then("an administrator alert is raised")
+    @Then("an administrator standby alert is raised")
     public void thenAnAdministratorAlertIsRaised() {
-        competitionFixture.checkAnAdminstratorAlertIsRaised();
+        competitionFixture.checkAnAdminstratorStandbyAlertIsRaised();
     }
 
     @When("sufficient players are assigned to the match")
@@ -153,17 +153,17 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("a match confirmation notification is sent out to all notified players")
     public void thenAMatchConfirmationNotificationIsSentOutToAllNotifiedPlayers() {
-        competitionFixture.matchConfirmationSentToAllConfirmedPlayers();
+        competitionFixture.checkMatchConfirmationSentToAllConfirmedPlayers();
     }
 
     @Then("the confirmation contains the list of players assigned to the match")
     public void thenTheConfirmationContainsTheListOfPlayersAssignedToTheMatch() {
-        competitionFixture.matchConfirmationContainsListOfPlayerInTeam();
+        competitionFixture.checkMatchConfirmationContainsListOfPlayerInTeam();
     }
 
     @Then("the confirmation contains the match details")
     public void thenTheConfirmationContainsTheMatchDetails() {
-        competitionFixture.matchConfirmationContainsTheMatchDetails();
+        competitionFixture.checkMatchConfirmationContainsTheMatchDetails();
     }
 
     @Then("an administration confirmation notification is raised")
@@ -172,39 +172,24 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @Given("a member of the pool is on holiday on the date of the match")
-    @Pending
-    public void givenAMemberOfThePoolIsOnHolidayOnTheDateOfTheMatch() {
-        // PENDING
-    }
-
-    @When("players are notified")
-    @Pending
-    public void whenPlayersAreNotified() {
-        // PENDING
+    public void givenAMemberOfThePoolIsOnHolidayOnTheDateOfTheMatch() throws IOException {
+        competitionFixture.aFirstPickPoolMemberHasAlreadyDeclined();
     }
 
     @Then("the player on holiday is not notified")
-    @Pending
     public void thenThePlayerOnHolidayIsNotNotified() {
-        // PENDING
+        competitionFixture.checkNotificationDoesNotGoToPlayerWhoDeclined();
+        competitionFixture.checkNotificationGoesToEligibleFirstPickPlayers();
     }
 
-    @Given("a member of the pool is injured")
-    @Pending
-    public void givenAMemberOfThePoolIsInjured() {
-        // PENDING
+    @When("there are insufficient eligible players to fulfill the match")
+    public void givenAnThereAreInsufficientEligiblePlayersToFulfillTheMatch() throws IOException {
+        competitionFixture.aPlayerWhoDoesntHaveAnEligibleSubstituteDeclines();
     }
 
-    @Then("the injured player is not notified")
-    @Pending
-    public void thenTheInjuredPlayerIsNotNotified() {
-        // PENDING
-    }
-
-    @Given("an there are insufficient eligible players to fulfill the match")
-    @Pending
-    public void givenAnThereAreInsufficientEligiblePlayersToFulfillTheMatch() {
-        // PENDING
+    @Then("an administrator insufficient players alert is raised")
+    public void thenAnAdministratorInsufficientPlayersAlertIsRaised() {
+        competitionFixture.checkAnAdminstratorInsufficientPlayersAlertIsRaised();
     }
 
     @Given("a mixed doubles match is scheduled")
