@@ -19,6 +19,11 @@ public class CompetitionStateSerialisationHelper {
     }
 
     public String toString(CompetitionState state) {
+
+        if (state == null) {
+            return "INVALID STATE";
+        }
+
         final ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.writeValueAsString(state);

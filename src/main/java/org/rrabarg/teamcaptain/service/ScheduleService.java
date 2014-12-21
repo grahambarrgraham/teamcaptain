@@ -54,6 +54,7 @@ public class ScheduleService {
         }
 
         schedule.setState(competitionState);
+        scheduleRepository.setCompetitionState(scheduleId, competitionState);
 
         return scheduleId;
     }
@@ -67,7 +68,7 @@ public class ScheduleService {
             scheduleId = scheduleRepository.addSchedule(scheduleName, state);
             log.debug("Creating new schedule " + scheduleName);
         } else {
-            log.debug("Reusing schedule " + scheduleName);
+            log.debug("Reusing schedule " + scheduleName + " setting state to " + state);
             scheduleRepository.setCompetitionState(scheduleId, state);
         }
 
@@ -77,6 +78,7 @@ public class ScheduleService {
     public void clearMatches(Schedule schedule) throws IOException {
         log.debug("Clearing all matches for schedule " + schedule.getId());
         scheduleRepository.clearSchedule(schedule.getId());
+        scheduleRepository.setCompetitionState(schedule.getId(), null);
     }
 
     public void updateMatch(Match match) throws IOException {

@@ -1,5 +1,7 @@
 package org.rrabarg.teamcaptain.domain;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.rrabarg.teamcaptain.SelectionStrategy;
 
@@ -31,4 +33,8 @@ public class CompetitionState {
         this.selectionStrategy = selectionStrategy;
     }
 
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
+    }
 }
