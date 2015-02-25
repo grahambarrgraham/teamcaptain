@@ -17,7 +17,7 @@ import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
 import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.domain.PlayerResponse;
-import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
+import org.rrabarg.teamcaptain.domain.PlayerPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,8 +45,8 @@ public class NotificationService implements Consumer<Event<PlayerResponse>> {
         reactor.on($(ReactorMessageKind.InboundPlayerResponse), this);
     }
 
-    public void notify(PoolOfPlayers poolOfPlayers, Match match, Player player, Kind kind) {
-        final PlayerNotification notification = new PlayerNotification(poolOfPlayers, match, player, kind, now());
+    public void notify(PlayerPool playerPool, Match match, Player player, Kind kind) {
+        final PlayerNotification notification = new PlayerNotification(playerPool, match, player, kind, now());
 
         reactor.notify(ReactorMessageKind.OutboundPlayerNotification,
                 new Event<>(notification));
@@ -69,7 +69,7 @@ public class NotificationService implements Consumer<Event<PlayerResponse>> {
         }
     }
 
-    public void adminAlert(PoolOfPlayers pool, Match match, AdminAlert.Kind kind) {
+    public void adminAlert(PlayerPool pool, Match match, AdminAlert.Kind kind) {
         reactor.notify(ReactorMessageKind.OutboundAdminAlert, new Event<>(new AdminAlert(pool, match, kind, now())));
     }
 

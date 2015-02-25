@@ -1,13 +1,11 @@
 package org.rrabarg.teamcaptain.domain;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-
-import org.rrabarg.teamcaptain.SelectionStrategy;
 
 @Entity
 public class Schedule {
@@ -17,7 +15,7 @@ public class Schedule {
 
     private final List<Match> matches;
 
-    private CompetitionState state;
+    private Competition competition;
 
     /**
      * Used for entity creation
@@ -29,18 +27,18 @@ public class Schedule {
     /**
      * Used for load from persistent store
      */
-    public Schedule(String scheduleId, CompetitionState state, List<Match> matches) {
+    public Schedule(String scheduleId, Competition competition, List<Match> matches) {
         this.id = scheduleId;
         this.matches = matches;
-        this.state = state;
+        this.competition = competition;
     }
 
-    public List<Match> getMatches() {
-        return matches;
+    public synchronized List<Match> getMatches() {
+        return new ArrayList<>(matches);
     }
 
     public String getPlayerPoolId() {
-        return state.getPlayerPoolId();
+        return competition.getPlayerPool().getId();
     }
 
     public String getId() {
@@ -51,24 +49,17 @@ public class Schedule {
         this.id = scheduleId;
     }
 
-    public Collection<Match> getUpcomingMatches() {
-        return getMatches();
-    }
-
     @Override
     public String toString() {
         return "Schedule " + matches;
     }
 
-    public void setState(CompetitionState state) {
-        this.state = state;
+    public synchronized void updateMatch(Match match) {
+        matches.removeIf(a -> a.equals(match));
+        matches.add(match);
     }
 
-    public SelectionStrategy getSelectionStrategy() {
-        return state.getSelectionStrategy();
-    }
-
-    public CompetitionState getCompetitionState() {
-        return state;
+    public void setCompetition(Competition competition) {
+        this.competition = competition;
     }
 }

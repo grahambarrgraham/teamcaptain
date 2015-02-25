@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
 
 @Entity
 public class Match {
 
+    @Id
     private String id;
+
     private String scheduleId;
 
     private final String title;
@@ -20,9 +23,6 @@ public class Match {
 
     /**
      * Constructor used for inception
-     *
-     * @param strategy
-     *            TODO
      */
     public Match(String title, ZonedDateTime startDateTime, ZonedDateTime endDateTime, Location location) {
         this(null, null, title, startDateTime, endDateTime, location, null);
@@ -133,15 +133,15 @@ public class Match {
         return workflowState.getTravelDetails();
     }
 
-    public List<Player> getAcceptedPlayers(PoolOfPlayers pool) {
+    public List<Player> getAcceptedPlayers(PlayerPool pool) {
         return getPlayersInState(PlayerState.Accepted, pool);
     }
 
-    public List<Player> getConfirmedPlayers(PoolOfPlayers pool) {
+    public List<Player> getConfirmedPlayers(PlayerPool pool) {
         return getPlayersInState(PlayerState.Confirmed, pool);
     }
 
-    private List<Player> getPlayersInState(PlayerState playerState, PoolOfPlayers pool) {
+    private List<Player> getPlayersInState(PlayerState playerState, PlayerPool pool) {
         final List<Player> playerKeys = workflowState.getPlayerStates().entrySet().stream()
                 .filter(e -> e.getValue() == playerState)
                 .map(e -> e.getKey()).map(k -> pool.getPlayerForKey(k)).collect(Collectors.toList());

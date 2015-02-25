@@ -7,6 +7,7 @@ import java.time.format.FormatStyle;
 
 import javax.inject.Provider;
 
+import org.rrabarg.teamcaptain.domain.Email;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,7 +139,7 @@ public class PlayerNotificationRenderer {
 
             private SubjectBuilder teamForMatch() {
                 this.append("The team for this match will be : ");
-                this.append(getMatch().getAcceptedPlayers(notification.getPoolOfPlayers()).toString());
+                this.append(getMatch().getAcceptedPlayers(notification.getPlayerPool()).toString());
                 return this;
             }
 

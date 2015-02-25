@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
-import org.rrabarg.teamcaptain.service.Email;
+import org.rrabarg.teamcaptain.domain.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

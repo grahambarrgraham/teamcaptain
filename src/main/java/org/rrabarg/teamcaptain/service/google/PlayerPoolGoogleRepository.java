@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.repository.google;
+package org.rrabarg.teamcaptain.service.google;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Player;
-import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
+import org.rrabarg.teamcaptain.domain.PlayerPool;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -35,7 +35,7 @@ import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.ServiceException;
 
 @Repository
-public class PoolOfPlayersRepository {
+public class PlayerPoolGoogleRepository {
 
     Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
@@ -47,20 +47,53 @@ public class PoolOfPlayersRepository {
     ContactsService contactService;
 
     public String findPlayerPoolIdByName(String competitionName) throws IOException, ServiceException {
+
         if (competitionName == null) {
             return null;
         }
 
+        final Collection<ContactGroupEntry> groups = getContactGroupsForName(competitionName);
+
+        if (groups.size() > 1) {
+            log.warn("Multiple contact groups for name " + competitionName
+                    + " probably left over by an abandonded test");
+        }
+
+        final Collection<ContactGroupEntry> filteredGroups = groups.stream().filter(e -> e.getDeleted() != null)
+                .collect(Collectors.toList());
+
+        if (filteredGroups.size() == 0) {
+            return null;
+        }
+
+        return filteredGroups.iterator().next().getId();
+    }
+
+    public void deletePlayerPoolsByName(String name) throws MalformedURLException, IOException,
+            ServiceException {
+
+        if (name == null) {
+            return;
+        }
+
+        for (final ContactGroupEntry group : getContactGroupsForName(name)) {
+            log.debug("Deleting group " + group.getId() + " with name " + group.getTitle().getPlainText());
+            group.delete();
+        }
+    }
+
+    private Collection<ContactGroupEntry> getContactGroupsForName(String competitionName) throws MalformedURLException,
+            IOException, ServiceException {
         final Query myQuery = new Query(getGroupsFeedUrl());
         myQuery.setStringCustomParameter("Title", competitionName);
         final ContactGroupFeed queryResult = contactService.query(myQuery, ContactGroupFeed.class);
 
-        final Stream<ContactGroupEntry> stream = queryResult.getEntries()
-                .stream().peek(entry -> log.debug("Found group " + entry.getTitle().getPlainText()));
+        final Stream<ContactGroupEntry> stream = queryResult.getEntries().stream();
 
-        final Optional<ContactGroupEntry> entries = stream.filter(
-                a -> competitionName.equals(a.getTitle().getPlainText())).findAny();
-        return entries.isPresent() ? entries.get().getId() : null;
+        final Stream<ContactGroupEntry> filter = stream.filter(
+                a -> competitionName.equals(a.getTitle().getPlainText()));
+
+        return filter.collect(Collectors.toList());
     }
 
     public String createPlayerPoolWithName(String title) throws MalformedURLException, IOException,
@@ -78,7 +111,7 @@ public class PoolOfPlayersRepository {
         return contactService.insert(getGroupsFeedUrl(), entry).getId();
     }
 
-    public PoolOfPlayers getPlayerPoolById(String poolId) throws MalformedURLException, IOException, ServiceException {
+    public PlayerPool getPlayerPoolById(String poolId) throws MalformedURLException, IOException, ServiceException {
 
         if (poolId == null) {
             throw new RuntimeException("Invalid pool id " + poolId);
@@ -87,15 +120,15 @@ public class PoolOfPlayersRepository {
         final List<Player> players = streamAllContactsInGroup(poolId).map(entry -> instantiatePlayer(entry)).collect(
                 Collectors.toList());
 
-        return new PoolOfPlayers(poolId, players);
+        return new PlayerPool(poolId, players);
 
     }
 
     public void addPlayersToPool(String poolId, Collection<Player> players) throws MalformedURLException, IOException,
             ServiceException {
-        assert (poolId != null);
-
-        players.stream().forEach(a -> addPlayer(poolId, a));
+        for (final Player player : players) {
+            addPlayer(poolId, player);
+        }
     }
 
     public void clearPlayersFromPool(String poolId) throws MalformedURLException, IOException, ServiceException {
@@ -104,7 +137,8 @@ public class PoolOfPlayersRepository {
     }
 
     private void addPlayer(String poolId, final Player player) {
-        assert (poolId != null);
+
+        log.debug("Adding contact for player " + player + " to pool " + poolId);
 
         ContactEntry addedContact;
         try {
@@ -113,6 +147,9 @@ public class PoolOfPlayersRepository {
             throw new RuntimeException("Failed to add player " + player, e);
         }
         player.setId(addedContact.getId());
+
+        log.debug("Added contact for player " + player + " to pool " + poolId + " got player id "
+                + addedContact.getId() + " status " + addedContact.getStatus());
     }
 
     private void deleteContact(ContactEntry entry) {
@@ -241,7 +278,12 @@ public class PoolOfPlayersRepository {
 
         while (true) {
             final ContactFeed result = getResult(groupId, startingIndex);
+
             final List<ContactEntry> entries = result.getEntries();
+
+            log.debug("query result size for players query for group id " + groupId + " and starting index "
+                    + startingIndex + " was " + entries.size());
+
             if ((entries == null) || (entries.size() == 0)) {
                 break; // yuk
             }

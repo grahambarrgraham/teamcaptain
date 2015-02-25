@@ -54,3 +54,10 @@ And a member of the pool is on holiday on the date of the match
 When it is 10 days before the match
 Then the player on holiday is not notified
 And a notification goes out to the next appropriate player in the pool
+
+Scenario: there are insufficient eligible players
+Given a match is scheduled
+And it is 10 days before the match
+When there are insufficient eligible players to fulfill the match
+Then an administrator insufficient players alert is raised
+ 

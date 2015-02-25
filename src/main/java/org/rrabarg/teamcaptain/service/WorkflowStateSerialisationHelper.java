@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.repository;
+package org.rrabarg.teamcaptain.service;
 
 import java.io.IOException;
 

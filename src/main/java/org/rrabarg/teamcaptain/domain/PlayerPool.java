@@ -10,24 +10,24 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-public class PoolOfPlayers {
+public class PlayerPool {
 
     @Id
     private String id;
 
-    Map<String, Player> players;
+    protected final Map<String, Player> players;
 
     /**
      * Used for entity creation
      */
-    public PoolOfPlayers(Player... players) {
+    public PlayerPool(Player... players) {
         this.players = createMap(Arrays.asList(players));
     }
 
     /**
      * Used for load from persistent store
      */
-    public PoolOfPlayers(String poolId, Collection<Player> players) {
+    public PlayerPool(String poolId, Collection<Player> players) {
         this.players = createMap(players);
         this.id = poolId;
     }

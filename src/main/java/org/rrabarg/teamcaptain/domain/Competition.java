@@ -1,17 +1,22 @@
 package org.rrabarg.teamcaptain.domain;
 
+import javax.persistence.Id;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.rrabarg.teamcaptain.SelectionStrategy;
 
 public class Competition {
 
+    @Id
+    private String id;
+
     private final String name;
     private final Schedule schedule;
-    private final PoolOfPlayers playerPool;
+    private final PlayerPool playerPool;
     private final SelectionStrategy selectionStrategy;
 
-    public Competition(String name, Schedule schedule, PoolOfPlayers playerPool, SelectionStrategy strategy) {
+    public Competition(String name, Schedule schedule, PlayerPool playerPool, SelectionStrategy strategy) {
         this.schedule = schedule;
         this.playerPool = playerPool;
         this.name = name;
@@ -22,7 +27,7 @@ public class Competition {
         return schedule;
     }
 
-    public PoolOfPlayers getPlayerPool() {
+    public PlayerPool getPlayerPool() {
         return playerPool;
     }
 
@@ -32,6 +37,10 @@ public class Competition {
 
     public SelectionStrategy getSelectionStrategy() {
         return selectionStrategy;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

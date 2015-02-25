@@ -5,6 +5,7 @@ import static reactor.event.selector.Selectors.$;
 import javax.annotation.PostConstruct;
 
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.Email;
 import org.rrabarg.teamcaptain.domain.PlayerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

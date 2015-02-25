@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.service;
+package org.rrabarg.teamcaptain.domain;
 
 import java.time.Instant;
 

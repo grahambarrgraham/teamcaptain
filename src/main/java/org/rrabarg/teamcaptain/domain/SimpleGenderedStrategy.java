@@ -2,6 +2,7 @@ package org.rrabarg.teamcaptain.domain;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,22 +31,27 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
     }
 
     @Override
-    public Collection<Player> firstPick(PoolOfPlayers pool) {
+    public Collection<Player> firstPick(PlayerPool pool) {
 
         final List<Player> result = new ArrayList<>();
 
         final Map<Gender, List<Player>> groupedByGender = groupedByGender(pool);
 
-        result.addAll(gentFirstPick(groupedByGender, Gender.Male, numberOfGents));
-        result.addAll(gentFirstPick(groupedByGender, Gender.Female, numberOfLadies));
+        result.addAll(firstPick(groupedByGender, Gender.Male, numberOfGents));
+        result.addAll(firstPick(groupedByGender, Gender.Female, numberOfLadies));
 
         return result;
     }
 
-    private List<Player> gentFirstPick(final Map<Gender, List<Player>> groupedByGender, Gender male, int max) {
-        final List<Player> gents = groupedByGender.get(male);
-        sortPlayers(gents);
-        return gents.subList(0, max);
+    private List<Player> firstPick(final Map<Gender, List<Player>> groupedByGender, Gender gender, int max) {
+        final List<Player> players = groupedByGender.get(gender);
+
+        if (players == null) {
+            return Collections.emptyList();
+        }
+
+        sortPlayers(players);
+        return players.subList(0, max);
     }
 
     private void sortPlayers(final List<Player> gents) {
@@ -53,14 +59,14 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
         gents.sort((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
     }
 
-    private Map<Gender, List<Player>> groupedByGender(PoolOfPlayers pool) {
+    private Map<Gender, List<Player>> groupedByGender(PlayerPool pool) {
         final Map<Gender, List<Player>> groupedByGender = pool.getPlayers().stream()
                 .collect(Collectors.groupingBy(a -> a.getGender()));
         return groupedByGender;
     }
 
     @Override
-    public Player nextPick(PoolOfPlayers pool, Player decline) {
+    public Player nextPick(PlayerPool pool, Player decline) {
         final List<Player> list = groupedByGender(pool).get(decline.getGender());
         sortPlayers(list);
         final int indexOfNextPlayer = list.indexOf(decline) + 1;

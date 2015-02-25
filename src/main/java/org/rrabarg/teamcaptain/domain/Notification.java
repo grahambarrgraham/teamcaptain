@@ -6,13 +6,12 @@ public class Notification {
 
     protected final Match match;
     protected final Instant timestamp;
-    private final PoolOfPlayers poolOfPlayers;
+    private final PlayerPool playerPool;
 
-    public Notification(PoolOfPlayers poolOfPlayers, Instant timestamp, Match match) {
-        this.poolOfPlayers = poolOfPlayers;
+    public Notification(PlayerPool playerPool, Instant timestamp, Match match) {
+        this.playerPool = playerPool;
         this.timestamp = timestamp;
         this.match = match;
-
     }
 
     public Match getMatch() {
@@ -23,8 +22,8 @@ public class Notification {
         return timestamp;
     }
 
-    public PoolOfPlayers getPoolOfPlayers() {
-        return poolOfPlayers;
+    public PlayerPool getPlayerPool() {
+        return playerPool;
     }
 
 }

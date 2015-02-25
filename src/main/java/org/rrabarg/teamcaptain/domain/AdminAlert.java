@@ -6,7 +6,7 @@ public class AdminAlert extends Notification {
 
     private final Kind kind;
 
-    public AdminAlert(PoolOfPlayers pool, Match match, Kind kind, Instant timestamp) {
+    public AdminAlert(PlayerPool pool, Match match, Kind kind, Instant timestamp) {
         super(pool, timestamp, match);
         this.kind = kind;
     }

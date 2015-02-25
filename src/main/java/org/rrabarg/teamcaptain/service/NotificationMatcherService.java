@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.rrabarg.teamcaptain.domain.Email;
 import org.rrabarg.teamcaptain.domain.Notification;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
 import org.rrabarg.teamcaptain.domain.PlayerResponse;

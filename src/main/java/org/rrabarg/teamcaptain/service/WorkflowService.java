@@ -1,6 +1,7 @@
 package org.rrabarg.teamcaptain.service;
 
 import java.io.IOException;
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchWorkflow;
-import org.rrabarg.teamcaptain.domain.PoolOfPlayers;
+import org.rrabarg.teamcaptain.domain.PlayerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class WorkflowService {
+
+    private static final int NUMBER_OF_DAYS_TILL_MATCH = 10;
 
     Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -30,6 +33,9 @@ public class WorkflowService {
     @Autowired
     ScheduleService scheduleService;
 
+    @Autowired
+    Provider<Clock> clock;
+
     Map<Match, MatchWorkflow> workflowMap = new HashMap<>();
 
     public void refresh(String competitionName) throws IOException {
@@ -38,8 +44,9 @@ public class WorkflowService {
         if (competition != null) {
             competition
                     .getSchedule()
-                    .getUpcomingMatches()
+                    .getMatches()
                     .stream()
+                    .filter(a -> isUpcoming(a))
                     .parallel()
                     .peek(match -> log.info("Loaded \"" + match + "\""))
                     .map(match ->
@@ -52,7 +59,7 @@ public class WorkflowService {
         }
     }
 
-    private MatchWorkflow createOrUpdateWorkflow(PoolOfPlayers pool, Match match, SelectionStrategy strategy) {
+    private MatchWorkflow createOrUpdateWorkflow(PlayerPool pool, Match match, SelectionStrategy strategy) {
 
         MatchWorkflow flow = workflowMap.get(match);
 
@@ -75,4 +82,10 @@ public class WorkflowService {
     public void pump() {
         workflowMap.values().forEach(a -> a.pump());
     }
+
+    private boolean isUpcoming(Match match) {
+        return match.getStartDateTime().minusDays(NUMBER_OF_DAYS_TILL_MATCH).toInstant()
+                .compareTo(clock.get().instant()) <= 0;
+    }
+
 }

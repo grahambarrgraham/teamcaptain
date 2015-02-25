@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.repository.google;
+package org.rrabarg.teamcaptain.service.google;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

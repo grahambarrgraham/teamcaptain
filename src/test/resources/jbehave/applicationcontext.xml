@@ -6,10 +6,11 @@
 	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
 	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-	<context:component-scan base-package="org.rrabarg.teamcaptain" />
+	<context:component-scan base-package="org.rrabarg.teamcaptain">
+		<context:exclude-filter type="regex" expression="org.rrabarg.teamcaptain.service.google.*"/>
+	</context:component-scan>
 
 	<aop:aspectj-autoproxy />
-<!--  	<context:load-time-weaver />-->
 	<aop:config proxy-target-class="true" />
 
 </beans>

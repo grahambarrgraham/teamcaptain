@@ -1,11 +1,9 @@
-package org.rrabarg.teamcaptain.repository.google;
+package org.rrabarg.teamcaptain.service.google;
 
 import java.io.IOException;
 import java.time.Clock;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -17,8 +15,9 @@ import org.rrabarg.teamcaptain.domain.CompetitionState;
 import org.rrabarg.teamcaptain.domain.Location;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Schedule;
-import org.rrabarg.teamcaptain.repository.CompetitionStateSerialisationHelper;
-import org.rrabarg.teamcaptain.repository.WorkflowStateSerialisationHelper;
+import org.rrabarg.teamcaptain.service.CompetitionStateSerialisationHelper;
+import org.rrabarg.teamcaptain.service.WorkflowStateSerialisationHelper;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -32,7 +31,9 @@ import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 
 @Repository
-public class ScheduleRepository {
+public class ScheduleGoogleRepository {
+
+    Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private Provider<Clock> clock;
@@ -47,32 +48,39 @@ public class ScheduleRepository {
     private CompetitionStateSerialisationHelper competitionStateSerialisationHelper;
 
     public Schedule getScheduleByName(String competitionName) throws IOException {
+
         final String scheduleId = getScheduleId(competitionName);
 
         if (scheduleId == null) {
             return null;
         }
 
+        return new Schedule(scheduleId, null, getMatches(scheduleId));
+    }
+
+    public CompetitionState getCompetitionState(final String scheduleId) throws IOException {
         final CalendarListEntry calendar = getCalendarById(scheduleId);
+
+        log.debug("Loading calendar description " + calendar.getDescription() + " for schedule id " + scheduleId);
 
         final CompetitionState competitionState =
                 competitionStateSerialisationHelper.fromString(calendar.getDescription());
+        return competitionState;
+    }
 
-        final int daysTillMatchForNotifications = competitionState.getSelectionStrategy()
-                .getDaysTillMatchForNotifications();
-
-        return new Schedule(
-                scheduleId,
-                competitionState,
-                getUpcomingMatches(scheduleId, daysTillMatchForNotifications, ChronoUnit.DAYS));
+    public CompetitionState getScheduleState(String scheduleId) throws IOException {
+        final CalendarListEntry calendar = getCalendarById(scheduleId);
+        log.debug("getState, Loading calendar description " + calendar.getDescription() + " for schedule id "
+                + scheduleId);
+        return competitionStateSerialisationHelper.fromString(calendar.getDescription());
     }
 
     private CalendarListEntry getCalendarById(final String calendarId) throws IOException {
         return googleCalendarClient.calendarList().get(calendarId).execute();
     }
 
-    public String addSchedule(String scheduleTitle, CompetitionState state) throws IOException {
-        return addCalendar(scheduleTitle, state).getId();
+    public String addSchedule(String scheduleTitle) throws IOException {
+        return addCalendar(scheduleTitle).getId();
     }
 
     public void deleteSchedule(String sheduleId) throws IOException {
@@ -95,28 +103,24 @@ public class ScheduleRepository {
     public String getScheduleId(String scheduleName) throws IOException {
         final List<CalendarListEntry> items = getCalendarList().getItems();
         for (final CalendarListEntry calendarListEntry : items) {
-            if (scheduleName.equals(calendarListEntry.getSummary())) {
+            if (scheduleName.equals(calendarListEntry.getSummary()) && (!calendarListEntry.isDeleted())) {
                 return calendarListEntry.getId();
             }
         }
         return null;
     }
 
-    public List<Match> getUpcomingMatches(String scheduleId,
-            int numberOfDaysTillMatch, ChronoUnit days) throws IOException {
+    List<Match> getMatches(String scheduleId) throws IOException {
         final List<Event> items = getEventsForSchedule(scheduleId).getItems();
         return items.stream().map(event -> asMatch(scheduleId, event))
-                .filter(match -> isUpcoming(match, numberOfDaysTillMatch, days)).collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public Calendar setCompetitionState(String scheduleId, CompetitionState state) throws IOException {
         final Calendar entry = getCalendars().get(scheduleId).execute();
         entry.setDescription(competitionStateSerialisationHelper.toString(state));
-        return getCalendars().update(scheduleId, entry).execute();
-    }
-
-    private boolean isUpcoming(Match match, int numberOfDaysTillMatch, ChronoUnit days) {
-        return Duration.between(clock.get().instant(), match.getStartDateTime().toInstant()).toDays() <= 10;
+        final Calendar execute = getCalendars().update(scheduleId, entry).execute();
+        return execute;
     }
 
     private Match asMatch(String scheduleId, Event event) {
@@ -134,10 +138,9 @@ public class ScheduleRepository {
         return timeZone == null ? TimeZone.getDefault() : TimeZone.getTimeZone(timeZone);
     }
 
-    private Calendar addCalendar(String summary, CompetitionState state) throws IOException {
+    private Calendar addCalendar(String summary) throws IOException {
         final Calendar entry = new Calendar();
         entry.setSummary(summary);
-        entry.setDescription(competitionStateSerialisationHelper.toString(state));
         return getCalendars().insert(entry).execute();
     }
 

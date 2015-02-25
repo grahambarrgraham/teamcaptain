@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.repository;
+package org.rrabarg.teamcaptain.service;
 
 import java.io.IOException;
 
@@ -10,6 +10,11 @@ import org.springframework.stereotype.Service;
 public class CompetitionStateSerialisationHelper {
 
     public CompetitionState fromString(String serialisedState) {
+
+        if (serialisedState == null) {
+            return null;
+        }
+
         final ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.readValue(serialisedState, CompetitionState.class);
@@ -21,7 +26,7 @@ public class CompetitionStateSerialisationHelper {
     public String toString(CompetitionState state) {
 
         if (state == null) {
-            return "INVALID STATE";
+            return null;
         }
 
         final ObjectMapper mapper = new ObjectMapper();

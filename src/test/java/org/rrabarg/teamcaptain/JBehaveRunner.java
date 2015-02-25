@@ -39,7 +39,7 @@ public class JBehaveRunner extends JUnitStories {
 
     public JBehaveRunner() {
         configuredEmbedder().embedderControls().doGenerateViewAfterStories(false).doIgnoreFailureInStories(false)
-                .doIgnoreFailureInView(true).useThreads(1).useStoryTimeoutInSecs(360);
+                .doIgnoreFailureInView(true).useThreads(4).useStoryTimeoutInSecs(360);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class JBehaveRunner extends JUnitStories {
                 new ExamplesTableConverter(examplesTableFactory));
 
         return new MostUsefulConfiguration()
-                .useStoryControls(new StoryControls().doDryRun(false).doSkipScenariosAfterFailure(true))
+                .useStoryControls(new StoryControls().doDryRun(false).doSkipScenariosAfterFailure(false))
                 .useStoryLoader(new LoadFromClasspath(embeddableClass))
                 .useStoryParser(new RegexStoryParser(examplesTableFactory))
                 .useStoryPathResolver(new UnderscoredCamelCaseResolver())
@@ -77,7 +77,7 @@ public class JBehaveRunner extends JUnitStories {
                                 .withDefaultFormats().withPathResolver(new ResolveToPackagedName())
                                 .withViewResources(viewResources)
                                 .withFormats(Format.CONSOLE, Format.TXT, Format.HTML, Format.XML)
-                                .withFailureTrace(true).withFailureTraceCompression(true).withCrossReference(xref))
+                                .withFailureTrace(true).withFailureTraceCompression(false).withCrossReference(xref))
                 .useParameterConverters(parameterConverters)
                 // use '%' instead of '$' to identify parameters
                 .useStepPatternParser(new RegexPrefixCapturingPatternParser("%")).useStepMonitor(xref.getStepMonitor());

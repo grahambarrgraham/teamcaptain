@@ -6,8 +6,8 @@ public final class PlayerNotification extends Notification {
     private final Player player;
     private final Kind kind;
 
-    public PlayerNotification(PoolOfPlayers poolOfPlayers, Match match, Player player, Kind kind, Instant timestamp) {
-        super(poolOfPlayers, timestamp, match);
+    public PlayerNotification(PlayerPool playerPool, Match match, Player player, Kind kind, Instant timestamp) {
+        super(playerPool, timestamp, match);
         this.player = player;
         this.kind = kind;
     }

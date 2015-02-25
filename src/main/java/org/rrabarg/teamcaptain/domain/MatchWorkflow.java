@@ -42,7 +42,7 @@ public class MatchWorkflow {
 
     private Match match;
 
-    private PoolOfPlayers poolOfPlayers;
+    private PlayerPool playerPool;
 
     private SelectionStrategy selectionStrategy;
 
@@ -53,7 +53,7 @@ public class MatchWorkflow {
             match.setMatchState(MatchState.FirstPickPlayersNotified);
         }
 
-        final List<Player> team = match.getAcceptedPlayers(poolOfPlayers);
+        final List<Player> team = match.getAcceptedPlayers(playerPool);
         if (selectionStrategy.isViable(team)) {
             sendConfirmationEmailsToPlayer(team);
             sendAdminAlert(AdminAlert.Kind.MatchFulfilled);
@@ -83,7 +83,7 @@ public class MatchWorkflow {
     }
 
     public void sendAdminAlert(org.rrabarg.teamcaptain.domain.AdminAlert.Kind kind) {
-        notificationService.adminAlert(poolOfPlayers, match, kind);
+        notificationService.adminAlert(playerPool, match, kind);
     }
 
     private void sendConfirmationEmailsToPlayer(List<Player> team) {
@@ -124,7 +124,7 @@ public class MatchWorkflow {
 
     private MatchWorkflow notifyFirstPickPlayers() {
 
-        final Collection<Player> potentialFirstPick = selectionStrategy.firstPick(poolOfPlayers);
+        final Collection<Player> potentialFirstPick = selectionStrategy.firstPick(playerPool);
 
         final List<Substitute> potentialSubstitutes =
                 potentialFirstPick.stream().filter(p -> match.getPlayerState(p) == PlayerState.Declined)
@@ -161,7 +161,7 @@ public class MatchWorkflow {
 
     private Substitute getNextPickPlayer(Player p) {
         do {
-            final Player nextPick = selectionStrategy.nextPick(poolOfPlayers, p);
+            final Player nextPick = selectionStrategy.nextPick(playerPool, p);
             if ((nextPick != null) && (match.getPlayerState(nextPick) != PlayerState.Declined)) {
                 return new Substitute(p, Optional.of(nextPick));
             }
@@ -181,9 +181,9 @@ public class MatchWorkflow {
     }
 
     @Required
-    public void setup(PoolOfPlayers pool, Match match, SelectionStrategy strategy) {
+    public void setup(PlayerPool pool, Match match, SelectionStrategy strategy) {
         this.match = match;
-        this.poolOfPlayers = pool;
+        this.playerPool = pool;
         this.selectionStrategy = strategy;
     }
 
@@ -216,7 +216,7 @@ public class MatchWorkflow {
     }
 
     public void sendNotification(Player player, Kind confirmationofdecline) {
-        notificationService.notify(poolOfPlayers, match, player, confirmationofdecline);
+        notificationService.notify(playerPool, match, player, confirmationofdecline);
     }
 
     private WorkflowState getState() {

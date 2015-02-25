@@ -26,12 +26,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope(value = "prototype")
-public class SimpleGenericCompetitionFixture extends BaseFixture {
+public class CambridgeLeagueCompetitionFixture extends BaseFixture {
 
-    private static Logger log = LoggerFactory.getLogger(SimpleGenericCompetitionFixture.class);
+    private static Logger log = LoggerFactory.getLogger(CambridgeLeagueCompetitionFixture.class);
 
-    private final Player[] firstPick = new Player[] { joe, stacy };
-    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1, 7, 10, 4);
+    private final Player[] firstPick = new Player[] { stacy, sharon, safron, joe, jimmy, peter };
+    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(3, 3, 7, 15, 4);
     private final LocalDate aDate = LocalDate.of(2014, 3, 20);
     private final LocalTime aTime = LocalTime.of(20, 00);
     private final LocalTime aEndTime = aTime.plus(3, HOURS);
@@ -64,7 +64,7 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
     }
 
     private PlayerPool standardPlayerPool(String competitionName) {
-        return new PlayerPool(joe, stacy, peter);
+        return new PlayerPool(firstPick);
     }
 
     private Schedule standardSchedule(String scheduleName) {

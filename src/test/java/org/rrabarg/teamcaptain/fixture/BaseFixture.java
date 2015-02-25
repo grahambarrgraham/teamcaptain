@@ -22,6 +22,7 @@ import org.hamcrest.Matcher;
 import org.rrabarg.teamcaptain.TestClockFactory;
 import org.rrabarg.teamcaptain.TestMailbox;
 import org.rrabarg.teamcaptain.domain.Competition;
+import org.rrabarg.teamcaptain.domain.Email;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchState;
@@ -29,7 +30,6 @@ import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.domain.PlayerState;
 import org.rrabarg.teamcaptain.service.CompetitionService;
-import org.rrabarg.teamcaptain.service.Email;
 import org.rrabarg.teamcaptain.service.PlayerNotificationRepository;
 import org.rrabarg.teamcaptain.service.ScheduleService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
@@ -73,13 +73,13 @@ public abstract class BaseFixture {
     CompetitionService competitionService;
 
     @Autowired
+    ScheduleService scheduleService;
+
+    @Autowired
     TestMailbox mailbox;
 
     @Autowired
     PlayerNotificationRepository playerNotificationRepository;
-
-    @Autowired
-    ScheduleService scheduleService;
 
     @Autowired
     WorkflowService workflowService;
@@ -193,7 +193,10 @@ public abstract class BaseFixture {
     }
 
     protected void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch(Player playerWhoSaidTheyCouldPlay) {
-        final Optional<Match> thematch = scheduleService.findByName(competition.getName()).getUpcomingMatches()
+
+        final Competition comp = competitionService.findCompetitionByName(competition.getName());
+
+        final Optional<Match> thematch = comp.getSchedule().getMatches()
                 .stream().findFirst();
 
         assertThat("The match must exist", thematch.isPresent());
