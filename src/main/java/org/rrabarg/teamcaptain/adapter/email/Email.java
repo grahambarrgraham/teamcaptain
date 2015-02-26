@@ -1,11 +1,12 @@
-package org.rrabarg.teamcaptain.domain;
+package org.rrabarg.teamcaptain.adapter.email;
 
 import java.time.Instant;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.rrabarg.teamcaptain.adapter.InboundMessage;
 
-public class Email {
+public class Email implements InboundMessage {
     private final String toAddress;
     private final String subject;
     private final String body;
@@ -32,6 +33,7 @@ public class Email {
         return fromAddress;
     }
 
+    @Override
     public String getBody() {
         return body;
     }
@@ -43,6 +45,11 @@ public class Email {
 
     public Instant getTimestamp() {
         return instant;
+    }
+
+    @Override
+    public String getSourceIdentity() {
+        return getFromAddress();
     }
 
 }

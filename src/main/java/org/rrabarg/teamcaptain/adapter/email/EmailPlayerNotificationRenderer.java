@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.service;
+package org.rrabarg.teamcaptain.adapter.email;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -7,14 +7,13 @@ import java.time.format.FormatStyle;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.domain.Email;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PlayerNotificationRenderer {
+public class EmailPlayerNotificationRenderer {
 
     @Autowired
     Provider<Clock> clock;

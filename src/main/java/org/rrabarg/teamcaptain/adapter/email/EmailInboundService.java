@@ -1,11 +1,11 @@
-package org.rrabarg.teamcaptain.service;
+package org.rrabarg.teamcaptain.adapter.email;
 
 import static reactor.event.selector.Selectors.$;
 
 import javax.annotation.PostConstruct;
 
+import org.rrabarg.teamcaptain.adapter.NotificationMatcherService;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
-import org.rrabarg.teamcaptain.domain.Email;
 import org.rrabarg.teamcaptain.domain.PlayerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +17,15 @@ import reactor.event.Event;
 import reactor.function.Consumer;
 
 @Service
-public class InboundEmailService implements Consumer<Event<Email>> {
+public class EmailInboundService implements Consumer<Event<Email>> {
 
-    static Logger log = LoggerFactory.getLogger(InboundEmailService.class);
+    static Logger log = LoggerFactory.getLogger(EmailInboundService.class);
 
     @Autowired
     private Reactor reactor;
 
     @Autowired
-    private NotificationMatcherService matcherService;
+    private NotificationMatcherService emailNotificationMatcherService;
 
     @PostConstruct
     public void configure() {
@@ -39,7 +39,7 @@ public class InboundEmailService implements Consumer<Event<Email>> {
 
             log.debug("Receive email from " + event.getData().getFromAddress());
 
-            final PlayerResponse match = matcherService.getMatch(event.getData());
+            final PlayerResponse match = emailNotificationMatcherService.getMatch(event.getData());
 
             if (match != null) {
                 log.debug("Matched it to : " + match.getKind());

@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.service;
+package org.rrabarg.teamcaptain.adapter.sms;
 
 import static reactor.event.selector.Selectors.$;
 
@@ -21,18 +21,18 @@ import reactor.event.Event;
 import reactor.function.Consumer;
 
 @Service
-public class OutboundEmailService implements Consumer<Event<Notification>> {
+public class SmsOutboundService implements Consumer<Event<Notification>> {
 
-    static Logger log = LoggerFactory.getLogger(OutboundEmailService.class);
+    static Logger log = LoggerFactory.getLogger(SmsOutboundService.class);
 
     @Autowired
     Reactor reactor;
 
     @Autowired
-    PlayerNotificationRenderer playerNotificationRenderer;
+    SmsPlayerNotificationRenderer playerNotificationRenderer;
 
     @Autowired
-    AdminAlertRenderer adminAlertRenderer;
+    SmsAdminAlertRenderer adminAlertRenderer;
 
     @Autowired
     Provider<Clock> clock;
@@ -50,10 +50,10 @@ public class OutboundEmailService implements Consumer<Event<Notification>> {
         log.debug("Sending email : " + notification);
 
         if (notification instanceof AdminAlert) {
-            reactor.notify(ReactorMessageKind.OutboundEmail,
+            reactor.notify(ReactorMessageKind.OutboundSms,
                     new Event<>(adminAlertRenderer.render((AdminAlert) notification)));
         } else {
-            reactor.notify(ReactorMessageKind.OutboundEmail,
+            reactor.notify(ReactorMessageKind.OutboundSms,
                     new Event<>(playerNotificationRenderer.render((PlayerNotification) notification)));
         }
     }

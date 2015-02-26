@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.service;
+package org.rrabarg.teamcaptain.adapter.email;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -8,13 +8,12 @@ import java.time.format.FormatStyle;
 import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.domain.AdminAlert;
-import org.rrabarg.teamcaptain.domain.Email;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AdminAlertRenderer {
+public class EmailAdminAlertRenderer {
 
     @Autowired
     Provider<Clock> clock;
