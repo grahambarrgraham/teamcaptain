@@ -2,14 +2,14 @@ package org.rrabarg.teamcaptain.domain;
 
 import java.time.Instant;
 
-public class Notification {
+public abstract class Notification {
 
     protected final Match match;
     protected final Instant timestamp;
-    private final PlayerPool playerPool;
+    protected final Competition competition;
 
-    public Notification(PlayerPool playerPool, Instant timestamp, Match match) {
-        this.playerPool = playerPool;
+    public Notification(Competition competition, Instant timestamp, Match match) {
+        this.competition = competition;
         this.timestamp = timestamp;
         this.match = match;
     }
@@ -23,7 +23,13 @@ public class Notification {
     }
 
     public PlayerPool getPlayerPool() {
-        return playerPool;
+        return competition.getPlayerPool();
     }
+
+    public TeamCaptain getTeamCaptain() {
+        return competition.getTeamCaptain();
+    }
+
+    public abstract ContactDetail getTargetContact();
 
 }

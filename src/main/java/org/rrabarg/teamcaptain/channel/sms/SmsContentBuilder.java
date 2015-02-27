@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.adapter.sms;
+package org.rrabarg.teamcaptain.channel.sms;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -8,7 +8,7 @@ import org.rrabarg.teamcaptain.domain.Notification;
 
 class SmsContentBuilder {
 
-     private final Notification notification;
+    private final Notification notification;
 
     SmsContentBuilder(Notification notification) {
         this.notification = notification;
@@ -152,7 +152,7 @@ class SmsContentBuilder {
     public SmsContentBuilder signoff() {
         this
                 .append("Thanks ")
-                .append(notification.getOrganiserFirstName());
+                .append(notification.getTeamCaptain().getFirstName());
         return this;
     }
 
@@ -165,7 +165,7 @@ class SmsContentBuilder {
     public SmsContentBuilder hello() {
         this
                 .append("Hi ")
-                .append(notification.getPlayer().getFirstname())
+                .append(notification.getTargetContact().getFirstname())
                 .append(". ");
         return this;
     }

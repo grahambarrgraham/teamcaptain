@@ -4,6 +4,7 @@ import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.CompetitionState;
 import org.rrabarg.teamcaptain.domain.PlayerPool;
 import org.rrabarg.teamcaptain.domain.Schedule;
+import org.rrabarg.teamcaptain.domain.TeamCaptain;
 import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.CompetitionStateService;
 import org.rrabarg.teamcaptain.service.PlayerPoolService;
@@ -27,30 +28,21 @@ public class CompetitionGoogleService implements CompetitionService {
     @Autowired
     PlayerPoolService playerPoolService;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.rrabarg.teamcaptain.service.CompetitionService#saveCompetition(org.rrabarg.teamcaptain.domain.Competition)
-     */
     @Override
     public String saveCompetition(Competition competition) {
         try {
             final String name = competition.getName();
             final String poolId = playerPoolService.savePlayerPool(name, competition.getPlayerPool());
             final String scheduleId = scheduleService.saveSchedule(name, competition.getSchedule());
-            competitionStateRepository.save(null, new CompetitionState(poolId, competition.getSelectionStrategy()));
+            final String teamCaptainId = competition.getTeamCaptain().getId();
+            competitionStateRepository.save(null,
+                    new CompetitionState(poolId, teamCaptainId, competition.getSelectionStrategy()));
             return scheduleId;
         } catch (final Exception e) {
             throw new RuntimeException("Failed to save competition " + competition, e);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.rrabarg.teamcaptain.service.CompetitionService#findCompetitionByName(java.lang.String)
-     */
     @Override
     public Competition findCompetitionByName(String competitionName) {
 
@@ -69,7 +61,7 @@ public class CompetitionGoogleService implements CompetitionService {
             final PlayerPool playerPool = findPlayerPool(competitionName, competitionState.getPlayerPoolId());
 
             final Competition competition = new Competition(competitionName, schedule, playerPool,
-                    competitionState.getSelectionStrategy());
+                    competitionState.getSelectionStrategy(), getTeamCaptain(competitionState.getTeamCaptainId()));
 
             schedule.setCompetition(competition);
             competition.setId(competitionName);
@@ -79,6 +71,10 @@ public class CompetitionGoogleService implements CompetitionService {
         } catch (final Exception e) {
             throw new RuntimeException("Failure whilst try to find competition with name " + competitionName, e);
         }
+    }
+
+    private TeamCaptain getTeamCaptain(String teamCaptainId) {
+        throw new UnsupportedOperationException("method not implemented yet");
     }
 
     private PlayerPool findPlayerPool(String competitionName, String playerPoolId) {

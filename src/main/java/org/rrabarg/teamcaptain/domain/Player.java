@@ -1,12 +1,13 @@
 package org.rrabarg.teamcaptain.domain;
 
+import java.util.Objects;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+
 public class Player {
 
-    private final String firstname;
-    private final String surname;
+    private final ContactDetail contactDetail;
     private final Gender gender;
-    private final String emailAddress;
-    private final String mobileNumber;
     private String id;
 
     public Player(String firstname, String surname, Gender gender, String emailAddress, String mobileNumber) {
@@ -15,19 +16,16 @@ public class Player {
 
     public Player(String id, String firstname, String surname, Gender gender, String emailAddress, String mobileNumber) {
         this.id = id;
-        this.firstname = firstname;
-        this.surname = surname;
+        this.contactDetail = new ContactDetail(firstname, surname, emailAddress, mobileNumber);
         this.gender = gender;
-        this.emailAddress = emailAddress;
-        this.mobileNumber = mobileNumber;
     }
 
     public String getFirstname() {
-        return firstname;
+        return contactDetail.getFirstname();
     }
 
     public String getSurname() {
-        return surname;
+        return contactDetail.getSurname();
     }
 
     public Gender getGender() {
@@ -35,11 +33,11 @@ public class Player {
     }
 
     public String getEmailAddress() {
-        return emailAddress;
+        return contactDetail.getEmailAddress();
     }
 
     public String getMobileNumber() {
-        return mobileNumber;
+        return contactDetail.getMobileNumber();
     }
 
     public void setId(String id) {
@@ -61,40 +59,16 @@ public class Player {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((firstname == null) ? 0 : firstname.hashCode());
-        result = (prime * result) + ((surname == null) ? 0 : surname.hashCode());
-        return result;
+        return Objects.hashCode(this);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Player other = (Player) obj;
-        if (firstname == null) {
-            if (other.firstname != null) {
-                return false;
-            }
-        } else if (!firstname.equals(other.firstname)) {
-            return false;
-        }
-        if (surname == null) {
-            if (other.surname != null) {
-                return false;
-            }
-        } else if (!surname.equals(other.surname)) {
-            return false;
-        }
-        return true;
+        return EqualsBuilder.reflectionEquals(this, obj);
+    }
+
+    public ContactDetail getContactDetail() {
+        return contactDetail;
     }
 
 }

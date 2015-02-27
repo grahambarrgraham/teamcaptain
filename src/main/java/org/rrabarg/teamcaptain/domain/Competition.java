@@ -15,12 +15,15 @@ public class Competition {
     private final Schedule schedule;
     private final PlayerPool playerPool;
     private final SelectionStrategy selectionStrategy;
+    private final TeamCaptain teamCaptain;
 
-    public Competition(String name, Schedule schedule, PlayerPool playerPool, SelectionStrategy strategy) {
+    public Competition(String name, Schedule schedule, PlayerPool playerPool, SelectionStrategy strategy,
+            TeamCaptain teamCaptain) {
         this.schedule = schedule;
         this.playerPool = playerPool;
         this.name = name;
         selectionStrategy = strategy;
+        this.teamCaptain = teamCaptain;
     }
 
     public Schedule getSchedule() {
@@ -33,6 +36,10 @@ public class Competition {
 
     public String getName() {
         return name;
+    }
+
+    public TeamCaptain getTeamCaptain() {
+        return teamCaptain;
     }
 
     public SelectionStrategy getSelectionStrategy() {

@@ -6,8 +6,8 @@ public final class PlayerNotification extends Notification {
     private final Player player;
     private final Kind kind;
 
-    public PlayerNotification(PlayerPool playerPool, Match match, Player player, Kind kind, Instant timestamp) {
-        super(playerPool, timestamp, match);
+    public PlayerNotification(Competition competition, Match match, Player player, Kind kind, Instant timestamp) {
+        super(competition, timestamp, match);
         this.player = player;
         this.kind = kind;
     }
@@ -49,5 +49,10 @@ public final class PlayerNotification extends Notification {
     @Override
     public String toString() {
         return player.getKey() + " : " + kind + " for " + match.getTitle() + " with timestamp " + timestamp;
+    }
+
+    @Override
+    public ContactDetail getTargetContact() {
+        return player.getContactDetail();
     }
 }

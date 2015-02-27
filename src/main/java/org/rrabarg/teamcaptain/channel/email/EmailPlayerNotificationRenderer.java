@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.adapter.email;
+package org.rrabarg.teamcaptain.channel.email;
 
 import java.time.Clock;
 import java.time.Instant;

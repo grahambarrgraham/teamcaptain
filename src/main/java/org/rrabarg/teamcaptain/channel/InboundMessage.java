@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.adapter;
+package org.rrabarg.teamcaptain.channel;
 
 public interface InboundMessage {
 

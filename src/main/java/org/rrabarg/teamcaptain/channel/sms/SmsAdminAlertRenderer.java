@@ -1,10 +1,10 @@
-package org.rrabarg.teamcaptain.adapter.sms;
+package org.rrabarg.teamcaptain.channel.sms;
 
 import java.time.Clock;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.domain.AdminAlert;
+import org.rrabarg.teamcaptain.domain.TeamCaptainNotification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ public class SmsAdminAlertRenderer {
     @Autowired
     Provider<Clock> clock;
 
-    public SmsMessage render(AdminAlert notification) {
+    public SmsMessage render(TeamCaptainNotification notification) {
 
         final SmsContentBuilder builder = new SmsContentBuilder(notification);
 
@@ -27,7 +27,7 @@ public class SmsAdminAlertRenderer {
             break;
         }
 
-        return new SmsMessage(ADMIN_PHONE_NUMBER, builder.build(), clock.get().instant());
+        return new SmsMessage(notification.getTargetContact().getMobileNumber(), builder.build(), clock.get().instant());
     }
 
 }

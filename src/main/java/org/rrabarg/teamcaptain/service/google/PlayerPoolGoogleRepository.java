@@ -10,9 +10,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.rrabarg.teamcaptain.domain.ContactDetail;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PlayerPool;
+import org.rrabarg.teamcaptain.domain.TeamCaptain;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -213,6 +215,25 @@ public class PlayerPoolGoogleRepository {
         return Gender.Male == gender ?
                 new com.google.gdata.data.contacts.Gender(Value.MALE) :
                 new com.google.gdata.data.contacts.Gender(Value.FEMALE);
+    }
+
+    private TeamCaptain instantiateTeamCaptain(ContactEntry entry) {
+
+        try {
+            final TeamCaptain captain = new TeamCaptain(new ContactDetail(
+                    getGivenName(entry),
+                    getFamilyName(entry),
+                    getEmailAddress(entry),
+                    getPhoneNumber(entry)));
+
+            log.debug("Instantiated captain " + captain);
+
+            return captain;
+        } catch (final Exception e) {
+            log.error("Failed to instantiate captain for entry " + entry);
+            throw e;
+        }
+
     }
 
     private Player instantiatePlayer(ContactEntry entry) {

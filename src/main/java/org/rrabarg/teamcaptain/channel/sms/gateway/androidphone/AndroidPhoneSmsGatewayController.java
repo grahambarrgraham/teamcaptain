@@ -1,10 +1,10 @@
-package org.rrabarg.teamcaptain.adapter.sms.gateway.androidphone;
+package org.rrabarg.teamcaptain.channel.sms.gateway.androidphone;
 
 import java.time.Clock;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.adapter.sms.SmsMessage;
+import org.rrabarg.teamcaptain.channel.sms.SmsMessage;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

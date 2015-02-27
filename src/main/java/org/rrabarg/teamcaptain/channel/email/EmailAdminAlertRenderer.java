@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.adapter.email;
+package org.rrabarg.teamcaptain.channel.email;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -7,7 +7,7 @@ import java.time.format.FormatStyle;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.domain.AdminAlert;
+import org.rrabarg.teamcaptain.domain.TeamCaptainNotification;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,20 +18,20 @@ public class EmailAdminAlertRenderer {
     @Autowired
     Provider<Clock> clock;
 
-    public Email render(AdminAlert notification) {
+    public Email render(TeamCaptainNotification notification) {
         return renderer(notification).build();
     }
 
-    private EmailNotificationBuilder renderer(AdminAlert notification) {
+    private EmailNotificationBuilder renderer(TeamCaptainNotification notification) {
         return new EmailNotificationBuilder(notification);
     }
 
     class EmailNotificationBuilder {
 
         private static final String NEW_LINE = "\n";
-        private final AdminAlert notification;
+        private final TeamCaptainNotification notification;
 
-        EmailNotificationBuilder(AdminAlert notification) {
+        EmailNotificationBuilder(TeamCaptainNotification notification) {
             this.notification = notification;
         }
 

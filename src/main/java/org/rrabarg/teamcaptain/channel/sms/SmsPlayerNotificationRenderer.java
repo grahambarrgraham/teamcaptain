@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.adapter.sms;
+package org.rrabarg.teamcaptain.channel.sms;
 
 import java.time.Clock;
 import java.time.Instant;

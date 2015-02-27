@@ -53,7 +53,7 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
         return new Competition(getTestCompetitionName(),
                 standardSchedule(getTestCompetitionName()),
                 standardPlayerPool(getTestCompetitionName()),
-                testStrategy);
+                testStrategy, teamCaptain);
     }
 
     private Match standardMatch() {

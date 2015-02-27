@@ -9,11 +9,14 @@ public class CompetitionState {
 
     String playerPoolId;
     SelectionStrategy selectionStrategy;
+    String teamCaptainId;
 
     public CompetitionState(
             @JsonProperty("playerPoolId") String playerPoolId,
+            @JsonProperty("teamCaptainId") String teamCaptainId,
             @JsonProperty("selectionStrategy") SelectionStrategy selectionStrategy) {
         this.playerPoolId = playerPoolId;
+        this.teamCaptainId = teamCaptainId;
         this.selectionStrategy = selectionStrategy;
     }
 
@@ -41,5 +44,9 @@ public class CompetitionState {
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
+    }
+
+    public String getTeamCaptainId() {
+        return getTeamCaptainId();
     }
 }

@@ -42,9 +42,7 @@ public class MatchWorkflow {
 
     private Match match;
 
-    private PlayerPool playerPool;
-
-    private SelectionStrategy selectionStrategy;
+    private Competition competition;
 
     public MatchWorkflow pump() {
 
@@ -53,24 +51,24 @@ public class MatchWorkflow {
             match.setMatchState(MatchState.FirstPickPlayersNotified);
         }
 
-        final List<Player> team = match.getAcceptedPlayers(playerPool);
-        if (selectionStrategy.isViable(team)) {
+        final List<Player> team = match.getAcceptedPlayers(getPlayerPool());
+        if (getSelectionStrategy().isViable(team)) {
             sendConfirmationEmailsToPlayer(team);
-            sendAdminAlert(AdminAlert.Kind.MatchFulfilled);
+            sendAdminAlert(TeamCaptainNotification.Kind.MatchFulfilled);
 
             team.stream().forEach(player -> getState().setPlayerState(player, PlayerState.Confirmed));
             match.setMatchState(MatchState.MatchFulfilled);
         }
 
         if ((MatchState.FirstPickPlayersNotified == match.getMatchState()) &&
-                (getDaysTillMatch() <= selectionStrategy.getDaysTillMatchForReminders())) {
+                (getDaysTillMatch() <= getSelectionStrategy().getDaysTillMatchForReminders())) {
             sendReminders();
         }
 
         if ((MatchState.FirstPickPlayersNotified == match.getMatchState()) &&
-                (getDaysTillMatch() <= selectionStrategy.getDaysTillMatchForStandbys())) {
+                (getDaysTillMatch() <= getSelectionStrategy().getDaysTillMatchForStandbys())) {
             sendStandbys();
-            sendAdminAlert(AdminAlert.Kind.StandbyPlayersNotified);
+            sendAdminAlert(TeamCaptainNotification.Kind.StandbyPlayersNotified);
         }
 
         try {
@@ -82,8 +80,12 @@ public class MatchWorkflow {
         return this;
     }
 
-    public void sendAdminAlert(org.rrabarg.teamcaptain.domain.AdminAlert.Kind kind) {
-        notificationService.adminAlert(playerPool, match, kind);
+    private PlayerPool getPlayerPool() {
+        return competition.getPlayerPool();
+    }
+
+    public void sendAdminAlert(org.rrabarg.teamcaptain.domain.TeamCaptainNotification.Kind kind) {
+        notificationService.adminAlert(competition, match, kind);
     }
 
     private void sendConfirmationEmailsToPlayer(List<Player> team) {
@@ -124,7 +126,7 @@ public class MatchWorkflow {
 
     private MatchWorkflow notifyFirstPickPlayers() {
 
-        final Collection<Player> potentialFirstPick = selectionStrategy.firstPick(playerPool);
+        final Collection<Player> potentialFirstPick = getSelectionStrategy().firstPick(getPlayerPool());
 
         final List<Substitute> potentialSubstitutes =
                 potentialFirstPick.stream().filter(p -> match.getPlayerState(p) == PlayerState.Declined)
@@ -133,7 +135,7 @@ public class MatchWorkflow {
                         .map(s -> getNextPickPlayer(s)).collect(Collectors.toList());
 
         if (potentialSubstitutes.stream().filter(s -> !s.sub.isPresent()).findAny().isPresent()) {
-            sendAdminAlert(AdminAlert.Kind.InsufficientPlayers);
+            sendAdminAlert(TeamCaptainNotification.Kind.InsufficientPlayers);
         }
 
         final Stream<Player> firstPick = potentialFirstPick.stream().filter(
@@ -161,7 +163,7 @@ public class MatchWorkflow {
 
     private Substitute getNextPickPlayer(Player p) {
         do {
-            final Player nextPick = selectionStrategy.nextPick(playerPool, p);
+            final Player nextPick = getSelectionStrategy().nextPick(getPlayerPool(), p);
             if ((nextPick != null) && (match.getPlayerState(nextPick) != PlayerState.Declined)) {
                 return new Substitute(p, Optional.of(nextPick));
             }
@@ -170,6 +172,10 @@ public class MatchWorkflow {
                 return new Substitute(p, Optional.empty());
             }
         } while (true);
+    }
+
+    private SelectionStrategy getSelectionStrategy() {
+        return competition.getSelectionStrategy();
     }
 
     private void sendReminders() {
@@ -181,10 +187,9 @@ public class MatchWorkflow {
     }
 
     @Required
-    public void setup(PlayerPool pool, Match match, SelectionStrategy strategy) {
+    public void setup(Competition competition, Match match) {
+        this.competition = competition;
         this.match = match;
-        this.playerPool = pool;
-        this.selectionStrategy = strategy;
     }
 
     public void iCanPlay(Player player) throws IOException {
@@ -206,7 +211,7 @@ public class MatchWorkflow {
         final Substitute sub = getNextPickPlayer(player);
 
         if (!sub.sub.isPresent()) {
-            sendAdminAlert(AdminAlert.Kind.InsufficientPlayers);
+            sendAdminAlert(TeamCaptainNotification.Kind.InsufficientPlayers);
             return;
         }
 
@@ -216,7 +221,7 @@ public class MatchWorkflow {
     }
 
     public void sendNotification(Player player, Kind confirmationofdecline) {
-        notificationService.notify(playerPool, match, player, confirmationofdecline);
+        notificationService.notify(competition, match, player, confirmationofdecline);
     }
 
     private WorkflowState getState() {

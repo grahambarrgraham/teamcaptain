@@ -1,10 +1,10 @@
-package org.rrabarg.teamcaptain.adapter.email;
+package org.rrabarg.teamcaptain.channel.email;
 
 import static reactor.event.selector.Selectors.$;
 
 import javax.annotation.PostConstruct;
 
-import org.rrabarg.teamcaptain.adapter.NotificationMatcherService;
+import org.rrabarg.teamcaptain.channel.NotificationMatcherService;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.rrabarg.teamcaptain.domain.PlayerResponse;
 import org.slf4j.Logger;

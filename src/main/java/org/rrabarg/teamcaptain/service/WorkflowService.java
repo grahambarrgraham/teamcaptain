@@ -7,11 +7,9 @@ import java.util.Map;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchWorkflow;
-import org.rrabarg.teamcaptain.domain.PlayerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +48,7 @@ public class WorkflowService {
                     .parallel()
                     .peek(match -> log.info("Loaded \"" + match + "\""))
                     .map(match ->
-                            createOrUpdateWorkflow(competition.getPlayerPool(), match,
-                                    competition.getSelectionStrategy()))
+                            createOrUpdateWorkflow(competition, match))
                     .peek(workflow -> workflowMap.put(workflow.getMatch(), workflow))
                     .forEach(workflow -> workflow.pump());
         } else {
@@ -59,7 +56,7 @@ public class WorkflowService {
         }
     }
 
-    private MatchWorkflow createOrUpdateWorkflow(PlayerPool pool, Match match, SelectionStrategy strategy) {
+    private MatchWorkflow createOrUpdateWorkflow(Competition competition, Match match) {
 
         MatchWorkflow flow = workflowMap.get(match);
 
@@ -67,7 +64,7 @@ public class WorkflowService {
             flow = provider.get();
         }
 
-        flow.setup(pool, match, strategy);
+        flow.setup(competition, match);
         return flow;
     }
 

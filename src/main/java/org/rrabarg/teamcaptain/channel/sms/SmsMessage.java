@@ -1,8 +1,8 @@
-package org.rrabarg.teamcaptain.adapter.sms;
+package org.rrabarg.teamcaptain.channel.sms;
 
 import java.time.Instant;
 
-import org.rrabarg.teamcaptain.adapter.InboundMessage;
+import org.rrabarg.teamcaptain.channel.InboundMessage;
 
 public class SmsMessage implements InboundMessage {
 

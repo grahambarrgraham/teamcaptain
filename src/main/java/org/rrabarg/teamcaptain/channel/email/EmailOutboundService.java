@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.adapter.sms;
+package org.rrabarg.teamcaptain.channel.email;
 
 import static reactor.event.selector.Selectors.$;
 
@@ -8,7 +8,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
-import org.rrabarg.teamcaptain.domain.AdminAlert;
+import org.rrabarg.teamcaptain.domain.TeamCaptainNotification;
 import org.rrabarg.teamcaptain.domain.Notification;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
 import org.slf4j.Logger;
@@ -21,18 +21,18 @@ import reactor.event.Event;
 import reactor.function.Consumer;
 
 @Service
-public class SmsOutboundService implements Consumer<Event<Notification>> {
+public class EmailOutboundService implements Consumer<Event<Notification>> {
 
-    static Logger log = LoggerFactory.getLogger(SmsOutboundService.class);
+    static Logger log = LoggerFactory.getLogger(EmailOutboundService.class);
 
     @Autowired
     Reactor reactor;
 
     @Autowired
-    SmsPlayerNotificationRenderer playerNotificationRenderer;
+    EmailPlayerNotificationRenderer playerNotificationRenderer;
 
     @Autowired
-    SmsAdminAlertRenderer adminAlertRenderer;
+    EmailAdminAlertRenderer adminAlertRenderer;
 
     @Autowired
     Provider<Clock> clock;
@@ -49,11 +49,11 @@ public class SmsOutboundService implements Consumer<Event<Notification>> {
 
         log.debug("Sending email : " + notification);
 
-        if (notification instanceof AdminAlert) {
-            reactor.notify(ReactorMessageKind.OutboundSms,
-                    new Event<>(adminAlertRenderer.render((AdminAlert) notification)));
+        if (notification instanceof TeamCaptainNotification) {
+            reactor.notify(ReactorMessageKind.OutboundEmail,
+                    new Event<>(adminAlertRenderer.render((TeamCaptainNotification) notification)));
         } else {
-            reactor.notify(ReactorMessageKind.OutboundSms,
+            reactor.notify(ReactorMessageKind.OutboundEmail,
                     new Event<>(playerNotificationRenderer.render((PlayerNotification) notification)));
         }
     }

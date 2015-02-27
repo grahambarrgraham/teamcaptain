@@ -1,10 +1,10 @@
-package org.rrabarg.teamcaptain.adapter.email;
+package org.rrabarg.teamcaptain.channel.email;
 
 import java.time.Instant;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.rrabarg.teamcaptain.adapter.InboundMessage;
+import org.rrabarg.teamcaptain.channel.InboundMessage;
 
 public class Email implements InboundMessage {
     private final String toAddress;

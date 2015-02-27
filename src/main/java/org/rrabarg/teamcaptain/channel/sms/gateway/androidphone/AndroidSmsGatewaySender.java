@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.adapter.sms.gateway.androidphone;
+package org.rrabarg.teamcaptain.channel.sms.gateway.androidphone;
 
 import static reactor.event.selector.Selectors.$;
 
@@ -7,7 +7,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.rrabarg.teamcaptain.adapter.sms.SmsMessage;
+import org.rrabarg.teamcaptain.channel.sms.SmsMessage;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;

@@ -1,6 +1,6 @@
-package org.rrabarg.teamcaptain.adapter.sms;
+package org.rrabarg.teamcaptain.channel.sms;
 
-import org.rrabarg.teamcaptain.adapter.NotificationMatcherService;
+import org.rrabarg.teamcaptain.channel.NotificationMatcherService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

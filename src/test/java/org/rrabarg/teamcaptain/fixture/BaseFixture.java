@@ -21,14 +21,16 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.rrabarg.teamcaptain.TestClockFactory;
 import org.rrabarg.teamcaptain.TestMailbox;
-import org.rrabarg.teamcaptain.adapter.email.Email;
+import org.rrabarg.teamcaptain.channel.email.Email;
 import org.rrabarg.teamcaptain.domain.Competition;
+import org.rrabarg.teamcaptain.domain.ContactDetail;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchState;
 import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.domain.PlayerState;
+import org.rrabarg.teamcaptain.domain.TeamCaptain;
 import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.PlayerNotificationRepository;
 import org.rrabarg.teamcaptain.service.ScheduleService;
@@ -41,7 +43,8 @@ public abstract class BaseFixture {
 
     protected final Logger log = LoggerFactory.getLogger(BaseFixture.class);
 
-    protected final String adminstratorEmailAddress = "grahambarrgraham@gmail.com";
+    protected final TeamCaptain teamCaptain = new TeamCaptain(new ContactDetail("nick", "peters", "nick@nomail.com",
+            "3434"));
 
     protected final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, "stacy@nomail.com", "1111");
     protected final Player sally = new Player("Sally", "Figpigs", Gender.Female, "sally@nomail.com", "2222");
@@ -162,7 +165,7 @@ public abstract class BaseFixture {
     }
 
     public void checkAnAdministratorMatchConfirmationIsRaised(Match match) {
-        final Email email = mailbox.peek(adminstratorEmailAddress);
+        final Email email = mailbox.peek(teamCaptain.getContactDetail().getEmailAddress());
         assertThat("While checking that outbound admin email confirmation, found email null", email, notNullValue());
         assertThat("While checking that outbound admin email confirmation body, found body null", email.getBody(),
                 notNullValue());
@@ -181,7 +184,7 @@ public abstract class BaseFixture {
     }
 
     protected void checkAdminAlert(String expectedText) {
-        final Email email = mailbox.pop(adminstratorEmailAddress);
+        final Email email = mailbox.pop(teamCaptain.getContactDetail().getEmailAddress());
         assertThat("Admin Email must not be null", email, notNullValue());
         assertThat("Admin alert should be ", email.getSubject().toLowerCase(), containsString(expectedText));
     }
