@@ -21,20 +21,21 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.rrabarg.teamcaptain.TestClockFactory;
 import org.rrabarg.teamcaptain.TestMailbox;
-import org.rrabarg.teamcaptain.channel.email.Email;
+import org.rrabarg.teamcaptain.channel.Email;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.ContactDetail;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchState;
+import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Player;
-import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.domain.PlayerState;
 import org.rrabarg.teamcaptain.domain.TeamCaptain;
 import org.rrabarg.teamcaptain.service.CompetitionService;
-import org.rrabarg.teamcaptain.service.PlayerNotificationRepository;
+import org.rrabarg.teamcaptain.service.NotificationRepository;
 import org.rrabarg.teamcaptain.service.ScheduleService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
+import org.rrabarg.teamcaptain.strategy.ContactPreference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public abstract class BaseFixture {
     protected final Logger log = LoggerFactory.getLogger(BaseFixture.class);
 
     protected final TeamCaptain teamCaptain = new TeamCaptain(new ContactDetail("nick", "peters", "nick@nomail.com",
-            "3434"));
+            "3434"), ContactPreference.emailOnly(), Gender.Female);
 
     protected final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, "stacy@nomail.com", "1111");
     protected final Player sally = new Player("Sally", "Figpigs", Gender.Female, "sally@nomail.com", "2222");
@@ -82,7 +83,7 @@ public abstract class BaseFixture {
     TestMailbox mailbox;
 
     @Autowired
-    PlayerNotificationRepository playerNotificationRepository;
+    NotificationRepository playerNotificationRepository;
 
     @Autowired
     WorkflowService workflowService;
@@ -147,7 +148,7 @@ public abstract class BaseFixture {
         allConfirmedPlayers.forEach(player ->
                 checkEmailIsCorrect(match, player,
                         mailbox.pop(player.getEmailAddress()),
-                        Kind.ConfirmationOfAcceptance, null));
+                        NotificationKind.ConfirmationOfAcceptance, null));
     }
 
     public void checkAcknowledgementGoesToPlayerWhoDeclined(Match match) {
@@ -157,11 +158,12 @@ public abstract class BaseFixture {
     protected void checkAcknowledgement(Match match, Player playerThatCannotPlayInMatch) {
         checkEmailIsCorrect(match, playerThatCannotPlayInMatch,
                 mailbox.pop(playerThatCannotPlayInMatch.getEmailAddress()),
-                Kind.ConfirmationOfDecline, null);
+                NotificationKind.ConfirmationOfDecline, null);
     }
 
     public void checkAllCanYouPlayNotificationsWereSent(Match match) {
-        firstPickPlayers.stream().forEach(player -> checkOutboundEmailIsCorrect(player, Kind.CanYouPlay, match));
+        firstPickPlayers.stream().forEach(
+                player -> checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match));
     }
 
     public void checkAnAdministratorMatchConfirmationIsRaised(Match match) {
@@ -238,7 +240,7 @@ public abstract class BaseFixture {
 
     public void checkMatchConfirmationSentToAllConfirmedPlayers(Match match) {
         allConfirmedPlayers.stream().forEach(
-                player -> checkOutboundEmailIsCorrect(player, Kind.MatchConfirmation, match));
+                player -> checkOutboundEmailIsCorrect(player, NotificationKind.MatchConfirmation, match));
     }
 
     public void pumpWorkflowsTillXDaysBeforeMatch(final int daysTillMatchToStartReminders, Match match) {
@@ -257,7 +259,7 @@ public abstract class BaseFixture {
         mailbox.email().from(player.getEmailAddress()).subject("any text").body(response).send();
     }
 
-    protected void checkEmailIsCorrect(Match match, Player player, Email email, Kind kindOfEmail,
+    protected void checkEmailIsCorrect(Match match, Player player, Email email, NotificationKind kindOfEmail,
             Integer daysBeforeMatch) {
         assertThat("Email must not be null for player " + player, email, notNullValue());
         assertThat("Email Subject mismatch for player " + player, email.getSubject(), containsString(match.getTitle()));
@@ -299,7 +301,7 @@ public abstract class BaseFixture {
         }
     }
 
-    protected void checkOutboundEmailIsCorrect(Player player, Kind kind, Match match) {
+    protected void checkOutboundEmailIsCorrect(Player player, NotificationKind kind, Match match) {
         checkEmailIsCorrect(match, player, mailbox.peek(player.getEmailAddress()), kind, null);
     }
 
@@ -312,11 +314,11 @@ public abstract class BaseFixture {
                 match,
                 playerThatDidNotRespond,
                 mailbox.pop(playerThatDidNotRespond.getEmailAddress()),
-                Kind.Reminder,
+                NotificationKind.Reminder,
                 daysBeforeMatch);
     }
 
-    protected String getContentStringFor(Kind kindOfEmail) {
+    protected String getContentStringFor(NotificationKind kindOfEmail) {
         switch (kindOfEmail) {
         case CanYouPlay:
             return "Can you play";
@@ -386,7 +388,7 @@ public abstract class BaseFixture {
 
     public void checkNotificationGoesToEligibleFirstPickPlayers(Match match) {
         firstPickPlayers.stream().filter(p -> !playersThatCannotPlayInMatch.contains(p))
-                .forEach(player -> checkOutboundEmailIsCorrect(player, Kind.CanYouPlay, match));
+                .forEach(player -> checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match));
     }
 
 }

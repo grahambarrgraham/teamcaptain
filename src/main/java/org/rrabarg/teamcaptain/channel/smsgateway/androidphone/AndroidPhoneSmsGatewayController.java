@@ -1,10 +1,10 @@
-package org.rrabarg.teamcaptain.channel.sms.gateway.androidphone;
+package org.rrabarg.teamcaptain.channel.smsgateway.androidphone;
 
 import java.time.Clock;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.channel.sms.SmsMessage;
+import org.rrabarg.teamcaptain.channel.SmsMessage;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,7 +27,7 @@ public class AndroidPhoneSmsGatewayController {
     @RequestMapping(value = "/androidsmshandler", method = RequestMethod.GET)
     public void receiveSms(@RequestParam String phone, @RequestParam String smscenter, @RequestParam String text) {
 
-        reactor.notify(ReactorMessageKind.InboundSms,
+        reactor.notify(ReactorMessageKind.InboundChannelMessage,
                 new Event<>(new SmsMessage(phone, text, clock.get().instant())));
     }
 }

@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.channel.sms;
+package org.rrabarg.teamcaptain.channel.renderer;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -152,7 +152,7 @@ class SmsContentBuilder {
     public SmsContentBuilder signoff() {
         this
                 .append("Thanks ")
-                .append(notification.getTeamCaptain().getFirstName());
+                .append(notification.getTeamCaptain().getFirstname());
         return this;
     }
 
@@ -165,7 +165,7 @@ class SmsContentBuilder {
     public SmsContentBuilder hello() {
         this
                 .append("Hi ")
-                .append(notification.getTargetContact().getFirstname())
+                .append(notification.getTargetContactDetail().getFirstname())
                 .append(". ");
         return this;
     }

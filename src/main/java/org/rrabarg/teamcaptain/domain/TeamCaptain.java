@@ -1,29 +1,15 @@
 package org.rrabarg.teamcaptain.domain;
 
-public class TeamCaptain {
+import org.rrabarg.teamcaptain.strategy.ContactPreference;
 
-    private String id;
+public class TeamCaptain extends User {
 
-    private final ContactDetail contactDetail;
-
-    public TeamCaptain(ContactDetail contactDetail) {
-        this.contactDetail = contactDetail;
+    public TeamCaptain(ContactDetail contactDetail, Gender gender) {
+        super(contactDetail, gender, UserRole.TeamCaptain);
     }
 
-    public ContactDetail getContactDetail() {
-        return contactDetail;
-    }
-
-    public String getFirstName() {
-        return contactDetail.getFirstname();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public TeamCaptain(ContactDetail contactDetail, ContactPreference contactPreference, Gender gender) {
+        super(contactDetail, contactPreference, gender, UserRole.TeamCaptain);
     }
 
 }

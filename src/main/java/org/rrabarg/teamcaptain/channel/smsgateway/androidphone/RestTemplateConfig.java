@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.config;
+package org.rrabarg.teamcaptain.channel.smsgateway.androidphone;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

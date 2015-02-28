@@ -224,7 +224,7 @@ public class PlayerPoolGoogleRepository {
                     getGivenName(entry),
                     getFamilyName(entry),
                     getEmailAddress(entry),
-                    getPhoneNumber(entry)));
+                    getPhoneNumber(entry)), convert(entry.getGender()));
 
             log.debug("Instantiated captain " + captain);
 

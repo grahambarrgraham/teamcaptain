@@ -4,36 +4,39 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.rrabarg.teamcaptain.domain.Channel;
+import org.rrabarg.teamcaptain.domain.ContactDetail;
 import org.rrabarg.teamcaptain.domain.Notification;
+import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.PlayerNotification;
 import org.rrabarg.teamcaptain.domain.PlayerResponse;
 import org.rrabarg.teamcaptain.domain.PlayerResponse.Kind;
-import org.rrabarg.teamcaptain.service.PlayerNotificationRepository;
+import org.rrabarg.teamcaptain.service.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class NotificationMatcherService {
 
     @Autowired
-    PlayerNotificationRepository notificationRepository;
+    NotificationRepository notificationRepository;
 
-    final MessageKindAdapter messageKindAdapter;
-
-    public NotificationMatcherService(MessageKindAdapter messageKindAdapter) {
-        this.messageKindAdapter = messageKindAdapter;
-    }
-
-    public PlayerResponse getMatch(InboundMessage message) {
-        final List<PlayerNotification> matchingNotifications = getMatchingNotifications(message);
+    public PlayerResponse getMatch(Message message) {
+        final List<Notification> matchingNotifications = getMatchingNotifications(message);
         notificationRepository.removeAll(matchingNotifications);
-        final PlayerNotification notification = getLatestNotification(matchingNotifications);
-        return new PlayerResponse(
-                notification.getMatch(),
-                notification.getPlayer(),
-                getKind(notification.getKind(), message.getBody()),
-                message.getBody());
+        final Notification notification = getLatestNotification(matchingNotifications);
+
+        if ((notification != null) && (notification instanceof PlayerNotification)) {
+            return new PlayerResponse(
+                    notification.getMatch(),
+                    ((PlayerNotification) notification).getPlayer(),
+                    getKind(notification.getKind(), message.getBody()),
+                    message.getBody());
+        }
+        return null;
     }
 
-    private List<PlayerNotification> getMatchingNotifications(InboundMessage message) {
+    private List<Notification> getMatchingNotifications(Message message) {
         return notificationRepository.getPendingNotifications()
                 .stream().parallel()
                 .filter(notification -> matches(message, notification))
@@ -41,11 +44,11 @@ public class NotificationMatcherService {
                 .collect(Collectors.toList());
     }
 
-    private Comparator<? super PlayerNotification> comparator(InboundMessage data) {
+    private Comparator<? super Notification> comparator(Message data) {
         return (o1, o2) -> o2.getTimestamp().compareTo(o1.getTimestamp());
     }
 
-    private Kind getKind(org.rrabarg.teamcaptain.domain.PlayerNotification.Kind kind, String data) {
+    private Kind getKind(NotificationKind kind, String data) {
         switch (kind) {
         case CanYouPlay:
         case Reminder:
@@ -67,7 +70,7 @@ public class NotificationMatcherService {
         }
     }
 
-    private PlayerNotification getLatestNotification(final List<PlayerNotification> matchingNotifications) {
+    private Notification getLatestNotification(final List<Notification> matchingNotifications) {
         return matchingNotifications.get(0);
     }
 
@@ -79,7 +82,7 @@ public class NotificationMatcherService {
         }
     }
 
-    public boolean matches(InboundMessage message, PlayerNotification playerNotification) {
+    public boolean matches(Message message, Notification playerNotification) {
 
         if (matchNotificationId(message, playerNotification).isAtLeast(MatchStrength.High)) {
             return true;
@@ -93,20 +96,21 @@ public class NotificationMatcherService {
         return false;
     }
 
-    private MatchStrength matchKind(InboundMessage email, Notification playerNotification) {
+    private MatchStrength matchKind(Message message, Notification notification) {
         return MatchStrength.Medium;
     }
 
-    private MatchStrength matchAddress(InboundMessage message, PlayerNotification playerNotification) {
-        return getPlayerAddress(playerNotification).equalsIgnoreCase(message.getSourceIdentity()) ? MatchStrength.High
+    private MatchStrength matchAddress(Message message, Notification notification) {
+        return getIdentity(notification.getTargetContactDetail(), message.getChannel()).equalsIgnoreCase(
+                message.getSourceIdentity()) ? MatchStrength.High
                 : MatchStrength.None;
     }
 
-    private String getPlayerAddress(PlayerNotification playerNotification) {
-        return messageKindAdapter.getPlayerAddress(playerNotification.getPlayer());
+    private String getIdentity(ContactDetail targetContactDetail, Channel channel) {
+        return targetContactDetail.getIdentity(channel);
     }
 
-    private MatchStrength matchNotificationId(InboundMessage message, Notification playerNotification) {
+    private MatchStrength matchNotificationId(Message message, Notification playerNotification) {
         return MatchStrength.None;
     }
 

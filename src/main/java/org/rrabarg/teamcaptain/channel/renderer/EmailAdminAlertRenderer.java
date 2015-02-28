@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.channel.email;
+package org.rrabarg.teamcaptain.channel.renderer;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -7,36 +7,40 @@ import java.time.format.FormatStyle;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.domain.TeamCaptainNotification;
+import org.rrabarg.teamcaptain.channel.Email;
+import org.rrabarg.teamcaptain.channel.Message;
+import org.rrabarg.teamcaptain.channel.NotificationRenderer;
 import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.domain.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmailAdminAlertRenderer {
+public class EmailAdminAlertRenderer implements NotificationRenderer {
 
     @Autowired
     Provider<Clock> clock;
 
-    public Email render(TeamCaptainNotification notification) {
+    @Override
+    public Message render(Notification notification) {
         return renderer(notification).build();
     }
 
-    private EmailNotificationBuilder renderer(TeamCaptainNotification notification) {
+    private EmailNotificationBuilder renderer(Notification notification) {
         return new EmailNotificationBuilder(notification);
     }
 
     class EmailNotificationBuilder {
 
         private static final String NEW_LINE = "\n";
-        private final TeamCaptainNotification notification;
+        private final Notification notification;
 
-        EmailNotificationBuilder(TeamCaptainNotification notification) {
+        EmailNotificationBuilder(Notification notification) {
             this.notification = notification;
         }
 
         Email build() {
-            final String toAddress = getOutboundEmailAddress();
+            final String toAddress = notification.getTargetContactDetail().getEmailAddress();
 
             SubjectBuilder contentBuilder = null;
             SubjectBuilder subjectBuilder = null;
@@ -55,7 +59,7 @@ public class EmailAdminAlertRenderer {
             return new Email(
                     subjectBuilder.build(),
                     toAddress,
-                    getOutboundEmailAddress(),
+                    toAddress,
                     contentBuilder.build(),
                     now());
         }
@@ -162,16 +166,6 @@ public class EmailAdminAlertRenderer {
                 return this;
             }
 
-            private SubjectBuilder theMatch() {
-                this.append(notification.getMatch().getStartDateTime()
-                        .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
-                return this;
-            }
-
-        }
-
-        private String getOutboundEmailAddress() {
-            return "grahambarrgraham@gmail.com";
         }
     }
 

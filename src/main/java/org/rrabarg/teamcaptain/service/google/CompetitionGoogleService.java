@@ -23,7 +23,7 @@ public class CompetitionGoogleService implements CompetitionService {
     ScheduleService scheduleService;
 
     @Autowired
-    CompetitionStateService competitionStateRepository;
+    CompetitionStateService competitionStateService;
 
     @Autowired
     PlayerPoolService playerPoolService;
@@ -35,8 +35,11 @@ public class CompetitionGoogleService implements CompetitionService {
             final String poolId = playerPoolService.savePlayerPool(name, competition.getPlayerPool());
             final String scheduleId = scheduleService.saveSchedule(name, competition.getSchedule());
             final String teamCaptainId = competition.getTeamCaptain().getId();
-            competitionStateRepository.save(null,
-                    new CompetitionState(poolId, teamCaptainId, competition.getSelectionStrategy()));
+            competitionStateService.save(
+                    null,
+                    new CompetitionState(poolId, teamCaptainId,
+                            competition.getSelectionStrategy(),
+                            competition.getNotificationStrategy()));
             return scheduleId;
         } catch (final Exception e) {
             throw new RuntimeException("Failed to save competition " + competition, e);
@@ -53,7 +56,7 @@ public class CompetitionGoogleService implements CompetitionService {
                 return null;
             }
 
-            final CompetitionState competitionState = competitionStateRepository.getCompetitionState(competitionName);
+            final CompetitionState competitionState = competitionStateService.getCompetitionState(competitionName);
 
             schedule.getMatches().stream().map(a -> a.getWorkflowState())
                     .forEach(a -> log.debug("Schedule " + schedule.getId() + " loaded match state " + a));
@@ -61,7 +64,9 @@ public class CompetitionGoogleService implements CompetitionService {
             final PlayerPool playerPool = findPlayerPool(competitionName, competitionState.getPlayerPoolId());
 
             final Competition competition = new Competition(competitionName, schedule, playerPool,
-                    competitionState.getSelectionStrategy(), getTeamCaptain(competitionState.getTeamCaptainId()));
+                    competitionState.getSelectionStrategy(),
+                    competitionState.getNotificationStrategy(),
+                    getTeamCaptain(competitionState.getTeamCaptainId()));
 
             schedule.setCompetition(competition);
             competition.setId(competitionName);
@@ -88,12 +93,6 @@ public class CompetitionGoogleService implements CompetitionService {
         return pool;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.rrabarg.teamcaptain.service.CompetitionService#clearCompetition(org.rrabarg.teamcaptain.domain.Competition)
-     */
     @Override
     public void clearCompetition(Competition competition) {
         try {

@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.domain;
+package org.rrabarg.teamcaptain.strategy;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,25 +9,19 @@ import java.util.stream.Collectors;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.rrabarg.teamcaptain.SelectionStrategy;
+import org.rrabarg.teamcaptain.domain.Gender;
+import org.rrabarg.teamcaptain.domain.Player;
+import org.rrabarg.teamcaptain.domain.PlayerPool;
 
-public class SimpleGenderedStrategy implements SelectionStrategy {
+public class SimpleGenderedSelectionStrategy implements SelectionStrategy {
     private final int numberOfGents;
     private final int numberOfLadies;
-    private final int daysTillMatchForReminders;
-    private final int daysTillMatchForNotifications;
-    private final int daysTillMatchForStandbys;
 
-    public SimpleGenderedStrategy(
+    public SimpleGenderedSelectionStrategy(
             @JsonProperty("numberOfGents") int numberOfGents,
-            @JsonProperty("numberOfLadies") int numberOfLadies,
-            @JsonProperty("daysTillMatchForReminders") int daysTillMatchForReminders,
-            @JsonProperty("daysTillMatchForNotifications") int daysTillMatchForNotifications,
-            @JsonProperty("daysTillMatchForStandbys") int daysTillMatchForStandbys) {
+            @JsonProperty("numberOfLadies") int numberOfLadies) {
         this.numberOfGents = numberOfGents;
         this.numberOfLadies = numberOfLadies;
-        this.daysTillMatchForReminders = daysTillMatchForReminders;
-        this.daysTillMatchForNotifications = daysTillMatchForNotifications;
-        this.daysTillMatchForStandbys = daysTillMatchForStandbys;
     }
 
     @Override
@@ -79,21 +73,6 @@ public class SimpleGenderedStrategy implements SelectionStrategy {
 
     public int getNumberOfLadies() {
         return numberOfLadies;
-    }
-
-    @Override
-    public int getDaysTillMatchForReminders() {
-        return daysTillMatchForReminders;
-    }
-
-    @Override
-    public int getDaysTillMatchForNotifications() {
-        return daysTillMatchForNotifications;
-    }
-
-    @Override
-    public long getDaysTillMatchForStandbys() {
-        return daysTillMatchForStandbys;
     }
 
     @Override

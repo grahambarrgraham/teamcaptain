@@ -1,8 +1,7 @@
 package org.rrabarg.teamcaptain.domain;
 
-import java.util.Objects;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class ContactDetail {
 
@@ -36,12 +35,24 @@ public class ContactDetail {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this);
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 
     @Override
     public boolean equals(Object obj) {
         return EqualsBuilder.reflectionEquals(this, obj);
+    }
+
+    public String getIdentity(Channel channel) {
+        switch (channel) {
+        case Email:
+            return emailAddress;
+        case Sms:
+            return mobileNumber;
+        default:
+            break;
+        }
+        return null;
     }
 
 }

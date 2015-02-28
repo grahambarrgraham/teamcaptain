@@ -9,16 +9,19 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 
+import org.rrabarg.teamcaptain.NotificationStrategy;
 import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.domain.Competition;
+import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Player;
-import org.rrabarg.teamcaptain.domain.PlayerNotification.Kind;
 import org.rrabarg.teamcaptain.domain.PlayerPool;
 import org.rrabarg.teamcaptain.domain.PlayerState;
 import org.rrabarg.teamcaptain.domain.Schedule;
-import org.rrabarg.teamcaptain.domain.SimpleGenderedStrategy;
 import org.rrabarg.teamcaptain.service.MatchBuilder;
+import org.rrabarg.teamcaptain.strategy.BasicNotificationStrategy;
+import org.rrabarg.teamcaptain.strategy.ContactPreference;
+import org.rrabarg.teamcaptain.strategy.SimpleGenderedSelectionStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -31,7 +34,9 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
     private static Logger log = LoggerFactory.getLogger(SimpleGenericCompetitionFixture.class);
 
     private final Player[] firstPick = new Player[] { joe, stacy };
-    private final SelectionStrategy testStrategy = new SimpleGenderedStrategy(1, 1, 7, 10, 4);
+    private final SelectionStrategy testSelectionStrategy = new SimpleGenderedSelectionStrategy(1, 1);
+    private final NotificationStrategy testNotificationStrategy = new BasicNotificationStrategy(7, 10, 4,
+            ContactPreference.emailOnly());
     private final LocalDate aDate = LocalDate.of(2014, 3, 20);
     private final LocalTime aTime = LocalTime.of(20, 00);
     private final LocalTime aEndTime = aTime.plus(3, HOURS);
@@ -53,7 +58,7 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
         return new Competition(getTestCompetitionName(),
                 standardSchedule(getTestCompetitionName()),
                 standardPlayerPool(getTestCompetitionName()),
-                testStrategy, teamCaptain);
+                testSelectionStrategy, testNotificationStrategy, teamCaptain);
     }
 
     private Match standardMatch() {
@@ -74,7 +79,7 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
 
     public void allButOneFirstPickPlayersRespond(Match match) {
         log.debug("All but one first pick players respond");
-        checkOutboundEmailIsCorrect(stacy, Kind.CanYouPlay, match);
+        checkOutboundEmailIsCorrect(stacy, NotificationKind.CanYouPlay, match);
         aPlayerInThePoolSaysTheyCanPlay();
         playersThatDidntRespond.add(joe);
     }
@@ -95,11 +100,11 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
     }
 
     public void checkNotificationGoesToNextAppropriatePlayerInThePool(Match match) {
-        checkOutboundEmailIsCorrect(peter, Kind.CanYouPlay, match);
+        checkOutboundEmailIsCorrect(peter, NotificationKind.CanYouPlay, match);
     }
 
     public void checkNextAppropriatePlayerInThePoolIsNotifiedOfStandby(Match match) {
-        checkOutboundEmailIsCorrect(peter, Kind.StandBy, match);
+        checkOutboundEmailIsCorrect(peter, NotificationKind.StandBy, match);
     }
 
     public void aFirstPickPoolMemberHasAlreadyDeclined(Match match) throws IOException {

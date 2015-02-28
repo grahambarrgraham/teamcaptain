@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
-import org.rrabarg.teamcaptain.channel.email.Email;
+import org.rrabarg.teamcaptain.channel.Email;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +111,7 @@ public class TestMailbox implements Consumer<Event<Email>> {
     }
 
     public void send(Email inboundEmail) {
-        reactor.notify(ReactorMessageKind.InboundEmail, new Event<>(inboundEmail));
+        reactor.notify(ReactorMessageKind.InboundChannelMessage, new Event<>(inboundEmail));
     }
 
     public Email peek(String emailAddress) {

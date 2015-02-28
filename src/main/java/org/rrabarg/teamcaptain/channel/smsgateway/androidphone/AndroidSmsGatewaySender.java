@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.channel.sms.gateway.androidphone;
+package org.rrabarg.teamcaptain.channel.smsgateway.androidphone;
 
 import static reactor.event.selector.Selectors.$;
 
@@ -7,7 +7,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.rrabarg.teamcaptain.channel.sms.SmsMessage;
+import org.rrabarg.teamcaptain.channel.SmsMessage;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -34,8 +34,8 @@ public class AndroidSmsGatewaySender implements Consumer<Event<SmsMessage>> {
 
     Map<String, Object> mapFor(SmsMessage message) {
         final Map<String, Object> map = new HashMap<>();
-        map.put("phone", message.getPhone());
-        map.put("text", message.getText());
+        map.put("phone", message.getTargetIdentity());
+        map.put("text", message.getBody());
         map.put("password", getPassword());
         return map;
     }

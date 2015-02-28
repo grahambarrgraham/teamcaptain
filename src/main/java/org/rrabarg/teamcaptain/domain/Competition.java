@@ -4,6 +4,7 @@ import javax.persistence.Id;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.rrabarg.teamcaptain.NotificationStrategy;
 import org.rrabarg.teamcaptain.SelectionStrategy;
 
 public class Competition {
@@ -15,14 +16,19 @@ public class Competition {
     private final Schedule schedule;
     private final PlayerPool playerPool;
     private final SelectionStrategy selectionStrategy;
+    private final NotificationStrategy notificationStrategy;
     private final TeamCaptain teamCaptain;
 
-    public Competition(String name, Schedule schedule, PlayerPool playerPool, SelectionStrategy strategy,
+    public Competition(String name, Schedule schedule,
+            PlayerPool playerPool,
+            SelectionStrategy selectStrategy,
+            NotificationStrategy notificationStrategy,
             TeamCaptain teamCaptain) {
         this.schedule = schedule;
         this.playerPool = playerPool;
         this.name = name;
-        selectionStrategy = strategy;
+        this.selectionStrategy = selectStrategy;
+        this.notificationStrategy = notificationStrategy;
         this.teamCaptain = teamCaptain;
     }
 
@@ -44,6 +50,10 @@ public class Competition {
 
     public SelectionStrategy getSelectionStrategy() {
         return selectionStrategy;
+    }
+
+    public NotificationStrategy getNotificationStrategy() {
+        return notificationStrategy;
     }
 
     public void setId(String id) {

@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.channel.email;
+package org.rrabarg.teamcaptain.channel.renderer;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -7,36 +7,40 @@ import java.time.format.FormatStyle;
 
 import javax.inject.Provider;
 
+import org.rrabarg.teamcaptain.channel.Email;
+import org.rrabarg.teamcaptain.channel.Message;
+import org.rrabarg.teamcaptain.channel.NotificationRenderer;
 import org.rrabarg.teamcaptain.domain.Match;
-import org.rrabarg.teamcaptain.domain.PlayerNotification;
+import org.rrabarg.teamcaptain.domain.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmailPlayerNotificationRenderer {
+public class EmailPlayerNotificationRenderer implements NotificationRenderer {
 
     @Autowired
     Provider<Clock> clock;
 
-    public Email render(PlayerNotification notification) {
+    @Override
+    public Message render(Notification notification) {
         return renderer(notification).build();
     }
 
-    private EmailNotificationBuilder renderer(PlayerNotification notification) {
+    private EmailNotificationBuilder renderer(Notification notification) {
         return new EmailNotificationBuilder(notification);
     }
 
     class EmailNotificationBuilder {
 
         private static final String NEW_LINE = "\n";
-        private final PlayerNotification notification;
+        private final Notification notification;
 
-        EmailNotificationBuilder(PlayerNotification notification) {
+        EmailNotificationBuilder(Notification notification) {
             this.notification = notification;
         }
 
         Email build() {
-            final String toAddress = notification.getPlayer().getEmailAddress();
+            final String toAddress = notification.getTargetContactDetail().getEmailAddress();
 
             SubjectBuilder contentBuilder = null;
             SubjectBuilder subjectBuilder = null;
@@ -79,7 +83,7 @@ public class EmailPlayerNotificationRenderer {
             return new Email(
                     subjectBuilder.build(),
                     toAddress,
-                    getOutboundEmailAddress(),
+                    notification.getTeamCaptain().getEmailAddress(),
                     contentBuilder.build(),
                     now());
         }
@@ -245,7 +249,7 @@ public class EmailPlayerNotificationRenderer {
                 this
                         .append("Thanks")
                         .append(NEW_LINE)
-                        .append(notification.getOrganiserFirstName());
+                        .append(notification.getTeamCaptain().getFirstname());
                 return this;
             }
 
@@ -260,16 +264,12 @@ public class EmailPlayerNotificationRenderer {
             public SubjectBuilder hello() {
                 this
                         .append("Hi ")
-                        .append(notification.getPlayer().getFirstname())
+                        .append(notification.getTargetContactDetail().getFirstname())
                         .append(NEW_LINE)
                         .append(NEW_LINE);
                 return this;
             }
 
-        }
-
-        private String getOutboundEmailAddress() {
-            return "grahambarrgraham@gmail.com";
         }
     }
 

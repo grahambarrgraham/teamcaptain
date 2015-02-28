@@ -1,33 +1,37 @@
-package org.rrabarg.teamcaptain.channel.sms;
+package org.rrabarg.teamcaptain.channel.renderer;
 
 import java.time.Clock;
 import java.time.Instant;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.domain.PlayerNotification;
+import org.rrabarg.teamcaptain.channel.Message;
+import org.rrabarg.teamcaptain.channel.NotificationRenderer;
+import org.rrabarg.teamcaptain.channel.SmsMessage;
+import org.rrabarg.teamcaptain.domain.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SmsPlayerNotificationRenderer {
+public class SmsPlayerNotificationRenderer implements NotificationRenderer {
 
     @Autowired
     Provider<Clock> clock;
 
-    public SmsMessage render(PlayerNotification notification) {
+    @Override
+    public Message render(Notification notification) {
         return renderer(notification).build();
     }
 
-    private SmsNotificationBuilder renderer(PlayerNotification notification) {
+    private SmsNotificationBuilder renderer(Notification notification) {
         return new SmsNotificationBuilder(notification);
     }
 
     class SmsNotificationBuilder {
 
-        final PlayerNotification notification;
+        final Notification notification;
 
-        SmsNotificationBuilder(PlayerNotification notification) {
+        SmsNotificationBuilder(Notification notification) {
             this.notification = notification;
         }
 
@@ -64,7 +68,7 @@ public class SmsPlayerNotificationRenderer {
             }
 
             return new SmsMessage(
-                    notification.getPlayer().getMobileNumber(),
+                    notification.getTargetContactDetail().getMobileNumber(),
                     builder.build(),
                     now());
         }

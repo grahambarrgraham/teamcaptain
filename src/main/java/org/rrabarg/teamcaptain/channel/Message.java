@@ -1,24 +1,28 @@
-package org.rrabarg.teamcaptain.channel.email;
+package org.rrabarg.teamcaptain.channel;
 
 import java.time.Instant;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.rrabarg.teamcaptain.channel.InboundMessage;
+import org.rrabarg.teamcaptain.domain.Channel;
 
-public class Email implements InboundMessage {
-    private final String toAddress;
+public class Message {
+
+    private final String targetIdentity;
     private final String subject;
     private final String body;
-    private final String fromAddress;
+    private final String sourceIdentity;
     private final Instant instant;
+    private final Channel channel;
 
-    public Email(String subject, String toAddress, String fromAddress, String body, Instant instant) {
+    public Message(String subject, String targetIdentity, String sourceIdentity, String body, Instant instant,
+            Channel channel) {
         this.subject = subject;
-        this.toAddress = toAddress;
-        this.fromAddress = fromAddress;
+        this.targetIdentity = targetIdentity;
+        this.sourceIdentity = sourceIdentity;
         this.body = body;
         this.instant = instant;
+        this.channel = channel;
     }
 
     public String getSubject() {
@@ -26,14 +30,13 @@ public class Email implements InboundMessage {
     }
 
     public String getToAddress() {
-        return toAddress;
+        return targetIdentity;
     }
 
     public String getFromAddress() {
-        return fromAddress;
+        return sourceIdentity;
     }
 
-    @Override
     public String getBody() {
         return body;
     }
@@ -47,9 +50,16 @@ public class Email implements InboundMessage {
         return instant;
     }
 
-    @Override
     public String getSourceIdentity() {
         return getFromAddress();
+    }
+
+    public String getTargetIdentity() {
+        return getToAddress();
+    }
+
+    public Channel getChannel() {
+        return channel;
     }
 
 }
