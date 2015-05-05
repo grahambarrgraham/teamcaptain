@@ -36,24 +36,19 @@ public class WorkflowService {
 
     Map<Match, MatchWorkflow> workflowMap = new HashMap<>();
 
-    public void refresh(String competitionName) throws IOException {
-        final Competition competition = competitionService.findCompetitionByName(competitionName);
+    public void refresh(Competition competition) throws IOException {
 
-        if (competition != null) {
-            competition
-                    .getSchedule()
-                    .getMatches()
-                    .stream()
-                    .filter(a -> isUpcoming(a))
-                    .parallel()
-                    .peek(match -> log.info("Loaded \"" + match + "\""))
-                    .map(match ->
-                            createOrUpdateWorkflow(competition, match))
-                    .peek(workflow -> workflowMap.put(workflow.getMatch(), workflow))
-                    .forEach(workflow -> workflow.pump());
-        } else {
-            log.info("No upcoming matches for competition " + competitionName);
-        }
+        competition
+                .getSchedule()
+                .getMatches()
+                .stream()
+                .filter(a -> isUpcoming(a))
+                .parallel()
+                .peek(match -> log.info("Loaded \"" + match + "\""))
+                .map(match ->
+                        createOrUpdateWorkflow(competition, match))
+                .peek(workflow -> workflowMap.put(workflow.getMatch(), workflow))
+                .forEach(workflow -> workflow.pump());
     }
 
     private MatchWorkflow createOrUpdateWorkflow(Competition competition, Match match) {

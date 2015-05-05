@@ -98,7 +98,7 @@ public abstract class BaseFixture {
     }
 
     public void refreshWorkflows() throws IOException {
-        workflowService.refresh(competition.getName());
+        workflowService.refresh(competition);
     }
 
     public void clearCompetition() {

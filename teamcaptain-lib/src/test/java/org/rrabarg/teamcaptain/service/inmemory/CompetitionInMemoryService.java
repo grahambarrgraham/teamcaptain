@@ -1,5 +1,6 @@
 package org.rrabarg.teamcaptain.service.inmemory;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,11 @@ public class CompetitionInMemoryService implements CompetitionService {
     @Override
     public void clearCompetition(Competition competition) {
         map.remove(competition.getName());
+    }
+
+    @Override
+    public Collection<String> getCompetitionIds() {
+        return map.keySet();
     }
 
 }

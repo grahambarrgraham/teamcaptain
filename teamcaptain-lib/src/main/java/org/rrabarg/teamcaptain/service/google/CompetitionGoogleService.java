@@ -1,5 +1,7 @@
 package org.rrabarg.teamcaptain.service.google;
 
+import java.util.Collection;
+
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.CompetitionState;
 import org.rrabarg.teamcaptain.domain.PlayerPool;
@@ -101,6 +103,12 @@ public class CompetitionGoogleService implements CompetitionService {
         } catch (final Exception e) {
             throw new RuntimeException("Failed to clear competition " + competition.getName(), e);
         }
+    }
+
+    @Override
+    public Collection<String> getCompetitionIds() {
+        throw new UnsupportedOperationException(
+                "not yet implemented, requires a naming conventions for schedules in google calendar, to be able to select them.");
     }
 
 }

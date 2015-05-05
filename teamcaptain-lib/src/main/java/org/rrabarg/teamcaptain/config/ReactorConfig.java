@@ -2,6 +2,7 @@ package org.rrabarg.teamcaptain.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import reactor.core.Environment;
 import reactor.core.Reactor;
@@ -10,6 +11,7 @@ import reactor.spring.context.config.EnableReactor;
 
 @Configuration
 @EnableReactor
+@EnableScheduling
 public class ReactorConfig {
 
     @Bean
