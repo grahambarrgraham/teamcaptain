@@ -7,14 +7,14 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
-@Singleton
+@Component
 public class TeamCaptainManager {
 
     private static final int WORKFLOW_REFRESH_DELAY = 1000 * 60;

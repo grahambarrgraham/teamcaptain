@@ -30,18 +30,18 @@
 		<!--Dependency versions -->
 		<vertx.version>2.0.0-final</vertx.version>
 		<vertx.testtools.version>2.0.0-final</vertx.testtools.version>
-		
-		<maven.vertx.plugin.version>2.0.0-final</maven.vertx.plugin.version>
-   		</properties>
 
-<!-- 	<repositories>
-		<repository>
-			<id>sonatype-nexus-snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</repository>
-	</repositories>
- -->
+		<maven.vertx.plugin.version>2.0.0-final</maven.vertx.plugin.version>
+	</properties>
+
+	<!-- <repositories> <repository> <id>sonatype-nexus-snapshots</id> <url>https://oss.sonatype.org/content/repositories/snapshots</url> 
+		</repository> </repositories> -->
 	<dependencies>
+		<dependency>
+			<groupId>org.rrabarg</groupId>
+			<artifactId>teamcaptain-lib</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<!--Vertx provided dependencies -->
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -60,6 +60,26 @@
 			<artifactId>testtools</artifactId>
 			<version>${vertx.testtools.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
 		</dependency>
 	</dependencies>
 
