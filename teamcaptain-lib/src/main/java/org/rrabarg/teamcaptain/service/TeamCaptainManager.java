@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.rrabarg.teamcaptain.config.JavaUtilLoggingBridgeConfiguration;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class TeamCaptainManager {
 
-    private static final int WORKFLOW_REFRESH_DELAY = 1000 * 60;
-
     Logger log = LoggerFactory.getLogger(this.getClass());
 
+    @Inject
+    JavaUtilLoggingBridgeConfiguration julBridge; // ensure configured
+    
     @Inject
     CompetitionService competitionService;
 
@@ -30,18 +32,17 @@ public class TeamCaptainManager {
     Collection<Competition> competitions = new ArrayList<>();
 
     @PostConstruct
-    public void loadCompetitions() throws IOException {
+    public void refreshCompetitions() throws IOException {
         competitions = competitionService.getCompetitionIds().stream()
                 .map(a -> competitionService.findCompetitionByName(a))
                 .filter(a -> a != null)
                 .collect(Collectors.toList());
     }
 
-    @Scheduled(initialDelay = 0, fixedDelay = WORKFLOW_REFRESH_DELAY)
-    public synchronized void applyWorkflows() throws IOException {
-        competitions.stream().forEach(competition -> refreshWorkflow(competition));
-    }
-
+	public synchronized void refreshWorkflows() {
+		competitions.stream().forEach(competition -> refreshWorkflow(competition));		
+	}
+    
     private void refreshWorkflow(Competition competition) {
         try {
             workflowService.refresh(competition);
@@ -50,10 +51,6 @@ public class TeamCaptainManager {
         }
     }
 
-    @Scheduled(initialDelay = 0, fixedDelay = 1000 * 60 * 60)
-    public synchronized void refreshCompetitions() throws IOException {
-        loadCompetitions();
-    }
-
     final String s = "Test competition-127.0.1.1";
+
 }

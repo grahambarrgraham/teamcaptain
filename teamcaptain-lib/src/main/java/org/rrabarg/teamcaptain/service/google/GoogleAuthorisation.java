@@ -55,9 +55,6 @@ public class GoogleAuthorisation {
             CalendarScopes.CALENDAR, CONTACTS_API_SCOPE
     };
 
-    @Inject
-    JavaUtilLoggingBridgeConfiguration julBridge; // ensure configured
-
     @Bean
     public ContactsService googleContactsClient() throws IOException, GeneralSecurityException, AuthenticationException {
         final ContactsService contactsService = new ContactsService(APPLICATION_NAME);
