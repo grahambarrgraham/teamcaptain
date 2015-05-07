@@ -5,9 +5,11 @@ import java.io.IOException;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Schedule;
 import org.rrabarg.teamcaptain.service.ScheduleService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("inmemory")
 public class ScheduleInMemoryService implements ScheduleService {
 
     @Override

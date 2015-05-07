@@ -9,6 +9,7 @@ import javax.inject.Inject;
 
 import org.rrabarg.teamcaptain.channel.SmsMessage;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -17,6 +18,7 @@ import reactor.event.Event;
 import reactor.function.Consumer;
 
 @Component
+@Profile("androidsms")
 public class AndroidSmsGatewaySender implements Consumer<Event<SmsMessage>> {
 
     private static final String PASSWORD = "";

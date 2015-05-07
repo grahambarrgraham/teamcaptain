@@ -1,10 +1,6 @@
 package org.rrabarg.teamcaptain;
 
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -34,30 +30,18 @@ public class VertXTestConsoleManager {
 
         vertxPlatformManager.deployModuleFromClasspath(VERTX_CONSOLE_MODULE, conf, 1, new URL[] {},
 
-                // vertxPlatformManager.deployVerticle(WebserverVerticle.class.getName(), conf, getSystemClasspath(), 1,
-                // null,
                 asyncResult -> {
-                    // vertxPlatformManager.deployModule(VERTX_CONSOLE_MODULE, conf, 1, asyncResult -> {
-                if (asyncResult.succeeded()) {
-                    logger.info("Successfully deployed vertx module {}, with Deployment ID {}", VERTX_CONSOLE_MODULE,
-                            asyncResult.result());
-                } else {
-                    logger.error("Failed to deploy vertx module {}, error code was {}", VERTX_CONSOLE_MODULE,
-                            asyncResult.cause());
+                    if (asyncResult.succeeded()) {
+                        logger.info("Successfully deployed vertx module {}, with Deployment ID {}",
+                                VERTX_CONSOLE_MODULE,
+                                asyncResult.result());
+                    } else {
+                        logger.error("Failed to deploy vertx module {}, error code was {}", VERTX_CONSOLE_MODULE,
+                                asyncResult.cause());
 
-                    throw new IllegalStateException("Failed to deploy vertx console module");
-                }
-            });
+                        throw new IllegalStateException("Failed to deploy vertx console module");
+                    }
+                });
     }
 
-    private URL[] getSystemClasspath() {
-        final ClassLoader sysClassLoader = ClassLoader.getSystemClassLoader();
-
-        // Get the URLs
-        final URL[] urls = ((URLClassLoader) sysClassLoader).getURLs();
-        final List<URL> asList = new ArrayList(Arrays.asList(urls));
-        asList.removeIf(a -> a.getPath().endsWith("jar"));
-        return asList.toArray(new URL[asList.size()]);
-
-    }
 }

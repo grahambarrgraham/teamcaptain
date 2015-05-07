@@ -6,9 +6,11 @@ import java.util.Map;
 
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.service.CompetitionService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("inmemory")
 public class CompetitionInMemoryService implements CompetitionService {
 
     Map<String, Competition> map = new HashMap<String, Competition>();

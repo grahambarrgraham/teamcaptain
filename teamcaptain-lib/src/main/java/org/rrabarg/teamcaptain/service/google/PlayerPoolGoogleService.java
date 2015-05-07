@@ -7,11 +7,13 @@ import org.rrabarg.teamcaptain.service.PlayerPoolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.google.gdata.util.ServiceException;
 
 @Component
+@Profile("google")
 public class PlayerPoolGoogleService implements PlayerPoolService {
 
     Logger log = LoggerFactory.getLogger(getClass().getName());
@@ -19,8 +21,11 @@ public class PlayerPoolGoogleService implements PlayerPoolService {
     @Autowired
     PlayerPoolGoogleRepository contactRepository;
 
-    /* (non-Javadoc)
-     * @see org.rrabarg.teamcaptain.service.PlayerPoolService#savePlayerPool(java.lang.String, org.rrabarg.teamcaptain.domain.PlayerPool)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.rrabarg.teamcaptain.service.PlayerPoolService#savePlayerPool(java.lang.String,
+     * org.rrabarg.teamcaptain.domain.PlayerPool)
      */
     @Override
     public String savePlayerPool(String name, final PlayerPool playerPool) {
@@ -61,7 +66,9 @@ public class PlayerPoolGoogleService implements PlayerPoolService {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.rrabarg.teamcaptain.service.PlayerPoolService#findById(java.lang.String)
      */
     @Override
@@ -74,8 +81,11 @@ public class PlayerPoolGoogleService implements PlayerPoolService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.rrabarg.teamcaptain.service.PlayerPoolService#clearPlayers(java.lang.String, org.rrabarg.teamcaptain.domain.PlayerPool)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.rrabarg.teamcaptain.service.PlayerPoolService#clearPlayers(java.lang.String,
+     * org.rrabarg.teamcaptain.domain.PlayerPool)
      */
     @Override
     public void clearPlayers(String name, PlayerPool playerPool) {

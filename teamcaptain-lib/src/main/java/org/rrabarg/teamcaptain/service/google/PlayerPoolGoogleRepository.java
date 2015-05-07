@@ -17,6 +17,7 @@ import org.rrabarg.teamcaptain.domain.PlayerPool;
 import org.rrabarg.teamcaptain.domain.TeamCaptain;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import com.google.gdata.client.Query;
@@ -37,6 +38,7 @@ import com.google.gdata.data.extensions.PhoneNumber;
 import com.google.gdata.util.ServiceException;
 
 @Repository
+@Profile("google")
 public class PlayerPoolGoogleRepository {
 
     Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());

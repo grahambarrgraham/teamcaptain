@@ -25,6 +25,10 @@ public class Message {
         this.channel = channel;
     }
 
+    public Message(Message message, Instant instant) {
+        this(message.subject, message.targetIdentity, message.sourceIdentity, message.body, instant, message.channel);
+    }
+
     public String getSubject() {
         return subject;
     }
@@ -60,6 +64,10 @@ public class Message {
 
     public Channel getChannel() {
         return channel;
+    }
+
+    public Message withTimestamp(Instant instant) {
+        return new Message(this, instant);
     }
 
 }

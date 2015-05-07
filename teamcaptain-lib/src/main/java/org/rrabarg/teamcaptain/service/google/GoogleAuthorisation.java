@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Profile;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.DataStoreCredentialRefreshListener;
@@ -34,6 +35,7 @@ import com.google.gdata.util.AuthenticationException;
 
 @EnableAspectJAutoProxy
 @Configuration
+@Profile("google")
 public class GoogleAuthorisation {
 
     Logger log = LoggerFactory.getLogger(this.getClass());

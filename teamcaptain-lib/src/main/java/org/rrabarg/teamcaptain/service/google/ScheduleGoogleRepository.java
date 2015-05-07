@@ -19,6 +19,7 @@ import org.rrabarg.teamcaptain.service.CompetitionStateSerialisationHelper;
 import org.rrabarg.teamcaptain.service.WorkflowStateSerialisationHelper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import com.google.api.client.util.DateTime;
@@ -31,6 +32,7 @@ import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 
 @Repository
+@Profile("google")
 public class ScheduleGoogleRepository {
 
     Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
