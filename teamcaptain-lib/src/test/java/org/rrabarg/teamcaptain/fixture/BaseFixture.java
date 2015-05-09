@@ -19,23 +19,19 @@ import java.util.Optional;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.rrabarg.teamcaptain.TestClockFactory;
 import org.rrabarg.teamcaptain.TestMailbox;
 import org.rrabarg.teamcaptain.channel.Email;
+import org.rrabarg.teamcaptain.config.MutableClockFactory;
 import org.rrabarg.teamcaptain.domain.Competition;
-import org.rrabarg.teamcaptain.domain.ContactDetail;
-import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.MatchState;
 import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PlayerState;
-import org.rrabarg.teamcaptain.domain.TeamCaptain;
 import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.NotificationRepository;
 import org.rrabarg.teamcaptain.service.ScheduleService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
-import org.rrabarg.teamcaptain.strategy.ContactPreference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,24 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class BaseFixture {
 
     protected final Logger log = LoggerFactory.getLogger(BaseFixture.class);
-
-    protected final TeamCaptain teamCaptain = new TeamCaptain(new ContactDetail("nick", "peters", "nick@nomail.com",
-            "3434"), ContactPreference.emailOnly(), Gender.Female);
-
-    protected final Player stacy = new Player("Stacy", "Fignorks", Gender.Female, "stacy@nomail.com", "1111");
-    protected final Player sally = new Player("Sally", "Figpigs", Gender.Female, "sally@nomail.com", "2222");
-    protected final Player sara = new Player("Sara", "Figcows", Gender.Female, "sara@nomail.com", "3333");
-    protected final Player sharon = new Player("Sharon", "Fighens", Gender.Female, "sharon@nomail.com", "4444");
-    protected final Player sonia = new Player("Sonia", "Fighorse", Gender.Female, "sonia@nomail.com", "5555");
-    protected final Player safron = new Player("Safron", "Fignigs", Gender.Female, "safron@nomail.com", "6666");
-
-    protected final Player joe = new Player("Joe", "Ninety", Gender.Male, "joe@nomail.com", "7777");
-    protected final Player john = new Player("John", "Ten", Gender.Male, "john@nomail.com", "8888");
-    protected final Player josh = new Player("Josh", "Twenty", Gender.Male, "josh@nomail.com", "9999");
-    protected final Player jimmy = new Player("Jimmy", "Thirty", Gender.Male, "jimmy@nomail.com", "1119");
-    protected final Player jeff = new Player("Jeff", "Fourty", Gender.Male, "jeff@nomail.com", "2229");
-    protected final Player jed = new Player("Jed", "Fifty", Gender.Male, "jed@nomail.com", "3339");
-    protected final Player peter = new Player("Peter", "Pan", Gender.Male, "peterpan@nomail.com", "4449");
 
     protected final List<Player> allConfirmedPlayers = new ArrayList<Player>();
     protected final List<Player> firstPickPlayers = new ArrayList<Player>();
@@ -71,7 +49,7 @@ public abstract class BaseFixture {
     protected Match match;
 
     @Autowired
-    TestClockFactory clockFactory;
+    MutableClockFactory clockFactory;
 
     @Autowired
     CompetitionService competitionService;
@@ -167,7 +145,7 @@ public abstract class BaseFixture {
     }
 
     public void checkAnAdministratorMatchConfirmationIsRaised(Match match) {
-        final Email email = mailbox.peek(teamCaptain.getContactDetail().getEmailAddress());
+        final Email email = mailbox.peek(competition.getTeamCaptain().getContactDetail().getEmailAddress());
         assertThat("While checking that outbound admin email confirmation, found email null", email, notNullValue());
         assertThat("While checking that outbound admin email confirmation body, found body null", email.getBody(),
                 notNullValue());
@@ -186,7 +164,7 @@ public abstract class BaseFixture {
     }
 
     protected void checkAdminAlert(String expectedText) {
-        final Email email = mailbox.pop(teamCaptain.getContactDetail().getEmailAddress());
+        final Email email = mailbox.pop(competition.getTeamCaptain().getContactDetail().getEmailAddress());
         assertThat("Admin Email must not be null", email, notNullValue());
         assertThat("Admin alert should be ", email.getSubject().toLowerCase(), containsString(expectedText));
     }

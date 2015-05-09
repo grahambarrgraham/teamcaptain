@@ -2,6 +2,7 @@ package org.rrabarg.teamcaptain.service;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,8 +77,11 @@ public class WorkflowService {
     }
 
     private boolean isUpcoming(Match match) {
-        return match.getStartDateTime().minusDays(NUMBER_OF_DAYS_TILL_MATCH).toInstant()
-                .compareTo(clock.get().instant()) <= 0;
-    }
+        final Instant startOfWindow = match.getStartDateTime().minusDays(NUMBER_OF_DAYS_TILL_MATCH).toInstant();
+        final Instant now = clock.get().instant();
 
+        return (now.equals(startOfWindow) || (now.isAfter(startOfWindow) && now.isBefore(match.getStartDateTime()
+                .toInstant())));
+
+    }
 }

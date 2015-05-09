@@ -8,12 +8,12 @@ import org.rrabarg.teamcaptain.domain.Channel;
 
 public class Message {
 
-    private final String targetIdentity;
+    private final Channel channel;
     private final String subject;
     private final String body;
-    private final String sourceIdentity;
     private final Instant instant;
-    private final Channel channel;
+    private final String sourceIdentity;
+    private final String targetIdentity;
 
     public Message(String subject, String targetIdentity, String sourceIdentity, String body, Instant instant,
             Channel channel) {
@@ -27,6 +27,10 @@ public class Message {
 
     public Message(Message message, Instant instant) {
         this(message.subject, message.targetIdentity, message.sourceIdentity, message.body, instant, message.channel);
+    }
+
+    public Channel getChannel() {
+        return channel;
     }
 
     public String getSubject() {
@@ -60,10 +64,6 @@ public class Message {
 
     public String getTargetIdentity() {
         return getToAddress();
-    }
-
-    public Channel getChannel() {
-        return channel;
     }
 
     public Message withTimestamp(Instant instant) {

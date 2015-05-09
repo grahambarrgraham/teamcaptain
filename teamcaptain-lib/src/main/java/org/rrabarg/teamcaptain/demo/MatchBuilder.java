@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.service;
+package org.rrabarg.teamcaptain.demo;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

@@ -46,6 +46,11 @@ public class MatchWorkflow {
 
     public MatchWorkflow pump() {
 
+        if (getDaysTillMatch() < 0) {
+            log.info("match {} is in past so is ignored", match);
+            match.setMatchState(MatchState.MatchOutOfWindow);
+        }
+
         if (MatchState.InWindow == match.getMatchState()) {
             notifyFirstPickPlayers();
             match.setMatchState(MatchState.FirstPickPlayersNotified);
@@ -166,13 +171,16 @@ public class MatchWorkflow {
     private Substitute getNextPickPlayer(Player p) {
         do {
             final Player nextPick = getSelectionStrategy().nextPick(getPlayerPool(), p);
-            if ((nextPick != null) && (match.getPlayerState(nextPick) != PlayerState.Declined)) {
+            if ((nextPick != null) && (match.getPlayerState(nextPick) == PlayerState.None)) {
                 return new Substitute(p, Optional.of(nextPick));
             }
 
             if (nextPick == null) {
                 return new Substitute(p, Optional.empty());
             }
+
+            p = nextPick;
+
         } while (true);
     }
 

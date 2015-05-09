@@ -1,34 +1,37 @@
 package org.rrabarg.teamcaptain.fixture;
 
-import static java.time.temporal.ChronoUnit.HOURS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.jimmy;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.joe;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.peter;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.safron;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.sharon;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.stacy;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Arrays;
 
 import org.rrabarg.teamcaptain.NotificationStrategy;
 import org.rrabarg.teamcaptain.SelectionStrategy;
+import org.rrabarg.teamcaptain.demo.CompetitionBuilder;
 import org.rrabarg.teamcaptain.domain.Competition;
-import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Player;
-import org.rrabarg.teamcaptain.domain.PlayerPool;
 import org.rrabarg.teamcaptain.domain.PlayerState;
-import org.rrabarg.teamcaptain.domain.Schedule;
-import org.rrabarg.teamcaptain.service.MatchBuilder;
 import org.rrabarg.teamcaptain.strategy.BasicNotificationStrategy;
 import org.rrabarg.teamcaptain.strategy.ContactPreference;
 import org.rrabarg.teamcaptain.strategy.SimpleGenderedSelectionStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
 @Scope(value = "prototype")
+@Profile("test")
 public class CambridgeLeagueCompetitionFixture extends BaseFixture {
 
     private static Logger log = LoggerFactory.getLogger(CambridgeLeagueCompetitionFixture.class);
@@ -37,16 +40,14 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
     private final SelectionStrategy testSelectionStrategy = new SimpleGenderedSelectionStrategy(3, 3);
     private final NotificationStrategy testNotificationStrategy = new BasicNotificationStrategy(7, 15, 4,
             ContactPreference.emailOnly());
-    private final LocalDate aDate = LocalDate.of(2014, 3, 20);
-    private final LocalTime aTime = LocalTime.of(20, 00);
-    private final LocalTime aEndTime = aTime.plus(3, HOURS);
-    private final String aLocationFirstLine = "1 some street";
-    private final String aLocationPostcode = "EH1 1YA";
-    private final String aTitle = "A test match";
 
     @Override
     public Competition createCompetitionImpl() {
-        return standardCompetition();
+        return new CompetitionBuilder()
+                .withSelectStrategy(testSelectionStrategy)
+                .withNotificationStrategy(testNotificationStrategy)
+                .withPlayerPool(firstPick)
+                .build();
     }
 
     @Override
@@ -55,26 +56,11 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
     }
 
     private Competition standardCompetition() {
-        return new Competition(getTestCompetitionName(),
-                standardSchedule(getTestCompetitionName()),
-                standardPlayerPool(getTestCompetitionName()),
-                testSelectionStrategy, testNotificationStrategy, teamCaptain);
-    }
-
-    private Match standardMatch() {
-        return new MatchBuilder().withTitle(aTitle)
-                .withStart(aDate, aTime)
-                .withEnd(aDate, aEndTime)
-                .withLocation(aLocationFirstLine, aLocationPostcode).build();
-    }
-
-    private PlayerPool standardPlayerPool(String competitionName) {
-        return new PlayerPool(firstPick);
-    }
-
-    private Schedule standardSchedule(String scheduleName) {
-        match = standardMatch();
-        return new Schedule(match);
+        return new CompetitionBuilder()
+                .withSelectStrategy(testSelectionStrategy)
+                .withNotificationStrategy(testNotificationStrategy)
+                .withPlayerPool(firstPick)
+                .build();
     }
 
     public void allButOneFirstPickPlayersRespond(Match match) {

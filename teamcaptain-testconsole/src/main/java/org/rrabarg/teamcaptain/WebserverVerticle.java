@@ -57,6 +57,11 @@ public class WebserverVerticle extends Verticle {
                     for (final Object chatter : vertx.sharedData().getSet("chat.room." + chatRoom)) {
                         eventBus.send((String) chatter, jsonOutput);
                     }
+
+                    if ("competition".equals(chatRoom)) {
+                        eventBus.publish(ReactorVertxBridge.VERTX_BRIDGE_ADDRESS, jsonOutput);
+                    }
+
                 } catch (final IOException e) {
                     ws.reject();
                 }
