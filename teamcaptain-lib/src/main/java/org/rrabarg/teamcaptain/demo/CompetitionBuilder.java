@@ -1,6 +1,7 @@
 package org.rrabarg.teamcaptain.demo;
 
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.util.Arrays.asList;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -83,13 +84,14 @@ public class CompetitionBuilder {
         return this;
     }
 
-    public CompetitionBuilder withPlayerPool(Player[] pool) {
-        players = pool;
+    public CompetitionBuilder withPlayerPool(Player... players) {
+        this.players = players;
         return this;
     }
 
     public CompetitionBuilder withContactPreference(ContactPreference preference) {
         notificationStrategy = new BasicNotificationStrategy(7, 15, 4, preference);
+        asList(players).stream().forEach(player -> player.setContactPreference(preference));
         return this;
     }
 

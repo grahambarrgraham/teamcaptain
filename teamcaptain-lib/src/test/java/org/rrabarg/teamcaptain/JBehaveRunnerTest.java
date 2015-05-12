@@ -91,6 +91,7 @@ public class JBehaveRunnerTest extends JUnitStories {
     }
 
     private ApplicationContext createContext() {
+        System.setProperty("spring.profiles.active", "test, inmemory, mutableclock");
         return new SpringApplicationContextFactory("jbehave/applicationcontext.xml").createApplicationContext();
     }
 

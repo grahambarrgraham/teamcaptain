@@ -9,11 +9,12 @@ public class User {
     private static final ContactPreference DEFAULT_CONTACT_PREFERENCE = ContactPreference
             .emailOnly();
 
-    private final ContactPreference contactPreference;
+    private final UserRole role;
     private final ContactDetail contactDetail;
     private final Gender gender;
-    private String id;
-    private final UserRole role;
+
+    private ContactPreference contactPreference; // mutable
+    private String id; // null until saved
 
     public enum UserRole {
         TeamCaptain, Player;
@@ -97,5 +98,10 @@ public class User {
 
     public ContactPreference getContactPreference() {
         return contactPreference;
-    };
+    }
+
+    public void setContactPreference(ContactPreference preference) {
+        contactPreference = preference;
+    }
+
 }

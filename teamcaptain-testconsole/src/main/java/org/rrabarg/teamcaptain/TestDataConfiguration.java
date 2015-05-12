@@ -1,5 +1,14 @@
 package org.rrabarg.teamcaptain;
 
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.jed;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.jimmy;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.joe;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.peter;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.safron;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.sally;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.sharon;
+import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.stacy;
+
 import java.io.IOException;
 
 import javax.annotation.PostConstruct;
@@ -26,6 +35,7 @@ public class TestDataConfiguration {
     @PostConstruct
     void setTestData() throws IOException {
         competition = new CompetitionBuilder()
+                .withPlayerPool(stacy, sharon, safron, sally, joe, jimmy, peter, jed)
                 .withContactPreference(ContactPreference.smsQuestionsWithEmailBroadcast())
                 .build();
         competitionService.saveCompetition(competition);

@@ -18,5 +18,4 @@ public class Player extends User {
             ContactPreference contactPreference) {
         super(id, new ContactDetail(firstname, surname, emailAddress, mobileNumber), gender, UserRole.Player);
     }
-
 }

@@ -225,7 +225,11 @@ public abstract class BaseFixture {
         long daysTillMatch = getDaysTillMatch(match);
         while (--daysTillMatch >= daysTillMatchToStartReminders) {
             fixDateTimeBeforeMatch(daysTillMatch, ChronoUnit.DAYS, match);
-            pumpWorkflows();
+
+            // simulate pump workflows being schedule multiple times during the day, not just daily.
+            for (int i = 0; i < 6; i++) {
+                pumpWorkflows();
+            }
         }
     }
 

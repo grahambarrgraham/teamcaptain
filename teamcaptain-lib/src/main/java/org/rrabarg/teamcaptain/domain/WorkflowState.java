@@ -57,7 +57,6 @@ public class WorkflowState {
     public void substitute(Player player, Player substitute, PlayerState state) {
         synchronized (playerStates) {
             playerStates.put(substitute.getKey(), state);
-            playerStates.remove(player.getKey());
         }
     }
 

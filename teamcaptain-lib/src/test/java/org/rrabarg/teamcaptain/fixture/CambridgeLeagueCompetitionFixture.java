@@ -55,14 +55,6 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
         firstPickPlayers.addAll(Arrays.asList(firstPick));
     }
 
-    private Competition standardCompetition() {
-        return new CompetitionBuilder()
-                .withSelectStrategy(testSelectionStrategy)
-                .withNotificationStrategy(testNotificationStrategy)
-                .withPlayerPool(firstPick)
-                .build();
-    }
-
     public void allButOneFirstPickPlayersRespond(Match match) {
         log.debug("All but one first pick players respond");
         checkOutboundEmailIsCorrect(stacy, NotificationKind.CanYouPlay, match);
