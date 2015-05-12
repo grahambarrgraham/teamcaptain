@@ -75,6 +75,16 @@ public class ArrangeMatchSteps extends Steps {
         genericFixture.aPlayerInThePoolSaysTheyCanPlay();
     }
 
+    @When("a selected player accepts")
+    public void whenASelectedPlayerAccepts() {
+        whenATeamMemberAcknowledgesTheirAvailability();
+    }
+
+    @Given("a selected player accepts")
+    public void givenASelectedPlayerAccepts() {
+        whenATeamMemberAcknowledgesTheirAvailability();
+    }
+
     @Then("they are assigned to the match")
     public void thenTheyAreAssignedToTheMatch() {
         genericFixture.checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch();
@@ -90,10 +100,29 @@ public class ArrangeMatchSteps extends Steps {
         givenNotificationsHaveBeenSentOutToTheProposedTeamMembers();
     }
 
-    @Given("a player responds that they are not available")
     @When("a player responds that they are not available")
     public void whenAPlayerRespondsThatTheyAreNotAvailable() {
         genericFixture.aPlayerInThePoolSaysTheyCannotPlay();
+    }
+
+    @Given("a player responds that they are not available")
+    public void givenAPlayerRespondsThatTheyAreNotAvailable() {
+        genericFixture.aPlayerInThePoolSaysTheyCannotPlay();
+    }
+
+    @When("a selected player declines")
+    public void whenAPlayerDeclines() {
+        whenAPlayerRespondsThatTheyAreNotAvailable();
+    }
+
+    @When("the original player declines")
+    public void whenTheOriginalPlayerDeclines() {
+        whenAPlayerRespondsThatTheyAreNotAvailable();
+    }
+
+    @Given("a selected player declines")
+    public void giveAPlayerDeclines() {
+        whenAPlayerRespondsThatTheyAreNotAvailable();
     }
 
     @Then("a notification goes out to the next appropriate player in the pool")
@@ -111,12 +140,19 @@ public class ArrangeMatchSteps extends Steps {
         whenItIs10DaysBeforeTheMatch();
     }
 
+    @Given("a match is scheduled and is in the selection window")
+    public void givenAMatchIsScheduledAndIsInTheSelectionWindow() throws IOException, ServiceException,
+            InterruptedException {
+        givenAMatchIsScheduled();
+        givenItIs10DaysBeforeTheMatch();
+    }
+
     @Given("all but one first pick players responds")
     public void givenAllButOneFirstPickPlayersResponds() throws IOException {
         genericFixture.allButOneFirstPickPlayersRespond(match);
     }
 
-    @When("times elapses till the match")
+    @When("time elapses till the match")
     public void whenTimesElapsesTillTheMatch() {
         genericFixture.pumpWorkflowsTillXDaysBeforeMatch(0, match);
     }
@@ -126,9 +162,14 @@ public class ArrangeMatchSteps extends Steps {
         genericFixture.checkDailyReminderIsSentForDaysBeforeMatch(7, match);
     }
 
-    @Given("times elapses till the 5 days before the match")
-    public void givenTimesElapsesTillThe5DaysBeforeTheMatch() {
-        genericFixture.pumpWorkflowsTillXDaysBeforeMatch(5, match);
+    @Given("time elapses till %number days before the match")
+    public void givenTimesElapsesTillXDaysBeforeTheMatch(int number) {
+        genericFixture.pumpWorkflowsTillXDaysBeforeMatch(number, match);
+    }
+
+    @When("time elapses till %number days before the match")
+    public void whenTimesElapsesTillTheXDaysBeforeTheMatch(int number) {
+        givenTimesElapsesTillXDaysBeforeTheMatch(number);
     }
 
     @When("the remaining team member acknowledges their availability")
@@ -204,927 +245,264 @@ public class ArrangeMatchSteps extends Steps {
         genericFixture.checkAnAdminstratorInsufficientPlayersAlertIsRaised();
     }
 
-    @Given("a notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void givenANotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @When("a player responds that they are available")
-    @Pending
-    public void whenAPlayerRespondsThatTheyAreAvailable() {
-      // PENDING
-    }
-
     @Then("they become eligible again and are returned to the pool as the highest ranked substitute")
     @Pending
     public void thenTheyBecomeEligibleAgainAndAreReturnedToThePoolAsTheHighestRankedSubstitute() {
-      // PENDING
+        // PENDING
     }
 
     @Then("they are notified that they are eligible again")
     @Pending
     public void thenTheyAreNotifiedThatTheyAreEligibleAgain() {
-      // PENDING
-    }
-
-
-    Scenario: a player declines, then subsequently confirms, and is subsequently picked
-    Given a match is scheduled
-    And notifications have been sent out to the first pick players
-    And a player responds that they are not available (PENDING)
-    And a notification goes out to the next appropriate player in the pool (PENDING)
-    When a player responds that they are available (PENDING)
-    And the next appropriate player declines (PENDING)
-    Then they are assigned to the match (NOT PERFORMED)
-    @Given("a player responds that they are not available")
-    @Pending
-    public void givenAPlayerRespondsThatTheyAreNotAvailable() {
-      // PENDING
-    }
-
-    @Given("a notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void givenANotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @When("a player responds that they are available")
-    @Pending
-    public void whenAPlayerRespondsThatTheyAreAvailable() {
-      // PENDING
+        // PENDING
     }
 
     @When("the next appropriate player declines")
     @Pending
     public void whenTheNextAppropriatePlayerDeclines() {
-      // PENDING
+        // PENDING
     }
 
-
-    Scenario: a standby player confirms, and then the original player declines, standby player is selected
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    When the next appropriate player accepts (PENDING)
-    And the outstanding player declines (PENDING)
-    Then the standby player is selected (PENDING)
-    @And("it is 10 days before the match")
+    @Given("a standby notification goes out to the next appropriate player in the pool")
     @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
+    public void givenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
+        // PENDING
     }
 
     @When("the next appropriate player accepts")
     @Pending
     public void whenTheNextAppropriatePlayerAccepts() {
-      // PENDING
+        // PENDING
     }
 
     @When("the outstanding player declines")
     @Pending
     public void whenTheOutstandingPlayerDeclines() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the standby player is selected")
     @Pending
     public void thenTheStandbyPlayerIsSelected() {
-      // PENDING
+        // PENDING
     }
 
-
-    Scenario: a standby player confirms, and then the original player fails to respond 2 days before match, standby player is selected
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And the next appropriate player accepts (PENDING)
-    When times elapses till the 2 days before the match (PENDING)
-    Then the next appropriate player is selected (PENDING)
-    And the outstanding player is automatically declined (PENDING)
-    And the outstanding player is notified of the automatic decline (PENDING)
-    @And("it is 10 days before the match")
+    @Given("the next appropriate player accepts the standby request")
     @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("the next appropriate player accepts")
-    @Pending
-    public void andTheNextAppropriatePlayerAccepts() {
-      // PENDING
-    }
-
-    @When("times elapses till the 2 days before the match")
-    @Pending
-    public void whenTimesElapsesTillThe2DaysBeforeTheMatch() {
-      // PENDING
+    public void givenTheNextAppropriatePlayerAcceptsTheStandbyRequest() {
+        // PENDING
     }
 
     @Then("the next appropriate player is selected")
     @Pending
     public void thenTheNextAppropriatePlayerIsSelected() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the outstanding player is automatically declined")
     @Pending
     public void thenTheOutstandingPlayerIsAutomaticallyDeclined() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the outstanding player is notified of the automatic decline")
     @Pending
     public void thenTheOutstandingPlayerIsNotifiedOfTheAutomaticDecline() {
-      // PENDING
-    }
-
-
-    Scenario: a standby player confirms, and then the original player confirms in time, original player is selected, standby is stood down
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And the next appropriate player accepts (PENDING)
-    When times elapses till the 3 days before the match (PENDING)
-    Then the outstanding player is selected (PENDING)
-    And the standby player is stood down (PENDING)
-    @And("it is 10 days before the match")
-    @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("the next appropriate player accepts")
-    @Pending
-    public void andTheNextAppropriatePlayerAccepts() {
-      // PENDING
-    }
-
-    @When("times elapses till the 3 days before the match")
-    @Pending
-    public void whenTimesElapsesTillThe3DaysBeforeTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the outstanding player is selected")
     @Pending
     public void thenTheOutstandingPlayerIsSelected() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the standby player is stood down")
     @Pending
     public void thenTheStandbyPlayerIsStoodDown() {
-      // PENDING
-    }
-
-
-    Scenario: original and standby player both fail to respond, next standby is notified
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    When times elapses till the 3 days before the match (PENDING)
-    Then a standby notification goes out to the 2nd next appropriate player in the pool (PENDING)
-    @And("it is 10 days before the match")
-    @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @When("times elapses till the 3 days before the match")
-    @Pending
-    public void whenTimesElapsesTillThe3DaysBeforeTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Then("a standby notification goes out to the 2nd next appropriate player in the pool")
     @Pending
     public void thenAStandbyNotificationGoesOutToThe2ndNextAppropriatePlayerInThePool() {
-      // PENDING
+        // PENDING
     }
 
-
-    Scenario: unconfirmed standbys are stood down before confirmed standbys
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And times elapses till the 3 days before the match (PENDING)
-    And a standby notification goes out to the 2nd next appropriate player in the pool (PENDING)
-    And the 2nd standby player accepts (PENDING)
-    When the original player declines (PENDING)
-    Then the 2nd standby player is selected (PENDING)
-    And the 1st standby player is stood down (PENDING)
-    @And("it is 10 days before the match")
+    @Given("the 2nd standby player the standby request")
     @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("times elapses till the 3 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe3DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the 2nd next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToThe2ndNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("the 2nd standby player accepts")
-    @Pending
-    public void andThe2ndStandbyPlayerAccepts() {
-      // PENDING
-    }
-
-    @When("the original player declines")
-    @Pending
-    public void whenTheOriginalPlayerDeclines() {
-      // PENDING
+    public void givenThe2ndStandbyPlayerTheStandbyRequest() {
+        // PENDING
     }
 
     @Then("the 2nd standby player is selected")
     @Pending
     public void thenThe2ndStandbyPlayerIsSelected() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the 1st standby player is stood down")
     @Pending
     public void thenThe1stStandbyPlayerIsStoodDown() {
-      // PENDING
+        // PENDING
     }
 
-
-    Scenario: acceptance stands down lowest ranked unconfirmed standby
-    And it is 10 days before the match (PENDING)
-    And all but two equivalent first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And a standby notification goes out to the 2nd next appropriate player in the pool (PENDING)
-    And times elapses till the 3 days before the match (PENDING)
-    When one of the outstanding players accepts (PENDING)
-    Then the 1st standby player is selected (PENDING)
-    And the 2nd standby player is stood down (PENDING)
-    @And("it is 10 days before the match")
+    @Given("the 1st standby player accepts")
     @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
+    public void givenThe1stStandbyPlayerAccepts() {
+        // PENDING
     }
 
-    @And("all but two equivalent first pick players responds")
+    @Given("the 2nd standby player accepts")
     @Pending
-    public void andAllButTwoEquivalentFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the 2nd next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToThe2ndNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("times elapses till the 3 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe3DaysBeforeTheMatch() {
-      // PENDING
+    public void givenThe2ndStandbyPlayerAccepts() {
+        // PENDING
     }
 
     @When("one of the outstanding players accepts")
     @Pending
     public void whenOneOfTheOutstandingPlayersAccepts() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the 1st standby player is selected")
     @Pending
     public void thenThe1stStandbyPlayerIsSelected() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the 2nd standby player is stood down")
     @Pending
     public void thenThe2ndStandbyPlayerIsStoodDown() {
-      // PENDING
-    }
-
-
-    Scenario: acceptance stands down lowest ranked confirmed standby
-    And it is 10 days before the match (PENDING)
-    And all but two equivalent first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And a standby notification goes out to the 2nd next appropriate player in the pool (PENDING)
-    And the 1st standby player accepts (PENDING)
-    And the 2nd standby player accepts (PENDING)
-    When one of the outstanding players accepts (PENDING)
-    Then the 1st standby player is selected (PENDING)
-    And the 2nd standby player is stood down (PENDING)
-    @And("it is 10 days before the match")
-    @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but two equivalent first pick players responds")
-    @Pending
-    public void andAllButTwoEquivalentFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the 2nd next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToThe2ndNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("the 1st standby player accepts")
-    @Pending
-    public void andThe1stStandbyPlayerAccepts() {
-      // PENDING
-    }
-
-    @And("the 2nd standby player accepts")
-    @Pending
-    public void andThe2ndStandbyPlayerAccepts() {
-      // PENDING
-    }
-
-    @When("one of the outstanding players accepts")
-    @Pending
-    public void whenOneOfTheOutstandingPlayersAccepts() {
-      // PENDING
-    }
-
-    @Then("the 1st standby player is selected")
-    @Pending
-    public void thenThe1stStandbyPlayerIsSelected() {
-      // PENDING
-    }
-
-    @Then("the 2nd standby player is stood down")
-    @Pending
-    public void thenThe2ndStandbyPlayerIsStoodDown() {
-      // PENDING
-    }
-
-
-    Scenario: a confirmed player can subsequently decline
-    Given a match is scheduled
-    And notifications have been sent out to the proposed team members
-    And a team member acknowledges their availability (PENDING)
-    And they are assigned to the match (PENDING)
-    When the player subsequently declines (PENDING)
-    Then a notification goes out to the next appropriate player in the pool (NOT PERFORMED)
-    And a decline acknowledgement notification goes to the player (NOT PERFORMED)
-    @Given("a team member acknowledges their availability")
-    @Pending
-    public void givenATeamMemberAcknowledgesTheirAvailability() {
-      // PENDING
-    }
-
-    @Given("they are assigned to the match")
-    @Pending
-    public void givenTheyAreAssignedToTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @When("the player subsequently declines")
     @Pending
     public void whenThePlayerSubsequentlyDeclines() {
-      // PENDING
+        // PENDING
     }
 
-
-    Scenario: an unconfirmed standby who has been stood down can be repicked for standby
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And the standby player accepts (PENDING)
-    And the original player accepts (PENDING)
-    And times elapses till the 3 days before the match (PENDING)
-    And the original player declines (PENDING)
-    And a standby notification goes out to the standby player (PENDING)
-    @And("it is 10 days before the match")
+    @Given("the standby player accepts")
     @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
+    public void givenTheStandbyPlayerAccepts() {
+        // PENDING
     }
 
-    @And("all but one first pick players responds")
+    @Given("the original player accepts")
     @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
+    public void givenTheOriginalPlayerAccepts() {
+        // PENDING
     }
 
-    @And("times elapses till the 4 days before the match")
+    @Given("the original player declines")
     @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
+    public void givenTheOriginalPlayerDeclines() {
+        // PENDING
     }
 
-    @And("a standby notification goes out to the next appropriate player in the pool")
+    @Given("a standby notification goes out to the standby player")
     @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
+    public void givenAStandbyNotificationGoesOutToTheStandbyPlayer() {
+        // PENDING
     }
 
-    @And("the standby player accepts")
+    @Given("the standby player declines")
     @Pending
-    public void andTheStandbyPlayerAccepts() {
-      // PENDING
-    }
-
-    @And("the original player accepts")
-    @Pending
-    public void andTheOriginalPlayerAccepts() {
-      // PENDING
-    }
-
-    @And("times elapses till the 3 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe3DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("the original player declines")
-    @Pending
-    public void andTheOriginalPlayerDeclines() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the standby player")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheStandbyPlayer() {
-      // PENDING
-    }
-
-
-    Scenario: player who has declined standby cannot be selected to play
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And the standby player declines (PENDING)
-    When all picked players decline (PENDING)
-    Then the declined standby is not selected (PENDING)
-    @And("it is 10 days before the match")
-    @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("the standby player declines")
-    @Pending
-    public void andTheStandbyPlayerDeclines() {
-      // PENDING
+    public void givenTheStandbyPlayerDeclines() {
+        // PENDING
     }
 
     @When("all picked players decline")
     @Pending
     public void whenAllPickedPlayersDecline() {
-      // PENDING
+        // PENDING
     }
 
     @Then("the declined standby is not selected")
     @Pending
     public void thenTheDeclinedStandbyIsNotSelected() {
-      // PENDING
+        // PENDING
     }
 
-
-    Scenario: 
-
-    Scenario: 
-
-    Scenario: a standby reminder is sent to players on standby notification who have failed to respond
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And times elapses till the 3 days before the match (PENDING)
-    And a standby reminder goes out to the next appropriate player in the pool (PENDING)
-    @And("it is 10 days before the match")
+    @Then("a standby reminder goes out to the next appropriate player in the pool")
     @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
+    public void thenAStandbyReminderGoesOutToTheNextAppropriatePlayerInThePool() {
+        // PENDING
     }
 
-    @And("all but one first pick players responds")
+    @Given("all but 2 first pick players responds")
     @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
+    public void givenAllButTwoFirstPickPlayersResponds() {
+        // PENDING
     }
 
-    @And("times elapses till the 4 days before the match")
+    @Given("all standby players accept")
     @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
+    public void givenAllStandbyPlayersAccept() {
+        // PENDING
     }
 
-    @And("a standby notification goes out to the next appropriate player in the pool")
+    @Then("the match is confirmed")
     @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
+    public void thenTheMatchIsConfirmed() {
+        // PENDING
     }
 
-    @And("times elapses till the 3 days before the match")
+    @Then("all confirmed standby players are stood down and notified")
     @Pending
-    public void andTimesElapsesTillThe3DaysBeforeTheMatch() {
-      // PENDING
+    public void thenAllConfirmedStandbyPlayersAreStoodDownAndNotified() {
+        // PENDING
     }
 
-    @And("a standby reminder goes out to the next appropriate player in the pool")
+    @Then("all unconfirmed standby players are stood down and notified")
     @Pending
-    public void andAStandbyReminderGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-
-    Scenario: the match is confirmed, confirmed standby players are stood down
-    And it is 10 days before the match (PENDING)
-    And all but two first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And standby notifications go out to the next appropriate players in the pool (PENDING)
-    And all standby players accept (PENDING)
-    When all outstanding selected player accept
-    The the match is confirmed (PENDING)
-    Then all confirmed standby players are stood down (PENDING)
-    Then all confirmed standby players are notified that they are stood down (PENDING)
-    @And("it is 10 days before the match")
-    @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but two first pick players responds")
-    @Pending
-    public void andAllButTwoFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("standby notifications go out to the next appropriate players in the pool")
-    @Pending
-    public void andStandbyNotificationsGoOutToTheNextAppropriatePlayersInThePool() {
-      // PENDING
-    }
-
-    @And("all standby players accept")
-    @Pending
-    public void andAllStandbyPlayersAccept() {
-      // PENDING
-    }
-
-    @When("all outstanding selected player accept\nThe the match is confirmed")
-    @Pending
-    public void whenAllOutstandingSelectedPlayerAcceptTheTheMatchIsConfirmed() {
-      // PENDING
-    }
-
-    @Then("all confirmed standby players are stood down")
-    @Pending
-    public void thenAllConfirmedStandbyPlayersAreStoodDown() {
-      // PENDING
-    }
-
-    @Then("all confirmed standby players are notified that they are stood down")
-    @Pending
-    public void thenAllConfirmedStandbyPlayersAreNotifiedThatTheyAreStoodDown() {
-      // PENDING
-    }
-
-
-    Scenario: the match is confirmed, players notified for standby are stood down
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    And times elapses till the 4 days before the match (PENDING)
-    And a standby notification goes out to the next appropriate player in the pool (PENDING)
-    And times elapses till the 3 days before the match (PENDING)
-    And a standby reminder goes out to the 2nd next appropriate player in the pool (PENDING)
-    When all outstanding selected player accept
-    The the match is confirmed (PENDING)
-    Then all unconfirmed standby players are stood down (PENDING)
-    Then all unconfirmed standby players are notified that they are stood down (PENDING)
-    @And("it is 10 days before the match")
-    @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @And("times elapses till the 4 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe4DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void andAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @And("times elapses till the 3 days before the match")
-    @Pending
-    public void andTimesElapsesTillThe3DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("a standby reminder goes out to the 2nd next appropriate player in the pool")
-    @Pending
-    public void andAStandbyReminderGoesOutToThe2ndNextAppropriatePlayerInThePool() {
-      // PENDING
-    }
-
-    @When("all outstanding selected player accept\nThe the match is confirmed")
-    @Pending
-    public void whenAllOutstandingSelectedPlayerAcceptTheTheMatchIsConfirmed() {
-      // PENDING
-    }
-
-    @Then("all unconfirmed standby players are stood down")
-    @Pending
-    public void thenAllUnconfirmedStandbyPlayersAreStoodDown() {
-      // PENDING
-    }
-
-    @Then("all unconfirmed standby players are notified that they are stood down")
-    @Pending
-    public void thenAllUnconfirmedStandbyPlayersAreNotifiedThatTheyAreStoodDown() {
-      // PENDING
-    }
-
-
-    Scenario: the match is not confirmed 3 days before the match, all players are notified of status
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    When times elapses till the 3 days before the match (PENDING)
-    Then all notified players who have not declined are sent a detailed match status (PENDING)
-    @And("it is 10 days before the match")
-    @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @When("times elapses till the 3 days before the match")
-    @Pending
-    public void whenTimesElapsesTillThe3DaysBeforeTheMatch() {
-      // PENDING
+    public void thenAllUnconfirmedStandbyPlayersAreStoodDownAndNotified() {
+        // PENDING
     }
 
     @Then("all notified players who have not declined are sent a detailed match status")
     @Pending
     public void thenAllNotifiedPlayersWhoHaveNotDeclinedAreSentADetailedMatchStatus() {
-      // PENDING
-    }
-
-
-    Scenario: the match date passes, all players are notified it has passed, and notes player status
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    When times elapses till after the match (PENDING)
-    Then all notified players who have not declined are sent a detailed match status with completed status. (PENDING)
-    @And("it is 10 days before the match")
-    @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
-    }
-
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @When("times elapses till after the match")
-    @Pending
-    public void whenTimesElapsesTillAfterTheMatch() {
-      // PENDING
+        // PENDING
     }
 
     @Then("all notified players who have not declined are sent a detailed match status with completed status.")
     @Pending
     public void thenAllNotifiedPlayersWhoHaveNotDeclinedAreSentADetailedMatchStatusWithCompletedStatus() {
-      // PENDING
+        // PENDING
     }
 
-
-//    Scenario: the match date passes, selected players who accept are notified that the match has passed
-//    And it is 10 days before the match (PENDING)
-//    And all but one first pick players responds (PENDING)
-//    When times elapses till after the match (PENDING)
-//    And the outstanding player is notified that the match has passed (PENDING)
-
-    @And("it is 10 days before the match")
+    @Then("the outstanding player is notified that the match has passed")
     @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
+    public void thenTheOutstandingPlayerIsNotifiedThatTheMatchHasPassed() {
+        // PENDING
     }
 
-    @And("all but one first pick players responds")
+    @When("time elapses till after the match")
     @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
+    public void whenTimeElapsesTillAfterTheMatch() {
+        // PENDING
     }
 
-    @When("times elapses till after the match")
+    @Then("the standby player is notified that the match has passed")
     @Pending
-    public void whenTimesElapsesTillAfterTheMatch() {
-      // PENDING
+    public void thenTheStandbyPlayerIsNotifiedThatTheMatchHasPassed() {
+        // PENDING
     }
 
-    @When("the outstanding player is notified that the match has passed")
+    @Given("all but 2 equivalent first pick players responds")
     @Pending
-    public void whenTheOutstandingPlayerIsNotifiedThatTheMatchHasPassed() {
-      // PENDING
+    public void givenAllBut2EquivalentFirstPickPlayersResponds() {
+        // PENDING
     }
 
-
-    Scenario: the match date passes, selected players who accept are notified that the match has passed
-    And it is 10 days before the match (PENDING)
-    And all but one first pick players responds (PENDING)
-    When times elapses till after the match (PENDING)
-    And the standby player is notified that the match has passed (PENDING)
-    @And("it is 10 days before the match")
+    @When("all outstanding selected players accept")
     @Pending
-    public void andItIs10DaysBeforeTheMatch() {
-      // PENDING
+    public void whenAllOutstandingSelectedPlayersAccept() {
+        // PENDING
     }
 
-    @And("all but one first pick players responds")
-    @Pending
-    public void andAllButOneFirstPickPlayersResponds() {
-      // PENDING
-    }
-
-    @When("times elapses till after the match")
-    @Pending
-    public void whenTimesElapsesTillAfterTheMatch() {
-      // PENDING
-    }
-
-    @When("the standby player is notified that the match has passed")
-    @Pending
-    public void whenTheStandbyPlayerIsNotifiedThatTheMatchHasPassed() {
-      // PENDING
-    }    
-    
     @Given("a mixed doubles match is scheduled")
     @Pending
     public void givenAMixedDoublesMatchIsScheduled() {
