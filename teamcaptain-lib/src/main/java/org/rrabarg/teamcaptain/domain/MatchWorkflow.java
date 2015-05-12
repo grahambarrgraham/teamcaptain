@@ -118,9 +118,10 @@ public class MatchWorkflow {
             return;
         }
 
-        sendNotification(nextPick.sub.get(), NotificationKind.StandBy);
+        final Player theSubstitute = nextPick.sub.get();
+        sendNotification(theSubstitute, NotificationKind.StandBy);
         sendAdminAlert(NotificationKind.StandbyPlayersNotified);
-        match.setPlayerState(player, PlayerState.Notified);
+        match.setPlayerState(theSubstitute, PlayerState.Notified);
     }
 
     private void sendStandbys() {

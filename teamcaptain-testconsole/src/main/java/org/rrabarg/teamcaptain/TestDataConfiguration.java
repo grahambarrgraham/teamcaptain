@@ -19,6 +19,7 @@ import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.TeamCaptainManager;
 import org.rrabarg.teamcaptain.strategy.ContactPreference;
+import org.rrabarg.teamcaptain.strategy.SimpleGenderedSelectionStrategy;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -36,6 +37,7 @@ public class TestDataConfiguration {
     void setTestData() throws IOException {
         competition = new CompetitionBuilder()
                 .withPlayerPool(stacy, sharon, safron, sally, joe, jimmy, peter, jed)
+                .withSelectStrategy(new SimpleGenderedSelectionStrategy(1, 1))
                 .withContactPreference(ContactPreference.smsQuestionsWithEmailBroadcast())
                 .build();
         competitionService.saveCompetition(competition);

@@ -100,4 +100,5 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
     public void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch() {
         checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch(stacy);
     }
+
 }

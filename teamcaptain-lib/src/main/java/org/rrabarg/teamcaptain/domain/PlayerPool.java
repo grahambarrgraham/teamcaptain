@@ -2,8 +2,10 @@ package org.rrabarg.teamcaptain.domain;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
@@ -55,8 +57,21 @@ public class PlayerPool {
 
     private Map<String, Player> createMap(Collection<Player> players) {
         final Map<String, Player> result =
-                players.stream().collect(Collectors.toMap(Player::getKey,
+                players.stream().collect(toLinkedMap(Player::getKey,
                         Function.<Player> identity()));
         return result;
     }
+
+    // maintains order of values
+    private static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(
+            Function<? super T, ? extends K> keyMapper,
+            Function<? super T, ? extends U> valueMapper)
+    {
+        return Collectors.toMap(keyMapper, valueMapper,
+                (u, v) -> {
+                    throw new IllegalStateException(String.format("Duplicate key %s", u));
+                },
+                LinkedHashMap::new);
+    }
+
 }

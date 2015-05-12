@@ -1,5 +1,7 @@
 package org.rrabarg.teamcaptain.strategy;
 
+import static java.util.stream.Collectors.groupingBy;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,25 +46,18 @@ public class SimpleGenderedSelectionStrategy implements SelectionStrategy {
             return Collections.emptyList();
         }
 
-        sortPlayers(players);
         return players.subList(0, max);
-    }
-
-    private void sortPlayers(final List<Player> gents) {
-        // trivial alphabetic
-        gents.sort((o1, o2) -> o1.getKey().compareTo(o2.getKey()));
     }
 
     private Map<Gender, List<Player>> groupedByGender(PlayerPool pool) {
         final Map<Gender, List<Player>> groupedByGender = pool.getPlayers().stream()
-                .collect(Collectors.groupingBy(a -> a.getGender()));
+                .collect(groupingBy(a -> a.getGender()));
         return groupedByGender;
     }
 
     @Override
     public Player nextPick(PlayerPool pool, Player decline) {
         final List<Player> list = groupedByGender(pool).get(decline.getGender());
-        sortPlayers(list);
         final int indexOfNextPlayer = list.indexOf(decline) + 1;
         return (indexOfNextPlayer) >= list.size() ? null : list.get(indexOfNextPlayer);
     }
