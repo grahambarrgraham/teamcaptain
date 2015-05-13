@@ -63,9 +63,26 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
         playersThatDidntRespond.add(joe);
     }
 
-    public void aPlayerInThePoolSaysTheyCannotPlay() {
+    public void aFirstPickPlayerDeclines() {
+        aPlayerDeclines(joe);
+    }
+
+    public void aSecondPickPlayerDeclines() {
+        aPlayerDeclines(peter);
+    }
+
+    public void aSecondPickPlayerAccepts() {
+        aPlayerAccepts(peter);
+    }
+
+    private void aPlayerDeclines(Player joe) {
         playersThatCannotPlayInMatch.add(joe);
         aPlayerRespondsWith(joe, "No");
+    }
+
+    private void aPlayerAccepts(Player player) {
+        allConfirmedPlayers.add(peter);
+        aPlayerRespondsWith(player, "Yes");
     }
 
     public void aPlayerWhoDoesntHaveAnEligibleSubstituteDeclines() {
@@ -99,6 +116,10 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
 
     public void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch() {
         checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch(stacy);
+    }
+
+    public void checkAcceptingPlayerWhoHasAlreadyDeclinedIsNotifiedOfTheirEligibility() {
+        checkOutboundEmailIsCorrect(joe, NotificationKind.PreviouslyDeclinedButNowEligibleAgain, match);
     }
 
 }

@@ -102,12 +102,12 @@ public class ArrangeMatchSteps extends Steps {
 
     @When("a player responds that they are not available")
     public void whenAPlayerRespondsThatTheyAreNotAvailable() {
-        genericFixture.aPlayerInThePoolSaysTheyCannotPlay();
+        genericFixture.aFirstPickPlayerDeclines();
     }
 
     @Given("a player responds that they are not available")
     public void givenAPlayerRespondsThatTheyAreNotAvailable() {
-        genericFixture.aPlayerInThePoolSaysTheyCannotPlay();
+        genericFixture.aFirstPickPlayerDeclines();
     }
 
     @When("a selected player declines")
@@ -248,43 +248,37 @@ public class ArrangeMatchSteps extends Steps {
     @Then("they become eligible again and are returned to the pool as the highest ranked substitute")
     @Pending
     public void thenTheyBecomeEligibleAgainAndAreReturnedToThePoolAsTheHighestRankedSubstitute() {
-        // PENDING
+        // nothing to assert here, need to assert that they can be picked
     }
 
     @Then("they are notified that they are eligible again")
     @Pending
     public void thenTheyAreNotifiedThatTheyAreEligibleAgain() {
-        // PENDING
+        genericFixture.checkAcceptingPlayerWhoHasAlreadyDeclinedIsNotifiedOfTheirEligibility();
     }
 
     @When("the next appropriate player declines")
     @Pending
     public void whenTheNextAppropriatePlayerDeclines() {
-        // PENDING
-    }
-
-    @Given("a standby notification goes out to the next appropriate player in the pool")
-    @Pending
-    public void givenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        // PENDING
+        genericFixture.aSecondPickPlayerDeclines();
     }
 
     @When("the next appropriate player accepts")
     @Pending
     public void whenTheNextAppropriatePlayerAccepts() {
-        // PENDING
+        genericFixture.aSecondPickPlayerAccepts();
     }
 
     @When("the outstanding player declines")
     @Pending
     public void whenTheOutstandingPlayerDeclines() {
-        // PENDING
+        genericFixture.aFirstPickPlayerDeclines();
     }
 
     @Then("the standby player is selected")
     @Pending
     public void thenTheStandbyPlayerIsSelected() {
-        // PENDING
+        thenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool();
     }
 
     @Given("the next appropriate player accepts the standby request")

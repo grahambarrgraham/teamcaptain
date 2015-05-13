@@ -18,7 +18,8 @@ public enum NotificationKind {
 
     StandbyPlayersNotified(Information),
     MatchFulfilled(Information),
-    InsufficientPlayers(Information);
+    InsufficientPlayers(Information),
+    PreviouslyDeclinedButNowEligibleAgain(Information);
 
     private final Category category;
 

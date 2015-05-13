@@ -74,7 +74,6 @@ Scenario: a standby player confirms, and then the original player declines, stan
 Given a match is scheduled and is in the selection window
 And all but one first pick players responds
 And time elapses till 4 days before the match
-And a standby notification goes out to the next appropriate player in the pool
 When the next appropriate player accepts
 And the outstanding player declines
 Then the standby player is selected 
