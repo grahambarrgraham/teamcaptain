@@ -52,7 +52,7 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
 
     @Override
     protected void setupScenarioImpl() {
-        firstPickPlayers.addAll(Arrays.asList(firstPick));
+        selectedPlayers.addAll(Arrays.asList(firstPick));
     }
 
     public void allButOneFirstPickPlayersRespond(Match match) {
@@ -63,17 +63,17 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
     }
 
     public void aPlayerInThePoolSaysTheyCannotPlay() {
-        playersThatCannotPlayInMatch.add(joe);
+        selectedPlayersThatDeclined.add(joe);
         aPlayerRespondsWith(joe, "No");
     }
 
     public void aPlayerWhoDoesntHaveAnEligibleSubstituteDeclines() {
-        playersThatCannotPlayInMatch.add(stacy);
+        selectedPlayersThatDeclined.add(stacy);
         aPlayerRespondsWith(stacy, "No");
     }
 
     public void aPlayerInThePoolSaysTheyCanPlay() {
-        allConfirmedPlayers.add(stacy);
+        selectedPlayersThatAccepted.add(stacy);
         aPlayerRespondsWith(stacy, "Yes");
     }
 
@@ -87,7 +87,7 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
 
     public void aFirstPickPoolMemberHasAlreadyDeclined(Match match) throws IOException {
         match.setPlayerState(joe, PlayerState.Declined);
-        playersThatCannotPlayInMatch.add(joe);
+        selectedPlayersThatDeclined.add(joe);
         scheduleService.updateMatch(match);
     }
 

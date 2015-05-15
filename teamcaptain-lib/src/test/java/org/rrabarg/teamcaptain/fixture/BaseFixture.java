@@ -40,10 +40,12 @@ public abstract class BaseFixture {
 
     protected final Logger log = LoggerFactory.getLogger(BaseFixture.class);
 
-    protected final List<Player> allConfirmedPlayers = new ArrayList<Player>();
-    protected final List<Player> firstPickPlayers = new ArrayList<Player>();
+    protected final List<Player> selectedPlayers = new ArrayList<Player>();
     protected final List<Player> playersThatDidntRespond = new ArrayList<Player>();
-    protected final List<Player> playersThatCannotPlayInMatch = new ArrayList<Player>();
+    protected final List<Player> selectedPlayersThatDeclined = new ArrayList<Player>();
+    protected final List<Player> selectedPlayersThatAccepted = new ArrayList<Player>();
+    protected final List<Player> standbyPlayersThatAccepted = new ArrayList<Player>();
+    protected final List<Player> standbyPlayersThatDeclined = new ArrayList<Player>();
 
     protected Competition competition;
     protected Match match;
@@ -91,10 +93,12 @@ public abstract class BaseFixture {
     public void clearScenarioState() {
         mailbox.clear();
         playerNotificationRepository.clear();
-        allConfirmedPlayers.clear();
-        firstPickPlayers.clear();
+        selectedPlayersThatAccepted.clear();
+        standbyPlayersThatAccepted.clear();
+        standbyPlayersThatDeclined.clear();
+        selectedPlayers.clear();
         playersThatDidntRespond.clear();
-        playersThatCannotPlayInMatch.clear();
+        selectedPlayersThatDeclined.clear();
     }
 
     public Competition createCompetition() {
@@ -118,29 +122,36 @@ public abstract class BaseFixture {
     }
 
     public void allFirstPickPlayersConfirmTheyCanPlay() {
-        allConfirmedPlayers.addAll(firstPickPlayers);
-        firstPickPlayers.stream().forEach(player -> aPlayerRespondsWith(player, "Yes"));
+        selectedPlayersThatAccepted.addAll(selectedPlayers);
+        selectedPlayers.stream().forEach(player -> aPlayerRespondsWith(player, "Yes"));
     }
 
     public void checkAcknowledgementGoesToPlayerWhoAccepted(Match match) {
-        allConfirmedPlayers.forEach(player ->
-                checkEmailIsCorrect(match, player,
-                        mailbox.pop(player.getEmailAddress()),
-                        NotificationKind.ConfirmationOfAcceptance, null));
+        selectedPlayersThatAccepted.forEach(player ->
+                checkAcknowledgement(match, player, NotificationKind.ConfirmationOfAcceptance));
+    }
+
+    public void checkAcknowledgementGoesToPlayerWhoAcceptedStandby(Match match) {
+        standbyPlayersThatAccepted.forEach(player ->
+                checkAcknowledgement(match, player, NotificationKind.ConfirmationOfStandby));
     }
 
     public void checkAcknowledgementGoesToPlayerWhoDeclined(Match match) {
-        playersThatCannotPlayInMatch.forEach(p -> checkAcknowledgement(match, p));
+        selectedPlayersThatDeclined.forEach(p -> checkAcknowledgement(match, p,
+                NotificationKind.ConfirmationOfDecline));
+
+        standbyPlayersThatDeclined.forEach(p -> checkAcknowledgement(match, p,
+                NotificationKind.ConfirmationOfDecline));
     }
 
-    protected void checkAcknowledgement(Match match, Player playerThatCannotPlayInMatch) {
-        checkEmailIsCorrect(match, playerThatCannotPlayInMatch,
-                mailbox.pop(playerThatCannotPlayInMatch.getEmailAddress()),
-                NotificationKind.ConfirmationOfDecline, null);
+    protected void checkAcknowledgement(Match match, Player player, NotificationKind kind) {
+        checkEmailIsCorrect(match, player,
+                mailbox.pop(player.getEmailAddress()),
+                kind, null);
     }
 
     public void checkAllCanYouPlayNotificationsWereSent(Match match) {
-        firstPickPlayers.stream().forEach(
+        selectedPlayers.stream().forEach(
                 player -> checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match));
     }
 
@@ -207,17 +218,17 @@ public abstract class BaseFixture {
     }
 
     public void checkMatchConfirmationContainsListOfPlayerInTeam() {
-        allConfirmedPlayers.stream().forEach(
+        selectedPlayersThatAccepted.stream().forEach(
                 player -> checkOutboundEmailContainsListOfPlayers(mailbox.peek(player.getEmailAddress())));
     }
 
     public void checkMatchConfirmationContainsTheMatchDetails(Match match) {
-        allConfirmedPlayers.stream().forEach(
+        selectedPlayersThatAccepted.stream().forEach(
                 player -> checkOutboundEmailContainsMatchDetails(mailbox.peek(player.getEmailAddress()), match));
     }
 
     public void checkMatchConfirmationSentToAllConfirmedPlayers(Match match) {
-        allConfirmedPlayers.stream().forEach(
+        selectedPlayersThatAccepted.stream().forEach(
                 player -> checkOutboundEmailIsCorrect(player, NotificationKind.MatchConfirmation, match));
     }
 
@@ -256,7 +267,7 @@ public abstract class BaseFixture {
     protected void checkOutboundEmailContainsListOfPlayers(Email email) {
         assertThat("While checking that outbound email contained list of team's players, found email null", email,
                 notNullValue());
-        allConfirmedPlayers.stream().forEach(
+        selectedPlayersThatAccepted.stream().forEach(
                 player -> assertThat("Email body must contain the players name", email.getBody(),
                         containsString(player.getKey())));
     }
@@ -304,6 +315,8 @@ public abstract class BaseFixture {
         switch (kindOfEmail) {
         case CanYouPlay:
             return "Can you play";
+        case ConfirmationOfStandby:
+            return "Brilliant, thanks, I'll be in touch shortly to confirm.";
         case ConfirmationOfAcceptance:
             return "Brilliant, your in";
         case ConfirmationOfDecline:
@@ -369,7 +382,7 @@ public abstract class BaseFixture {
     }
 
     public void checkNotificationGoesToEligibleFirstPickPlayers(Match match) {
-        firstPickPlayers.stream().filter(p -> !playersThatCannotPlayInMatch.contains(p))
+        selectedPlayers.stream().filter(p -> !selectedPlayersThatDeclined.contains(p))
                 .forEach(player -> checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match));
     }
 

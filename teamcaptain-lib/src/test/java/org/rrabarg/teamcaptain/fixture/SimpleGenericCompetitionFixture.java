@@ -38,6 +38,11 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
     private final NotificationStrategy testNotificationStrategy = new BasicNotificationStrategy(7, 10, 4,
             ContactPreference.emailOnly());
 
+    Player substitute = peter;
+    Player aFirstPickPlayerWithNoEligibleSubstitute = stacy;
+    Player aFirstPickPlayerWithAnEligibleSubstitute = joe;
+    Player selectedPlayerWhoHasDeclinePriorToMatchWindow = joe;
+
     @Override
     public Competition createCompetitionImpl() {
         return standardCompetition();
@@ -45,7 +50,11 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
 
     @Override
     protected void setupScenarioImpl() {
-        firstPickPlayers.addAll(asList(joe, stacy));
+        selectedPlayers.addAll(asList(joe, stacy));
+    }
+
+    enum Action {
+        Accepts, Declines
     }
 
     private Competition standardCompetition() {
@@ -56,70 +65,101 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
                 .build();
     }
 
-    public void allButOneFirstPickPlayersRespond(Match match) {
-        log.debug("All but one first pick players respond");
-        checkOutboundEmailIsCorrect(stacy, NotificationKind.CanYouPlay, match);
-        aPlayerInThePoolSaysTheyCanPlay();
-        playersThatDidntRespond.add(joe);
+    public void allSelectedPlayersAcceptExceptOneWhoHasEligibleSubstitute(Match match) {
+        log.debug("All players accept except " + aFirstPickPlayerWithAnEligibleSubstitute);
+        aPlayerDoesNotRespond(aFirstPickPlayerWithAnEligibleSubstitute, match);
+        aSelectedPlayerDeclines(aFirstPickPlayerWithNoEligibleSubstitute);
     }
 
-    public void aFirstPickPlayerDeclines() {
-        aPlayerDeclines(joe);
+    public void allSelectedPlayersAcceptExceptOneWhoHasNoEligibleSubstitute(Match match) {
+        log.debug("All players accept except " + aFirstPickPlayerWithAnEligibleSubstitute);
+        aPlayerDoesNotRespond(aFirstPickPlayerWithAnEligibleSubstitute, match);
+        aSelectedPlayerDeclines(aFirstPickPlayerWithNoEligibleSubstitute);
     }
 
-    public void aSecondPickPlayerDeclines() {
-        aPlayerDeclines(peter);
+    public Player aSelectedPlayerWithAnEligibleSubstituteDeclines() {
+        aSelectedPlayerDeclines(aFirstPickPlayerWithAnEligibleSubstitute);
+        return aFirstPickPlayerWithAnEligibleSubstitute;
     }
 
-    public void aSecondPickPlayerAccepts() {
-        aPlayerAccepts(peter);
+    public Player aSelectedPlayerWithNoEligibleSubstituteDeclines() {
+        aSelectedPlayerDeclines(aFirstPickPlayerWithNoEligibleSubstitute);
+        return aFirstPickPlayerWithNoEligibleSubstitute;
     }
 
-    private void aPlayerDeclines(Player joe) {
-        playersThatCannotPlayInMatch.add(joe);
-        aPlayerRespondsWith(joe, "No");
+    public Player aSelectedSubstituteDeclines() {
+        aSelectedPlayerDeclines(substitute);
+        return substitute;
     }
 
-    private void aPlayerAccepts(Player player) {
-        allConfirmedPlayers.add(peter);
-        aPlayerRespondsWith(player, "Yes");
+    public Player aSelectedSubstituteAccepts() {
+        aSelectedPlayerAccepts(substitute);
+        return substitute;
     }
 
-    public void aPlayerWhoDoesntHaveAnEligibleSubstituteDeclines() {
-        playersThatCannotPlayInMatch.add(stacy);
-        aPlayerRespondsWith(stacy, "No");
+    public Player aPlayerWhoDoesntHaveAnEligibleSubstituteDeclines() {
+        aSelectedPlayerDeclines(aFirstPickPlayerWithNoEligibleSubstitute);
+        return aFirstPickPlayerWithNoEligibleSubstitute;
     }
 
-    public void aPlayerInThePoolSaysTheyCanPlay() {
-        allConfirmedPlayers.add(stacy);
-        aPlayerRespondsWith(stacy, "Yes");
+    public Player aSelectedPlayerWithAnEligibleSubstituteAccepts() {
+        aSelectedPlayerAccepts(aFirstPickPlayerWithAnEligibleSubstitute);
+        return aFirstPickPlayerWithAnEligibleSubstitute;
     }
 
     public void checkNotificationGoesToNextAppropriatePlayerInThePool(Match match) {
-        checkOutboundEmailIsCorrect(peter, NotificationKind.CanYouPlay, match);
+        checkOutboundEmailIsCorrect(substitute, NotificationKind.CanYouPlay, match);
     }
 
     public void checkNextAppropriatePlayerInThePoolIsNotifiedOfStandby(Match match) {
-        checkOutboundEmailIsCorrect(peter, NotificationKind.StandBy, match);
+        checkOutboundEmailIsCorrect(substitute, NotificationKind.StandBy, match);
     }
 
-    public void aFirstPickPoolMemberHasAlreadyDeclined(Match match) throws IOException {
-        match.setPlayerState(joe, PlayerState.Declined);
-        playersThatCannotPlayInMatch.add(joe);
+    public void aFirstPickPoolMemberHasDeclinedPriorToTheMatchWindow(Match match) throws IOException {
+        selectedPlayersThatDeclined.add(selectedPlayerWhoHasDeclinePriorToMatchWindow);
+        match.setPlayerState(selectedPlayerWhoHasDeclinePriorToMatchWindow, PlayerState.Declined);
         scheduleService.updateMatch(match);
     }
 
     public void checkNotificationDoesNotGoToPlayerWhoDeclined() {
-        assertThat("Mailbox of player who decline prior to match is empty",
-                mailbox.peek(joe.getEmailAddress()), nullValue());
+        for (final Player player : selectedPlayersThatDeclined) {
+            assertThat("Mailbox of player who decline prior to match is empty",
+                    mailbox.peek(player.getEmailAddress()), nullValue());
+        }
     }
 
     public void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch() {
-        checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch(stacy);
+        for (final Player player : selectedPlayersThatAccepted) {
+            checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch(player);
+        }
     }
 
-    public void checkAcceptingPlayerWhoHasAlreadyDeclinedIsNotifiedOfTheirEligibility() {
-        checkOutboundEmailIsCorrect(joe, NotificationKind.PreviouslyDeclinedButNowEligibleAgain, match);
+    public void checkThatOutStandingPlayersAreAutomaticallyDeclined() {
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    public void theSelectedPlayerAccepts() {
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    private void aPlayerDoesNotRespond(Player player, Match match) {
+        checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match);
+        playersThatDidntRespond.add(player);
+    }
+
+    public void aSelectedPlayerDeclines(Player player) {
+        selectedPlayersThatDeclined.add(player);
+        aPlayerRespondsWith(player, "No");
+    }
+
+    public void aSelectedPlayerAccepts(Player player) {
+        selectedPlayersThatAccepted.add(player);
+        aPlayerRespondsWith(player, "Yes");
+    }
+
+    public void aSelectedPlayerAcceptsStandby(Player player) {
+        standbyPlayersThatAccepted.add(player);
+        aPlayerRespondsWith(player, "Yes");
     }
 
 }

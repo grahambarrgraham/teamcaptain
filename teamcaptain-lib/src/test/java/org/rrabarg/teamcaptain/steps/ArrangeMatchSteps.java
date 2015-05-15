@@ -12,6 +12,7 @@ import org.jbehave.core.annotations.When;
 import org.jbehave.core.steps.Steps;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.fixture.CambridgeLeagueCompetitionFixture;
 import org.rrabarg.teamcaptain.fixture.SimpleGenericCompetitionFixture;
 import org.slf4j.Logger;
@@ -33,6 +34,9 @@ public class ArrangeMatchSteps extends Steps {
     Logger log = LoggerFactory.getLogger(getClass().getName());
 
     Match match;
+
+    private Player theLastPlayerWhoReplied;
+    private Player theFirstPickPlayerWhoReplied;
 
     @BeforeScenario
     public void setup() throws IOException, InterruptedException {
@@ -71,18 +75,19 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @When("a team member acknowledges their availability")
-    public void whenATeamMemberAcknowledgesTheirAvailability() {
-        genericFixture.aPlayerInThePoolSaysTheyCanPlay();
-    }
-
-    @When("a selected player accepts")
     public void whenASelectedPlayerAccepts() {
-        whenATeamMemberAcknowledgesTheirAvailability();
+        theLastPlayerWhoReplied = genericFixture.aSelectedPlayerWithAnEligibleSubstituteAccepts();
+        theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
     }
 
-    @Given("a selected player accepts")
-    public void givenASelectedPlayerAccepts() {
-        whenATeamMemberAcknowledgesTheirAvailability();
+    @When("that selected player then accepts")
+    public void whenThatSelectedPlayerThenAccepts() {
+        genericFixture.aSelectedPlayerAccepts(theLastPlayerWhoReplied);
+    }
+
+    @When("the first picked selected player then accepts")
+    public void whenTheFirstPickedSelectedPlayerThenAccepts() {
+        genericFixture.aSelectedPlayerAccepts(theFirstPickPlayerWhoReplied);
     }
 
     @Then("they are assigned to the match")
@@ -100,29 +105,26 @@ public class ArrangeMatchSteps extends Steps {
         givenNotificationsHaveBeenSentOutToTheProposedTeamMembers();
     }
 
-    @When("a player responds that they are not available")
-    public void whenAPlayerRespondsThatTheyAreNotAvailable() {
-        genericFixture.aFirstPickPlayerDeclines();
+    @When("a selected player with an eligible substitute declines")
+    public void whenAPlayerWithAnEligibleSubstituteDeclines() {
+        theLastPlayerWhoReplied = genericFixture.aSelectedPlayerWithAnEligibleSubstituteDeclines();
+        theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
     }
 
-    @Given("a player responds that they are not available")
-    public void givenAPlayerRespondsThatTheyAreNotAvailable() {
-        genericFixture.aFirstPickPlayerDeclines();
+    @Given("a selected player with an eligible substitute declines")
+    public void giveAPlayerDeclines() {
+        whenAPlayerWithAnEligibleSubstituteDeclines();
     }
 
-    @When("a selected player declines")
-    public void whenAPlayerDeclines() {
-        whenAPlayerRespondsThatTheyAreNotAvailable();
+    @Given("a selected player with no eligible substitute declines")
+    public void giveAPlayerWithNoEligibleSubstituteDeclines() {
+        theLastPlayerWhoReplied = genericFixture.aSelectedPlayerWithNoEligibleSubstituteDeclines();
+        theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
     }
 
     @When("the original player declines")
     public void whenTheOriginalPlayerDeclines() {
-        whenAPlayerRespondsThatTheyAreNotAvailable();
-    }
-
-    @Given("a selected player declines")
-    public void giveAPlayerDeclines() {
-        whenAPlayerRespondsThatTheyAreNotAvailable();
+        throw new UnsupportedOperationException();
     }
 
     @Then("a notification goes out to the next appropriate player in the pool")
@@ -147,9 +149,9 @@ public class ArrangeMatchSteps extends Steps {
         givenItIs10DaysBeforeTheMatch();
     }
 
-    @Given("all but one first pick players responds")
+    @Given("all selected players accept except one, and that player has an eligible substitute in the pool")
     public void givenAllButOneFirstPickPlayersResponds() throws IOException {
-        genericFixture.allButOneFirstPickPlayersRespond(match);
+        genericFixture.allSelectedPlayersAcceptExceptOneWhoHasEligibleSubstitute(match);
     }
 
     @When("time elapses till the match")
@@ -226,7 +228,7 @@ public class ArrangeMatchSteps extends Steps {
 
     @Given("a member of the pool is on holiday on the date of the match")
     public void givenAMemberOfThePoolIsOnHolidayOnTheDateOfTheMatch() throws IOException {
-        genericFixture.aFirstPickPoolMemberHasAlreadyDeclined(match);
+        genericFixture.aFirstPickPoolMemberHasDeclinedPriorToTheMatchWindow(match);
     }
 
     @Then("the player on holiday is not notified")
@@ -251,52 +253,51 @@ public class ArrangeMatchSteps extends Steps {
         // nothing to assert here, need to assert that they can be picked
     }
 
-    @Then("they are notified that they are eligible again")
-    @Pending
-    public void thenTheyAreNotifiedThatTheyAreEligibleAgain() {
-        genericFixture.checkAcceptingPlayerWhoHasAlreadyDeclinedIsNotifiedOfTheirEligibility();
+    @When("the selected substitute player declines")
+    public void whenTheSelectedSubstituteDeclines() {
+        theLastPlayerWhoReplied = genericFixture.aSelectedSubstituteDeclines();
     }
 
-    @When("the next appropriate player declines")
-    @Pending
-    public void whenTheNextAppropriatePlayerDeclines() {
-        genericFixture.aSecondPickPlayerDeclines();
+    @Given("the selected substitute player declines")
+    public void givenTheSelectedSubstituteDeclines() {
+        theLastPlayerWhoReplied = genericFixture.aSelectedSubstituteDeclines();
     }
 
-    @When("the next appropriate player accepts")
-    @Pending
-    public void whenTheNextAppropriatePlayerAccepts() {
-        genericFixture.aSecondPickPlayerAccepts();
+    @When("the selected substitute player accepts")
+    public void whenTheSelectedSubstituteAccepts() {
+        theLastPlayerWhoReplied = genericFixture.aSelectedSubstituteAccepts();
     }
 
     @When("the outstanding player declines")
-    @Pending
     public void whenTheOutstandingPlayerDeclines() {
-        genericFixture.aFirstPickPlayerDeclines();
+        theLastPlayerWhoReplied = genericFixture.aSelectedPlayerWithAnEligibleSubstituteDeclines();
+        theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
     }
 
     @Then("the standby player is selected")
-    @Pending
     public void thenTheStandbyPlayerIsSelected() {
-        thenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool();
+        genericFixture.checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch();
     }
 
     @Given("the next appropriate player accepts the standby request")
-    @Pending
     public void givenTheNextAppropriatePlayerAcceptsTheStandbyRequest() {
-        // PENDING
+        theLastPlayerWhoReplied = genericFixture.aSelectedSubstituteAccepts();
     }
 
     @Then("the next appropriate player is selected")
-    @Pending
     public void thenTheNextAppropriatePlayerIsSelected() {
-        // PENDING
+        thenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool();
+    }
+
+    @Then("they are notified that they are now a confirmed standby player")
+    public void thenTheyAreNotifiedThatTheyAreNowAConfirmedSubstitute() {
+        genericFixture.checkAcknowledgementGoesToPlayerWhoAcceptedStandby(match);
     }
 
     @Then("the outstanding player is automatically declined")
     @Pending
     public void thenTheOutstandingPlayerIsAutomaticallyDeclined() {
-        // PENDING
+        // genericFixture.checkThatOutStandingPlayerIsAutomaticallyDeclined();
     }
 
     @Then("the outstanding player is notified of the automatic decline")
