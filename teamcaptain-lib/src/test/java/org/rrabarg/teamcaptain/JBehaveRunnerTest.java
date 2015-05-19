@@ -39,12 +39,13 @@ public class JBehaveRunnerTest extends JUnitStories {
 
     public JBehaveRunnerTest() {
         configuredEmbedder().embedderControls().doGenerateViewAfterStories(false).doIgnoreFailureInStories(false)
-                .doIgnoreFailureInView(true).useThreads(4).useStoryTimeoutInSecs(360);
+                .doIgnoreFailureInView(true).useThreads(1).useStoryTimeoutInSecs(360);
     }
 
     @Override
     protected List<String> storyPaths() {
-        return new StoryFinder().findPaths(CodeLocations.codeLocationFromClass(this.getClass()), "jbehave/*.story", "");
+        return new StoryFinder().findPaths(CodeLocations.codeLocationFromClass(this.getClass()),
+                "jbehave/core/*.story", "");
     }
 
     @Override
@@ -86,8 +87,6 @@ public class JBehaveRunnerTest extends JUnitStories {
     @Override
     public InjectableStepsFactory stepsFactory() {
         return new SpringStepsFactory(configuration(), createContext());
-        // return new InstanceStepsFactory(configuration(), new
-        // ArrangeMatchSteps());
     }
 
     private ApplicationContext createContext() {

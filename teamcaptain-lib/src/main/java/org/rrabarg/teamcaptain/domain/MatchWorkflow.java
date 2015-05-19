@@ -21,7 +21,7 @@ import javax.inject.Provider;
 
 import org.rrabarg.teamcaptain.NotificationStrategy;
 import org.rrabarg.teamcaptain.SelectionStrategy;
-import org.rrabarg.teamcaptain.service.NotificationService;
+import org.rrabarg.teamcaptain.service.OutboundNotificationService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +30,6 @@ import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import reactor.event.Event;
-
 @Component
 @Scope(value = "prototype")
 public class MatchWorkflow {
@@ -39,7 +37,7 @@ public class MatchWorkflow {
     private static Logger log = LoggerFactory.getLogger(MatchWorkflow.class);
 
     @Autowired
-    NotificationService notificationService;
+    OutboundNotificationService notificationService;
 
     @Autowired
     WorkflowService workflowService;
@@ -234,17 +232,17 @@ public class MatchWorkflow {
         return this.match;
     }
 
-    public void notify(Event<PlayerResponse> playerResponse) {
+    public void notify(PlayerResponse playerResponse) {
         try {
-            switch (playerResponse.getData().getKind()) {
+            switch (playerResponse.getKind()) {
             case ICanPlay:
-                iCanPlay(playerResponse.getData().getPlayer());
+                iCanPlay(playerResponse.getPlayer());
                 break;
             case ICanStandby:
-                iCanStandby(playerResponse.getData().getPlayer());
+                iCanStandby(playerResponse.getPlayer());
                 break;
             case ICantPlay:
-                iCannotPlay(playerResponse.getData().getPlayer());
+                iCannotPlay(playerResponse.getPlayer());
                 break;
             default:
                 break;

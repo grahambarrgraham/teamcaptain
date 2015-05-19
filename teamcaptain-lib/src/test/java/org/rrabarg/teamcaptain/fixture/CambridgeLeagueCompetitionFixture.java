@@ -97,6 +97,6 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
     }
 
     public void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch() {
-        checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch(stacy);
+        checkPlayerIsAssignedToTheMatch(stacy);
     }
 }

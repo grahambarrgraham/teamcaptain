@@ -3,12 +3,20 @@ package org.rrabarg.teamcaptain.channel;
 import static reactor.event.selector.Selectors.$;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
+import org.rrabarg.teamcaptain.channel.NotificationMatcherService.MatcherResult;
+import org.rrabarg.teamcaptain.channel.NotificationMatcherService.MatcherResultItem;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.MatchWorkflow;
+import org.rrabarg.teamcaptain.domain.NotificationKind;
+import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PlayerResponse;
+import org.rrabarg.teamcaptain.domain.PlayerResponse.Kind;
+import org.rrabarg.teamcaptain.domain.User.UserRole;
+import org.rrabarg.teamcaptain.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import reactor.core.Reactor;
@@ -20,11 +28,14 @@ public class InboundChannelService implements Consumer<Event<Message>> {
 
     static Logger log = LoggerFactory.getLogger(InboundChannelService.class);
 
-    @Autowired
+    @Inject
     private Reactor reactor;
 
-    @Autowired
+    @Inject
     private NotificationMatcherService notificationMatcherService;
+
+    @Inject
+    private WorkflowService workflowService;
 
     @PostConstruct
     public void configure() {
@@ -40,18 +51,64 @@ public class InboundChannelService implements Consumer<Event<Message>> {
 
             log.debug("Receive " + message.getChannel() + " from " + message.getSourceIdentity());
 
-            final PlayerResponse match = notificationMatcherService.getMatch(message);
+            final MatcherResult result = notificationMatcherService.findMatches(message);
 
-            if (match != null) {
-
-                log.debug("Matched it to : " + match.getKind());
-
-                reactor.notify(ReactorMessageKind.InboundNotification, new Event<>(match));
-            } else {
-                log.warn("Unmatched incoming message " + message);
+            if (!result.hasMatches()) {
+                log.debug("Unmatched incoming message '%s', attempting to identify workflow via contact lookup",
+                        message.getSourceIdentity());
             }
+
+            if (result.isMatchUnambiguous()) {
+                final MatcherResultItem mostLikelyMatch = result.getMostLikelyMatch();
+
+                if (mostLikelyMatch.getUser().getRole() == UserRole.Player) {
+                    final PlayerResponse response = new PlayerResponse(
+                            mostLikelyMatch.getMatch(),
+                            (Player) mostLikelyMatch.getUser(),
+                            getKind(mostLikelyMatch.getKind(), message.getBody()),
+                            message.getBody());
+
+                    notifyWorkflow(response);
+
+                } else {
+                    // implement team captain message processing
+                }
+            } else {
+                // implement ambiguous processing
+            }
+
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+    private void notifyWorkflow(PlayerResponse response) {
+        final MatchWorkflow workflow = workflowService.getWorkflow(response.getMatch());
+        if (workflow != null) {
+            workflow.notify(response);
+        }
+    }
+
+    private PlayerResponse.Kind getKind(NotificationKind kind, String data) {
+        switch (kind) {
+        case CanYouPlay:
+        case Reminder:
+            if (data.toLowerCase().contains("yes")) {
+                return Kind.ICanPlay;
+            }
+            if (data.toLowerCase().contains("no")) {
+                return Kind.ICantPlay;
+            }
+        case StandBy:
+            if (data.toLowerCase().contains("yes")) {
+                return Kind.ICanStandby;
+            }
+            if (data.toLowerCase().contains("no")) {
+                return Kind.ICantPlay;
+            }
+        default:
+            return Kind.Information;
+        }
+    }
+
 }

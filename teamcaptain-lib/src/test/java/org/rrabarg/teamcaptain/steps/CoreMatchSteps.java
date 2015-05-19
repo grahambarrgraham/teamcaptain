@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.temporal.ChronoUnit;
 
 import org.jbehave.core.annotations.AfterStories;
+import org.jbehave.core.annotations.Alias;
 import org.jbehave.core.annotations.BeforeScenario;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Pending;
@@ -12,7 +13,9 @@ import org.jbehave.core.annotations.When;
 import org.jbehave.core.steps.Steps;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
+import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Player;
+import org.rrabarg.teamcaptain.fixture.BaseFixture.Response;
 import org.rrabarg.teamcaptain.fixture.CambridgeLeagueCompetitionFixture;
 import org.rrabarg.teamcaptain.fixture.SimpleGenericCompetitionFixture;
 import org.slf4j.Logger;
@@ -23,7 +26,7 @@ import org.springframework.stereotype.Component;
 import com.google.gdata.util.ServiceException;
 
 @Component
-public class ArrangeMatchSteps extends Steps {
+public class CoreMatchSteps extends Steps {
 
     @Autowired
     SimpleGenericCompetitionFixture genericFixture;
@@ -37,6 +40,7 @@ public class ArrangeMatchSteps extends Steps {
 
     private Player theLastPlayerWhoReplied;
     private Player theFirstPickPlayerWhoReplied;
+    private Player thePlayerStillToRespond;
 
     @BeforeScenario
     public void setup() throws IOException, InterruptedException {
@@ -74,20 +78,29 @@ public class ArrangeMatchSteps extends Steps {
         genericFixture.checkAllCanYouPlayNotificationsWereSent(match);
     }
 
-    @When("a team member acknowledges their availability")
-    public void whenASelectedPlayerAccepts() {
-        theLastPlayerWhoReplied = genericFixture.aSelectedPlayerWithAnEligibleSubstituteAccepts();
+    @When("a selected player with an eligible substitute %response")
+    @Alias("a selected player %response")
+    public void whenAPlayerWithAnEligibleSubResponds(String response) {
+        theLastPlayerWhoReplied = genericFixture.getASelectedPlayerWithAnEligibleSubstitute();
         theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
+        genericFixture.aSelectedPlayerResponds(theLastPlayerWhoReplied, getResponse(response));
     }
 
-    @When("that selected player then accepts")
-    public void whenThatSelectedPlayerThenAccepts() {
-        genericFixture.aSelectedPlayerAccepts(theLastPlayerWhoReplied);
+    @When("a selected player with no eligible substitute %response")
+    public void whenAPlayerWithNoEligibleSubResponds(String response) {
+        theLastPlayerWhoReplied = genericFixture.getASelectedPlayerWithNoEligibleSubstitute();
+        theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
+        genericFixture.aSelectedPlayerResponds(theLastPlayerWhoReplied, getResponse(response));
     }
 
-    @When("the first picked selected player then accepts")
-    public void whenTheFirstPickedSelectedPlayerThenAccepts() {
-        genericFixture.aSelectedPlayerAccepts(theFirstPickPlayerWhoReplied);
+    @When("that selected player then %response")
+    public void whenThatSelectedPlayerResponds(String response) {
+        genericFixture.aSelectedPlayerResponds(theLastPlayerWhoReplied, getResponse(response));
+    }
+
+    @When("the first picked selected player then %response")
+    public void whenTheFirstPickedSelectedPlayerResponds(String response) {
+        genericFixture.aSelectedPlayerResponds(theFirstPickPlayerWhoReplied, getResponse(response));
     }
 
     @Then("they are assigned to the match")
@@ -105,31 +118,26 @@ public class ArrangeMatchSteps extends Steps {
         givenNotificationsHaveBeenSentOutToTheProposedTeamMembers();
     }
 
-    @When("a selected player with an eligible substitute declines")
-    public void whenAPlayerWithAnEligibleSubstituteDeclines() {
-        theLastPlayerWhoReplied = genericFixture.aSelectedPlayerWithAnEligibleSubstituteDeclines();
-        theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
+    @Given("a selected player with an eligible substitute %response")
+    @Alias("a selected player %response")
+    public void givenAPlayerWithAnEligibleSubResponds(String response) {
+        whenAPlayerWithAnEligibleSubResponds(response);
     }
 
-    @Given("a selected player with an eligible substitute declines")
-    public void giveAPlayerDeclines() {
-        whenAPlayerWithAnEligibleSubstituteDeclines();
+    @Given("a selected player with no eligible substitute %response")
+    public void giveAPlayerWithNoEligibleSubstituteDeclines(String response) {
+        whenAPlayerWithNoEligibleSubResponds(response);
     }
 
-    @Given("a selected player with no eligible substitute declines")
-    public void giveAPlayerWithNoEligibleSubstituteDeclines() {
-        theLastPlayerWhoReplied = genericFixture.aSelectedPlayerWithNoEligibleSubstituteDeclines();
-        theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
-    }
-
-    @When("the original player declines")
-    public void whenTheOriginalPlayerDeclines() {
-        throw new UnsupportedOperationException();
+    @When("the original player %response")
+    public void whenTheOriginalPlayerResponds(String response) {
+        genericFixture.aSelectedPlayerResponds(theFirstPickPlayerWhoReplied, getResponse(response));
     }
 
     @Then("a notification goes out to the next appropriate player in the pool")
     public void thenANotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        genericFixture.checkNotificationGoesToNextAppropriatePlayerInThePool(match);
+        genericFixture.checkOutboundEmailIsCorrect(genericFixture.getEligibleSubstituteFor(theLastPlayerWhoReplied),
+                NotificationKind.CanYouPlay, match);
     }
 
     @Then("a decline acknowledgement notification goes to the player")
@@ -149,9 +157,17 @@ public class ArrangeMatchSteps extends Steps {
         givenItIs10DaysBeforeTheMatch();
     }
 
-    @Given("all selected players accept except one, and that player has an eligible substitute in the pool")
-    public void givenAllButOneFirstPickPlayersResponds() throws IOException {
-        genericFixture.allSelectedPlayersAcceptExceptOneWhoHasEligibleSubstitute(match);
+    @Given("all selected players %response except one, and that player has %hasSub eligible substitute in the pool")
+    public void givenAllButOneFirstPickPlayersResponds(String response, String hasSub) throws IOException {
+
+        if ("no".equals(hasSub)) {
+            thePlayerStillToRespond = genericFixture.getASelectedPlayerWithNoEligibleSubstitute();
+        } else {
+            thePlayerStillToRespond = genericFixture.getASelectedPlayerWithAnEligibleSubstitute();
+        }
+
+        genericFixture.allSelectedPlayersRespondExcept(match, getResponse(response),
+                thePlayerStillToRespond);
     }
 
     @When("time elapses till the match")
@@ -192,12 +208,14 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("a standby notification goes out to the next appropriate player in the pool")
     public void thenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        genericFixture.checkNextAppropriatePlayerInThePoolIsNotifiedOfStandby(match);
+        genericFixture.checkOutboundEmailIsCorrect(genericFixture.getEligibleSubstituteFor(theLastPlayerWhoReplied),
+                NotificationKind.StandBy, match);
     }
 
-    @Then("an administrator standby alert is raised")
-    public void thenAnAdministratorAlertIsRaised() {
-        genericFixture.checkAnAdminstratorStandbyAlertIsRaised();
+    @Then("the team captain is notified of the %type message from %player")
+    public void thenTheTeamCaptainIsNotified(String type, String player) {
+        genericFixture.checkOutboundTeamCaptainEmailIsCorrect(getTeamCaptainNotificationKind(type), match,
+                theLastPlayerWhoReplied);
     }
 
     @When("sufficient players are assigned to the match")
@@ -221,11 +239,6 @@ public class ArrangeMatchSteps extends Steps {
         genericFixture.checkMatchConfirmationContainsTheMatchDetails(match);
     }
 
-    @Then("an administration confirmation notification is raised")
-    public void thenAnAdministrationConfirmationNotificationIsRaised() {
-        genericFixture.checkAnAdministratorMatchConfirmationIsRaised(match);
-    }
-
     @Given("a member of the pool is on holiday on the date of the match")
     public void givenAMemberOfThePoolIsOnHolidayOnTheDateOfTheMatch() throws IOException {
         genericFixture.aFirstPickPoolMemberHasDeclinedPriorToTheMatchWindow(match);
@@ -238,13 +251,8 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @When("there are insufficient eligible players to fulfill the match")
-    public void givenAnThereAreInsufficientEligiblePlayersToFulfillTheMatch() throws IOException {
-        genericFixture.aPlayerWhoDoesntHaveAnEligibleSubstituteDeclines();
-    }
-
-    @Then("an administrator insufficient players alert is raised")
-    public void thenAnAdministratorInsufficientPlayersAlertIsRaised() {
-        genericFixture.checkAnAdminstratorInsufficientPlayersAlertIsRaised();
+    public void whenThereAreInsufficientEligiblePlayersToFulfillTheMatch() throws IOException {
+        whenAPlayerWithNoEligibleSubResponds("decline");
     }
 
     @Then("they become eligible again and are returned to the pool as the highest ranked substitute")
@@ -253,35 +261,37 @@ public class ArrangeMatchSteps extends Steps {
         // nothing to assert here, need to assert that they can be picked
     }
 
-    @When("the selected substitute player declines")
-    public void whenTheSelectedSubstituteDeclines() {
-        theLastPlayerWhoReplied = genericFixture.aSelectedSubstituteDeclines();
+    @When("the selected substitute player %response")
+    public void whenTheSelectedSubstituteResponds(String response) {
+        theLastPlayerWhoReplied = genericFixture.getEligibleSubstituteFor(theLastPlayerWhoReplied);
+        genericFixture.aStandbyPlayerResponds(theLastPlayerWhoReplied, getResponse(response));
     }
 
-    @Given("the selected substitute player declines")
-    public void givenTheSelectedSubstituteDeclines() {
-        theLastPlayerWhoReplied = genericFixture.aSelectedSubstituteDeclines();
+    @When("an unselected substitute player %response")
+    public void whenAnUnselectedSelectedSubstituteResponds(String response) {
+        theLastPlayerWhoReplied = getViableSubstitute();
+        genericFixture.aStandbyPlayerResponds(theLastPlayerWhoReplied, getResponse(response));
     }
 
-    @When("the selected substitute player accepts")
-    public void whenTheSelectedSubstituteAccepts() {
-        theLastPlayerWhoReplied = genericFixture.aSelectedSubstituteAccepts();
+    @Given("the selected substitute player %response")
+    public void givenTheSelectedSubstituteResponds(String response) {
+        whenTheSelectedSubstituteResponds(response);
     }
 
-    @When("the outstanding player declines")
-    public void whenTheOutstandingPlayerDeclines() {
-        theLastPlayerWhoReplied = genericFixture.aSelectedPlayerWithAnEligibleSubstituteDeclines();
-        theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
+    @When("the outstanding player %response")
+    public void whenTheOutstandingPlayerResponds(String response) {
+        theLastPlayerWhoReplied = genericFixture
+                .aSelectedPlayerResponds(thePlayerStillToRespond, getResponse(response));
     }
 
     @Then("the standby player is selected")
     public void thenTheStandbyPlayerIsSelected() {
-        genericFixture.checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch();
+        genericFixture.checkPlayerIsAssignedToTheMatch(getViableSubstitute());
     }
 
-    @Given("the next appropriate player accepts the standby request")
-    public void givenTheNextAppropriatePlayerAcceptsTheStandbyRequest() {
-        theLastPlayerWhoReplied = genericFixture.aSelectedSubstituteAccepts();
+    @Given("the next appropriate player %response the standby request")
+    public void givenTheNextAppropriatePlayerAcceptsTheStandbyRequest(String response) {
+        theLastPlayerWhoReplied = genericFixture.aStandbyPlayerResponds(getViableSubstitute(), getResponse(response));
     }
 
     @Then("the next appropriate player is selected")
@@ -291,7 +301,8 @@ public class ArrangeMatchSteps extends Steps {
 
     @Then("they are notified that they are now a confirmed standby player")
     public void thenTheyAreNotifiedThatTheyAreNowAConfirmedSubstitute() {
-        genericFixture.checkAcknowledgementGoesToPlayerWhoAcceptedStandby(match);
+        genericFixture.checkOutboundEmailIsCorrect(theLastPlayerWhoReplied, NotificationKind.ConfirmationOfStandby,
+                match);
     }
 
     @Then("the outstanding player is automatically declined")
@@ -475,9 +486,8 @@ public class ArrangeMatchSteps extends Steps {
     }
 
     @When("time elapses till after the match")
-    @Pending
     public void whenTimeElapsesTillAfterTheMatch() {
-        // PENDING
+        genericFixture.pumpWorkflowsTillXDaysBeforeMatch(-1, match);
     }
 
     @Then("the standby player is notified that the match has passed")
@@ -498,82 +508,37 @@ public class ArrangeMatchSteps extends Steps {
         // PENDING
     }
 
-    @Given("a mixed doubles match is scheduled")
-    @Pending
-    public void givenAMixedDoublesMatchIsScheduled() {
-        final Competition competition = cambsLeagueFixture.createCompetition();
-        match = competition.getSchedule().getMatches().get(0);
+    private Response getResponse(String declinesOrAccepts) {
+
+        final String response = declinesOrAccepts.trim().toLowerCase();
+
+        if (response.startsWith("decline")) {
+            return Response.Decline;
+        } else if (response.startsWith("accept")) {
+            return Response.Accept;
+        }
+
+        throw new UnsupportedOperationException("Unparsable response string " + response);
     }
 
-    @Then("the 3 strongest eligible ladies are chosen from the pool")
-    @Pending
-    public void thenThe3StrongestEligibleLadiesAreChosenFromThePool() {
-        // PENDING
+    private NotificationKind getTeamCaptainNotificationKind(String type) {
+
+        switch (type.trim().toLowerCase()) {
+        case "unexpected":
+            return NotificationKind.OutOfBandMessage;
+        case "standby alert":
+            return NotificationKind.StandbyPlayersNotified;
+        case "match confirmation":
+            return NotificationKind.MatchConfirmation;
+        case "insufficient players":
+            return NotificationKind.InsufficientPlayers;
+        }
+
+        throw new UnsupportedOperationException("Unparsable team captain notification kind " + type);
     }
 
-    @Then("the 3 strongest eligible men are chosen from the pool")
-    @Pending
-    public void thenThe3StrongestEligibleMenAreChosenFromThePool() {
-        // PENDING
+    private Player getViableSubstitute() {
+        return genericFixture.getEligibleSubstituteFor(genericFixture.getASelectedPlayerWithAnEligibleSubstitute());
     }
 
-    @Then("the 6 strongest eligible and available men are chosen from the pool")
-    @Pending
-    public void thenThe6StrongestEligibleAndAvailableMenAreChosenFromThePool() {
-        // PENDING
-    }
-
-    @Then("the 6 strongest eligible and available ladies are chosen from the pool")
-    @Pending
-    public void thenThe6StrongestEligibleAndAvailableLadiesAreChosenFromThePool() {
-        // PENDING
-    }
-
-    @Given("a Cambridge county match is scheduled")
-    @Pending
-    public void givenACambridgeCountyMatchIsScheduled() {
-        // PENDING
-    }
-
-    @Then("the nominated players are chosen first")
-    @Pending
-    public void thenTheNominatedPlayersAreChosenFirst() {
-        // PENDING
-    }
-
-    @Then("the nominated ladies are chosen")
-    @Pending
-    public void thenTheNominatedLadiesAreChosen() {
-        // PENDING
-    }
-
-    @Then("the nominated men are chosen")
-    @Pending
-    public void thenTheNominatedMenAreChosen() {
-        // PENDING
-    }
-
-    @Given("a nominated player is unavailable")
-    @Pending
-    public void givenANominatedPlayerIsUnavailable() {
-        // PENDING
-    }
-
-    @Then("the next strongest player of the same gender is chosen")
-    @Pending
-    public void thenTheNextStrongestPlayerOfTheSameGenderIsChosen() {
-        // PENDING
-    }
-
-    @When("players are chosen")
-    @Pending
-    public void whenPlayersAreChosen() {
-        // PENDING
-    }
-
-    @Given("a Cambridge league mens doubles badminton match is scheduled")
-    @Pending
-    public void givenACambridgeLeagueMensDoublesBadmintonMatchIsScheduled() {
-        // PENDING
-    }
 }

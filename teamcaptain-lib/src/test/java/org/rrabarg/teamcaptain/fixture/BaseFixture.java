@@ -3,6 +3,7 @@ package org.rrabarg.teamcaptain.fixture;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -49,6 +50,17 @@ public abstract class BaseFixture {
 
     protected Competition competition;
     protected Match match;
+
+    public enum Response {
+        Decline, Accept;
+
+        public Response inverse() {
+            if (this == Decline) {
+                return Accept;
+            }
+            return Decline;
+        }
+    };
 
     @Autowired
     MutableClockFactory clockFactory;
@@ -186,7 +198,7 @@ public abstract class BaseFixture {
         }
     }
 
-    protected void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch(Player playerWhoSaidTheyCouldPlay) {
+    public void checkPlayerIsAssignedToTheMatch(Player player) {
 
         final Competition comp = competitionService.findCompetitionByName(competition.getName());
 
@@ -197,7 +209,7 @@ public abstract class BaseFixture {
         assertThat("The match must be in notified state", MatchState.FirstPickPlayersNotified == thematch.get()
                 .getMatchState());
         assertThat("The player should be in the accepted state", PlayerState.Accepted == thematch.get()
-                .getPlayerState(playerWhoSaidTheyCouldPlay));
+                .getPlayerState(player));
     }
 
     public void checkThereAreNoRemindersForPlayersThatDidNotRespond(Match match) {
@@ -294,7 +306,7 @@ public abstract class BaseFixture {
         }
     }
 
-    protected void checkOutboundEmailIsCorrect(Player player, NotificationKind kind, Match match) {
+    public void checkOutboundEmailIsCorrect(Player player, NotificationKind kind, Match match) {
         checkEmailIsCorrect(match, player, mailbox.peek(player.getEmailAddress()), kind, null);
     }
 
@@ -384,6 +396,70 @@ public abstract class BaseFixture {
     public void checkNotificationGoesToEligibleFirstPickPlayers(Match match) {
         selectedPlayers.stream().filter(p -> !selectedPlayersThatDeclined.contains(p))
                 .forEach(player -> checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match));
+    }
+
+    public void checkOutboundTeamCaptainEmailIsCorrect(NotificationKind kind, Match match, Player referencePlayer) {
+
+        switch (kind) {
+        case OutOfBandMessage:
+            checkAdminAlert("Message requires attention");
+            // need to check contents refers to match and reference players message content
+        default:
+            break;
+        }
+
+        throw new UnsupportedOperationException(String.format("Team captain email checking not implemented for %type",
+                kind.toString()));
+    }
+
+    public Player allSelectedPlayersRespondExcept(Match match, Response response, Player exception) {
+        log.debug("All players %s except %s", response, exception);
+        aPlayerDoesNotRespond(exception, match);
+        selectedPlayers.stream().filter(a -> a.equals(exception))
+                .forEach(a -> aSelectedPlayerResponds(a, response.inverse()));
+        return exception;
+    }
+
+    public void checkNotificationDoesNotGoToPlayerWhoDeclined() {
+        for (final Player player : selectedPlayersThatDeclined) {
+            assertThat("Mailbox of player who decline prior to match is empty",
+                    mailbox.peek(player.getEmailAddress()), nullValue());
+        }
+    }
+
+    public void checkThatThoseWhoSaidTheyCouldPlayAreAssignedToTheMatch() {
+        for (final Player player : selectedPlayersThatAccepted) {
+            checkPlayerIsAssignedToTheMatch(player);
+        }
+    }
+
+    private void aPlayerDoesNotRespond(Player player, Match match) {
+        checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match);
+        playersThatDidntRespond.add(player);
+    }
+
+    public Player aSelectedPlayerResponds(Player player, Response response) {
+        switch (response) {
+        case Decline:
+            selectedPlayersThatDeclined.add(player);
+            aPlayerRespondsWith(player, "No");
+        case Accept:
+            selectedPlayersThatAccepted.add(player);
+            aPlayerRespondsWith(player, "Yes");
+        }
+        return player;
+    }
+
+    public Player aStandbyPlayerResponds(Player player, Response response) {
+        if (response == Response.Accept) {
+            standbyPlayersThatAccepted.add(player);
+            aPlayerRespondsWith(player, "Yes");
+        } else {
+            standbyPlayersThatDeclined.add(player);
+            aPlayerRespondsWith(player, "No");
+        }
+
+        return player;
     }
 
 }
