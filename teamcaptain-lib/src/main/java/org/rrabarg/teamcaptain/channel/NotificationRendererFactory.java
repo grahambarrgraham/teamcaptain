@@ -25,23 +25,17 @@ public class NotificationRendererFactory {
     Map<Key, NotificationRenderer> map = new HashMap<>();
 
     @Inject
-    NotificationRenderer emailAdminAlertRenderer;
+    NotificationRenderer emailNotificationRenderer;
 
     @Inject
-    NotificationRenderer smsAdminAlertRenderer;
-
-    @Inject
-    NotificationRenderer emailPlayerNotificationRenderer;
-
-    @Inject
-    NotificationRenderer smsPlayerNotificationRenderer;
+    NotificationRenderer smsNotificationRenderer;
 
     @PostConstruct
     void initMap() {
-        map.put($(TeamCaptain, Email), emailAdminAlertRenderer);
-        map.put($(TeamCaptain, Sms), smsAdminAlertRenderer);
-        map.put($(Player, Email), emailPlayerNotificationRenderer);
-        map.put($(Player, Sms), smsPlayerNotificationRenderer);
+        map.put($(TeamCaptain, Email), emailNotificationRenderer);
+        map.put($(TeamCaptain, Sms), smsNotificationRenderer);
+        map.put($(Player, Email), emailNotificationRenderer);
+        map.put($(Player, Sms), smsNotificationRenderer);
     }
 
     public Key $(UserRole target, Channel email) {

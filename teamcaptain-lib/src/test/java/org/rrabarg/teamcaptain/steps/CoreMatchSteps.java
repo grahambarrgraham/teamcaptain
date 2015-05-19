@@ -79,7 +79,7 @@ public class CoreMatchSteps extends Steps {
     }
 
     @When("a selected player with an eligible substitute %response")
-    @Alias("a selected player %response")
+    @Alias("a selected player %response the match")
     public void whenAPlayerWithAnEligibleSubResponds(String response) {
         theLastPlayerWhoReplied = genericFixture.getASelectedPlayerWithAnEligibleSubstitute();
         theFirstPickPlayerWhoReplied = theLastPlayerWhoReplied;
@@ -119,7 +119,7 @@ public class CoreMatchSteps extends Steps {
     }
 
     @Given("a selected player with an eligible substitute %response")
-    @Alias("a selected player %response")
+    @Alias("a selected player %response the match")
     public void givenAPlayerWithAnEligibleSubResponds(String response) {
         whenAPlayerWithAnEligibleSubResponds(response);
     }
@@ -136,7 +136,7 @@ public class CoreMatchSteps extends Steps {
 
     @Then("a notification goes out to the next appropriate player in the pool")
     public void thenANotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        genericFixture.checkOutboundEmailIsCorrect(genericFixture.getEligibleSubstituteFor(theLastPlayerWhoReplied),
+        genericFixture.checkOutboundMessageIsCorrect(genericFixture.getEligibleSubstituteFor(theLastPlayerWhoReplied),
                 NotificationKind.CanYouPlay, match);
     }
 
@@ -208,7 +208,7 @@ public class CoreMatchSteps extends Steps {
 
     @Then("a standby notification goes out to the next appropriate player in the pool")
     public void thenAStandbyNotificationGoesOutToTheNextAppropriatePlayerInThePool() {
-        genericFixture.checkOutboundEmailIsCorrect(genericFixture.getEligibleSubstituteFor(theLastPlayerWhoReplied),
+        genericFixture.checkOutboundMessageIsCorrect(genericFixture.getEligibleSubstituteFor(theLastPlayerWhoReplied),
                 NotificationKind.StandBy, match);
     }
 
@@ -278,7 +278,7 @@ public class CoreMatchSteps extends Steps {
         whenTheSelectedSubstituteResponds(response);
     }
 
-    @When("the outstanding player %response")
+    @When("the outstanding player %response the match")
     public void whenTheOutstandingPlayerResponds(String response) {
         theLastPlayerWhoReplied = genericFixture
                 .aSelectedPlayerResponds(thePlayerStillToRespond, getResponse(response));
@@ -301,8 +301,14 @@ public class CoreMatchSteps extends Steps {
 
     @Then("they are notified that they are now a confirmed standby player")
     public void thenTheyAreNotifiedThatTheyAreNowAConfirmedSubstitute() {
-        genericFixture.checkOutboundEmailIsCorrect(theLastPlayerWhoReplied, NotificationKind.ConfirmationOfStandby,
+        genericFixture.checkOutboundMessageIsCorrect(theLastPlayerWhoReplied, NotificationKind.ConfirmationOfStandby,
                 match);
+    }
+
+    @Then("all notified players who have not declined are sent a detailed match status with completed status.")
+    public void thenAllNotifiedPlayersWhoHaveNotDeclinedAreSentADetailedMatchStatusWithCompletedStatus() {
+        genericFixture.getAllNotifiedPlayers().forEach(
+                player -> genericFixture.checkHasReceivedDetailedMatchStatus(player, match));
     }
 
     @Then("the outstanding player is automatically declined")
@@ -470,12 +476,6 @@ public class CoreMatchSteps extends Steps {
     @Then("all notified players who have not declined are sent a detailed match status")
     @Pending
     public void thenAllNotifiedPlayersWhoHaveNotDeclinedAreSentADetailedMatchStatus() {
-        // PENDING
-    }
-
-    @Then("all notified players who have not declined are sent a detailed match status with completed status.")
-    @Pending
-    public void thenAllNotifiedPlayersWhoHaveNotDeclinedAreSentADetailedMatchStatusWithCompletedStatus() {
         // PENDING
     }
 

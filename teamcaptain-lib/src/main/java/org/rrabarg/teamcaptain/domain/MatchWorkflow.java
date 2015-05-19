@@ -197,7 +197,7 @@ public class MatchWorkflow {
     }
 
     private void iCanStandby(Player player) {
-        match.setPlayerState(player, PlayerState.OnStandby);
+        match.setPlayerState(player, PlayerState.AcceptedOnStandby);
         sendNotification(player, NotificationKind.ConfirmationOfStandby);
         pump();
     }

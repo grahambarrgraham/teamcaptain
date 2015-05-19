@@ -6,6 +6,7 @@ import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.peter;
 import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.stacy;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import org.rrabarg.teamcaptain.NotificationStrategy;
 import org.rrabarg.teamcaptain.SelectionStrategy;
@@ -80,4 +81,8 @@ public class SimpleGenericCompetitionFixture extends BaseFixture {
         scheduleService.updateMatch(match);
     }
 
+    public Stream<Player> getAllNotifiedPlayers() {
+        return Stream.of(selectedPlayersThatAccepted, standbyPlayersThatAccepted,
+                playersThatDidntRespond).flatMap(player -> player.stream());
+    }
 }

@@ -22,6 +22,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.rrabarg.teamcaptain.TestMailbox;
 import org.rrabarg.teamcaptain.channel.Email;
+import org.rrabarg.teamcaptain.channel.Message;
 import org.rrabarg.teamcaptain.config.MutableClockFactory;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
@@ -156,6 +157,10 @@ public abstract class BaseFixture {
                 NotificationKind.ConfirmationOfDecline));
     }
 
+    public void checkHasReceivedDetailedMatchStatus(Player player, Match match) {
+        checkOutboundMessageIsCorrect(player, NotificationKind.MatchStatus, match);
+    }
+
     protected void checkAcknowledgement(Match match, Player player, NotificationKind kind) {
         checkEmailIsCorrect(match, player,
                 mailbox.pop(player.getEmailAddress()),
@@ -164,7 +169,7 @@ public abstract class BaseFixture {
 
     public void checkAllCanYouPlayNotificationsWereSent(Match match) {
         selectedPlayers.stream().forEach(
-                player -> checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match));
+                player -> checkOutboundMessageIsCorrect(player, NotificationKind.CanYouPlay, match));
     }
 
     public void checkAnAdministratorMatchConfirmationIsRaised(Match match) {
@@ -241,7 +246,7 @@ public abstract class BaseFixture {
 
     public void checkMatchConfirmationSentToAllConfirmedPlayers(Match match) {
         selectedPlayersThatAccepted.stream().forEach(
-                player -> checkOutboundEmailIsCorrect(player, NotificationKind.MatchConfirmation, match));
+                player -> checkOutboundMessageIsCorrect(player, NotificationKind.MatchConfirmation, match));
     }
 
     public void pumpWorkflowsTillXDaysBeforeMatch(final int daysTillMatchToStartReminders, Match match) {
@@ -280,34 +285,44 @@ public abstract class BaseFixture {
         assertThat("While checking that outbound email contained list of team's players, found email null", email,
                 notNullValue());
         selectedPlayersThatAccepted.stream().forEach(
-                player -> assertThat("Email body must contain the players name", email.getBody(),
-                        containsString(player.getKey())));
+                player -> checkPlayerIsNamedInMessage(email, player));
     }
 
-    protected void checkOutboundEmailContainsMatchDetails(Email email, Match match) {
-        assertThat("While checking that outbound email contained match details, found email null", email,
+    private void checkPlayerIsNamedInMessage(Message message, Player player) {
+        assertThat("Email body must contain the players name", message.getBody(),
+                containsString(player.getKey()));
+    }
+
+    protected void checkOutboundEmailContainsMatchDetails(Message message, Match match) {
+        assertThat("While checking that outbound email contained match details, found email null", message,
                 notNullValue());
 
-        assertThat("Email body must contain the match location", email.getBody(),
+        assertThat("Email body must contain the match location", message.getBody(),
                 containsString(match.getLocation().toString()));
 
-        assertThat("Email body must contain the match title", email.getBody(),
+        assertThat("Email body must contain the match title", message.getBody(),
                 containsString(match.getTitle().toString()));
 
-        assertThat("Email body must contain the match date", email.getBody(),
+        assertThat("Email body must contain the match date", message.getBody(),
                 containsString(match.getStartDateTime().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))));
 
-        assertThat("Email body must contain the match start time", email.getBody(),
+        assertThat("Email body must contain the match start time", message.getBody(),
                 containsString(match.getStartDateTime().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM))));
 
         if (match.getTravelDetails() != null) {
-            assertThat("Email body must contain the match travel details", email.getBody(),
+            assertThat("Email body must contain the match travel details", message.getBody(),
                     containsString(match.getTravelDetails()));
         }
     }
 
-    public void checkOutboundEmailIsCorrect(Player player, NotificationKind kind, Match match) {
-        checkEmailIsCorrect(match, player, mailbox.peek(player.getEmailAddress()), kind, null);
+    public Message checkOutboundMessageIsCorrect(Player player, NotificationKind kind, Match match) {
+        final Email message = mailbox.peek(player.getEmailAddress());
+        checkEmailIsCorrect(match, player, message, kind, null);
+        checkPlayerIsNamedInMessage(message, player);
+        checkOutboundEmailContainsListOfPlayers(message);
+        checkOutboundEmailContainsMatchDetails(message, match);
+
+        return message;
     }
 
     protected void checkReminderOnDay(int daysBeforeMatch, Match match) {
@@ -341,6 +356,8 @@ public abstract class BaseFixture {
             break;
         case MatchConfirmation:
             return "the details for";
+        case MatchStatus:
+            return "match status";
         default:
             break;
         }
@@ -395,7 +412,7 @@ public abstract class BaseFixture {
 
     public void checkNotificationGoesToEligibleFirstPickPlayers(Match match) {
         selectedPlayers.stream().filter(p -> !selectedPlayersThatDeclined.contains(p))
-                .forEach(player -> checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match));
+                .forEach(player -> checkOutboundMessageIsCorrect(player, NotificationKind.CanYouPlay, match));
     }
 
     public void checkOutboundTeamCaptainEmailIsCorrect(NotificationKind kind, Match match, Player referencePlayer) {
@@ -434,7 +451,7 @@ public abstract class BaseFixture {
     }
 
     private void aPlayerDoesNotRespond(Player player, Match match) {
-        checkOutboundEmailIsCorrect(player, NotificationKind.CanYouPlay, match);
+        checkOutboundMessageIsCorrect(player, NotificationKind.CanYouPlay, match);
         playersThatDidntRespond.add(player);
     }
 

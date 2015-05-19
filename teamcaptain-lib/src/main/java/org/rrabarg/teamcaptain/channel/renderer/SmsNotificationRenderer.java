@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SmsPlayerNotificationRenderer implements NotificationRenderer {
+public class SmsNotificationRenderer implements NotificationRenderer {
 
     @Autowired
     Provider<Clock> clock;
@@ -58,10 +58,21 @@ public class SmsPlayerNotificationRenderer implements NotificationRenderer {
             case MatchConfirmation:
                 builder.matchConfirmation();
                 break;
+            case MatchStatus:
+                builder.matchStatus();
+                break;
             case StandBy:
                 builder.canYouStandby();
                 break;
             case StandDown:
+                break;
+            case MatchFulfilled:
+                builder.matchConfirmation();
+                break;
+            case InsufficientPlayers:
+            case OutOfBandMessage:
+            case StandbyPlayersNotified:
+                builder.alert(notification.getKind());
                 break;
             default:
                 return null;

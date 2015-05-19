@@ -2,9 +2,12 @@ package org.rrabarg.teamcaptain.channel.renderer;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.List;
 
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Notification;
+import org.rrabarg.teamcaptain.domain.NotificationKind;
+import org.rrabarg.teamcaptain.domain.Player;
 
 class SmsContentBuilder {
 
@@ -167,6 +170,56 @@ class SmsContentBuilder {
                 .append("Hi ")
                 .append(notification.getTargetContactDetail().getFirstname())
                 .append(". ");
+        return this;
+    }
+
+    public SmsContentBuilder matchStatus() {
+        this
+                .hello()
+                .append("A full team has not yet been selected for ")
+                .matchTitle()
+                .append(" on ")
+                .matchDate()
+                .append(".")
+                .playerStatus()
+                .signoff();
+        return this;
+    }
+
+    private SmsContentBuilder playerStatus() {
+        final List<Player> acceptedPlayers = getMatch().getAcceptedPlayers(notification.getPlayerPool());
+        final List<Player> declinedPlayers = getMatch().getDeclinedPlayers(notification.getPlayerPool());
+        final List<Player> notifiedPlayers = getMatch().getNotifiedPlayers(notification.getPlayerPool());
+        final List<Player> onStandbyPlayers = getMatch().getAcceptedOnStandbyPlayers(
+                notification.getPlayerPool());
+
+        return playerStatusDetail(acceptedPlayers, "accepted")
+                .playerStatusDetail(declinedPlayers, "declined")
+                .playerStatusDetail(notifiedPlayers, "yet to respond")
+                .playerStatusDetail(onStandbyPlayers, "accepted a standby request");
+    }
+
+    private SmsContentBuilder playerStatusDetail(List<Player> player, String description) {
+        if (player.isEmpty()) {
+            this.append("No players have ").append(description).append(".");
+        } else {
+            this.append("The following players have ").append(description).append(" : ");
+            this.append(player.toString());
+        }
+        this.append(".  ");
+        return this;
+    }
+
+    public SmsContentBuilder alert(NotificationKind kind) {
+        this
+                .hello()
+                .append("Alert : " + kind)
+                .matchTitle()
+                .append(" on ")
+                .matchDate()
+                .append(".")
+                .playerStatus()
+                .signoff();
         return this;
     }
 

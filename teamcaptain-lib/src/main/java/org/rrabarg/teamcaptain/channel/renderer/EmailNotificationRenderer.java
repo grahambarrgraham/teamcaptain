@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.List;
 
 import javax.inject.Provider;
 
@@ -12,11 +13,13 @@ import org.rrabarg.teamcaptain.channel.Message;
 import org.rrabarg.teamcaptain.channel.NotificationRenderer;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Notification;
+import org.rrabarg.teamcaptain.domain.NotificationKind;
+import org.rrabarg.teamcaptain.domain.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmailPlayerNotificationRenderer implements NotificationRenderer {
+public class EmailNotificationRenderer implements NotificationRenderer {
 
     @Autowired
     Provider<Clock> clock;
@@ -42,8 +45,8 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
         Email build() {
             final String toAddress = notification.getTargetContactDetail().getEmailAddress();
 
-            SubjectBuilder contentBuilder = null;
-            SubjectBuilder subjectBuilder = null;
+            ContentBuilder contentBuilder = null;
+            ContentBuilder subjectBuilder = null;
 
             switch (notification.getKind()) {
             case CanYouPlay:
@@ -67,8 +70,11 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 contentBuilder = content().reminder();
                 break;
             case MatchConfirmation:
-                subjectBuilder = subject().add("Match confirmed: ").matchTitle();
+                subjectBuilder = subject().add("Match Confirmed: ").matchTitle();
                 contentBuilder = content().matchConfirmation();
+            case MatchStatus:
+                subjectBuilder = subject().add("Match Status Update : ").matchTitle();
+                contentBuilder = content().matchStatus();
                 break;
             case StandBy:
                 subjectBuilder = subject().matchTitle();
@@ -76,6 +82,11 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 break;
             case StandDown:
                 break;
+            case InsufficientPlayers:
+            case OutOfBandMessage:
+            case StandbyPlayersNotified:
+                subjectBuilder = subject().add("Match Alert : ").matchTitle();
+                contentBuilder = content().alert(notification.getKind());
             default:
                 break;
             }
@@ -92,26 +103,65 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
             return clock.get().instant();
         }
 
-        private SubjectBuilder subject() {
-            return new SubjectBuilder();
+        private ContentBuilder subject() {
+            return new ContentBuilder();
         }
 
-        private SubjectBuilder content() {
-            return new SubjectBuilder();
+        private ContentBuilder content() {
+            return new ContentBuilder();
         }
 
-        class SubjectBuilder {
+        class ContentBuilder {
             StringBuilder builder = new StringBuilder();
 
-            public SubjectBuilder add(String s) {
+            public ContentBuilder add(String s) {
                 builder.append(s);
                 return this;
             }
 
-            public SubjectBuilder matchConfirmation() {
+            public ContentBuilder matchStatus() {
                 this
                         .hello()
-                        .append("Here's the details for ")
+                        .append("A full team has not yet been selected for ")
+                        .matchTitle()
+                        .append(" on ")
+                        .matchDate()
+                        .append(".")
+                        .newline()
+                        .playerStatus()
+                        .newline()
+                        .signoff();
+                return this;
+            }
+
+            private ContentBuilder playerStatus() {
+                final List<Player> acceptedPlayers = getMatch().getAcceptedPlayers(notification.getPlayerPool());
+                final List<Player> declinedPlayers = getMatch().getDeclinedPlayers(notification.getPlayerPool());
+                final List<Player> notifiedPlayers = getMatch().getNotifiedPlayers(notification.getPlayerPool());
+                final List<Player> onStandbyPlayers = getMatch().getAcceptedOnStandbyPlayers(
+                        notification.getPlayerPool());
+
+                return playerStatusDetail(acceptedPlayers, "accepted")
+                        .playerStatusDetail(declinedPlayers, "declined")
+                        .playerStatusDetail(notifiedPlayers, "yet to respond")
+                        .playerStatusDetail(onStandbyPlayers, "accepted a standby request");
+            }
+
+            private ContentBuilder playerStatusDetail(List<Player> player, String description) {
+                if (player.isEmpty()) {
+                    this.append("No players have ").append(description).append(".");
+                } else {
+                    this.append("The following players have ").append(description).append(" : ");
+                    this.append(player.toString());
+                }
+                this.append(".").newline();
+                return this;
+            }
+
+            public ContentBuilder matchConfirmation() {
+                this
+                        .hello()
+                        .append("Please find the confirmed team selection below for ")
                         .matchTitle()
                         .append(".")
                         .newline()
@@ -123,11 +173,11 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            private SubjectBuilder travelDetails() {
+            private ContentBuilder travelDetails() {
                 return this.append(getMatch().getTravelDetails());
             }
 
-            private SubjectBuilder matchDetails() {
+            private ContentBuilder matchDetails() {
                 this.append("The match is at ")
                         .append(getMatch().getLocation().toString())
                         .append(" and starts at ")
@@ -140,18 +190,18 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            private SubjectBuilder teamForMatch() {
+            private ContentBuilder teamForMatch() {
                 this.append("The team for this match will be : ");
                 this.append(getMatch().getAcceptedPlayers(notification.getPlayerPool()).toString());
                 return this;
             }
 
-            private SubjectBuilder matchStartTime() {
+            private ContentBuilder matchStartTime() {
                 return this.append(getMatch().getStartDateTime()
                         .format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)));
             }
 
-            public SubjectBuilder canYouStandby() {
+            public ContentBuilder canYouStandby() {
                 this
                         .hello()
                         .append("Can you standby for the match on ")
@@ -164,7 +214,7 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            public SubjectBuilder confirmStandby() {
+            public ContentBuilder confirmStandby() {
                 this
                         .hello()
                         .append("Brilliant, thanks, I'll be in touch shortly to confirm.")
@@ -173,7 +223,7 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            public SubjectBuilder append(String s) {
+            public ContentBuilder append(String s) {
                 if (s != null) {
                     builder.append(s);
                 }
@@ -184,7 +234,7 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return builder.toString();
             }
 
-            public SubjectBuilder matchTitle() {
+            public ContentBuilder matchTitle() {
                 builder.append(getMatch().getTitle());
                 return this;
             }
@@ -193,7 +243,7 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return notification.getMatch();
             }
 
-            public SubjectBuilder reminder() {
+            public ContentBuilder reminder() {
                 this
                         .hello()
                         .append("Sorry to bother you again, but its getting close to the match date and we really need to know whether you can play. The match is on : ")
@@ -205,7 +255,7 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            public SubjectBuilder canYouPlayContent() {
+            public ContentBuilder canYouPlayContent() {
                 this
                         .hello()
                         .append("Can you play in this match on ")
@@ -217,7 +267,7 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            public SubjectBuilder confirmAcceptance() {
+            public ContentBuilder confirmAcceptance() {
                 this
                         .hello()
                         .append("Brilliant, your in. I'll be in touch shortly with all the match details once I've got a full team.")
@@ -226,7 +276,7 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            public SubjectBuilder confirmDecline() {
+            public ContentBuilder confirmDecline() {
                 this.hello()
                         .append("Sorry you couldn't play, hope too see you in future matches.")
                         .append(NEW_LINE)
@@ -234,18 +284,18 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            private SubjectBuilder newline() {
+            private ContentBuilder newline() {
                 this.append(NEW_LINE);
                 return this;
             }
 
-            private SubjectBuilder matchDate() {
+            private ContentBuilder matchDate() {
                 this.append(getMatch().getStartDateTime()
                         .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
                 return this;
             }
 
-            public SubjectBuilder signoff() {
+            public ContentBuilder signoff() {
                 this
                         .append("Thanks")
                         .append(NEW_LINE)
@@ -253,7 +303,7 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            public SubjectBuilder answerYesOrNo() {
+            public ContentBuilder answerYesOrNo() {
                 this
                         .append("Please reply with the text YES or NO. ")
                         .append("If you're not sure please reply with any details. Once I've got a full team, I'll send out all of the match details.")
@@ -261,12 +311,25 @@ public class EmailPlayerNotificationRenderer implements NotificationRenderer {
                 return this;
             }
 
-            public SubjectBuilder hello() {
+            public ContentBuilder hello() {
                 this
                         .append("Hi ")
                         .append(notification.getTargetContactDetail().getFirstname())
                         .append(NEW_LINE)
                         .append(NEW_LINE);
+                return this;
+            }
+
+            public ContentBuilder alert(NotificationKind kind) {
+                this
+                        .hello()
+                        .append("Alert : " + kind)
+                        .matchTitle()
+                        .append(" on ")
+                        .matchDate()
+                        .append(".")
+                        .playerStatus()
+                        .signoff();
                 return this;
             }
 

@@ -57,7 +57,7 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
 
     public void allButOneFirstPickPlayersRespond(Match match) {
         log.debug("All but one first pick players respond");
-        checkOutboundEmailIsCorrect(stacy, NotificationKind.CanYouPlay, match);
+        checkOutboundMessageIsCorrect(stacy, NotificationKind.CanYouPlay, match);
         aPlayerInThePoolSaysTheyCanPlay();
         playersThatDidntRespond.add(joe);
     }
@@ -78,11 +78,11 @@ public class CambridgeLeagueCompetitionFixture extends BaseFixture {
     }
 
     public void checkNotificationGoesToNextAppropriatePlayerInThePool(Match match) {
-        checkOutboundEmailIsCorrect(peter, NotificationKind.CanYouPlay, match);
+        checkOutboundMessageIsCorrect(peter, NotificationKind.CanYouPlay, match);
     }
 
     public void checkNextAppropriatePlayerInThePoolIsNotifiedOfStandby(Match match) {
-        checkOutboundEmailIsCorrect(peter, NotificationKind.StandBy, match);
+        checkOutboundMessageIsCorrect(peter, NotificationKind.StandBy, match);
     }
 
     public void aFirstPickPoolMemberHasAlreadyDeclined(Match match) throws IOException {

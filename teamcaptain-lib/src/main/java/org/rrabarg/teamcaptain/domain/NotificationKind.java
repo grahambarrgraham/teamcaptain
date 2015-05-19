@@ -11,6 +11,7 @@ public enum NotificationKind {
     Reminder(Question),
     StandBy(Question),
     StandDown(Question),
+
     ConfirmationOfAcceptance(Information),
     ConfirmationOfDecline(Information),
     ConfirmationOfStandby(Information),
@@ -19,7 +20,8 @@ public enum NotificationKind {
     StandbyPlayersNotified(Information),
     MatchFulfilled(Information),
     InsufficientPlayers(Information),
-    OutOfBandMessage(Information);
+    OutOfBandMessage(Information),
+    MatchStatus(Information);
 
     private final Category category;
 

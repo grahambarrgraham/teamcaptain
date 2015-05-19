@@ -141,6 +141,18 @@ public class Match {
         return getPlayersInState(PlayerState.Confirmed, pool);
     }
 
+    public List<Player> getDeclinedPlayers(PlayerPool playerPool) {
+        return getPlayersInState(PlayerState.Declined, playerPool);
+    }
+
+    public List<Player> getNotifiedPlayers(PlayerPool playerPool) {
+        return getPlayersInState(PlayerState.Notified, playerPool);
+    }
+
+    public List<Player> getAcceptedOnStandbyPlayers(PlayerPool playerPool) {
+        return getPlayersInState(PlayerState.AcceptedOnStandby, playerPool);
+    }
+
     private List<Player> getPlayersInState(PlayerState playerState, PlayerPool pool) {
         final List<Player> playerKeys = workflowState.getPlayerStates().entrySet().stream()
                 .filter(e -> e.getValue() == playerState)

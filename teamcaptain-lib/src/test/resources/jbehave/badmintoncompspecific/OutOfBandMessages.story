@@ -13,7 +13,7 @@ Then the team captain is notified of the unexpected message from the substitute 
 
 Scenario: a confirmed player subsequently declines
 Given a match is scheduled and is in the selection window
-And a selected player accepts
+And a selected player accepts the match
 When the player subsequently declines
 Then the team captain is notified of the unexpected message from that selected player
 

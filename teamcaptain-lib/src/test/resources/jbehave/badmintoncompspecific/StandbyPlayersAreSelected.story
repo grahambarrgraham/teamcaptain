@@ -5,7 +5,7 @@ Given a match is scheduled and is in the selection window
 And all selected players accept except one, and that player has an eligible substitute in the pool
 When time elapses till 4 days before the match
 Then a standby notification goes out to the next appropriate player in the pool
-And an administrator standby alert is raised
+Then the team captain is notified of the standby message from the system
 
 Scenario: a standby player accepts, and then the original player confirms in time, original player is selected, standby is stood down
 Given a match is scheduled and is in the selection window
