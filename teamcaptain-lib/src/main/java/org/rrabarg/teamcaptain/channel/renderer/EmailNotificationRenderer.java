@@ -72,6 +72,7 @@ public class EmailNotificationRenderer implements NotificationRenderer {
             case MatchConfirmation:
                 subjectBuilder = subject().add("Match Confirmed: ").matchTitle();
                 contentBuilder = content().matchConfirmation();
+                break;
             case MatchStatus:
                 subjectBuilder = subject().add("Match Status Update : ").matchTitle();
                 contentBuilder = content().matchStatus();

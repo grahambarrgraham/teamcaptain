@@ -78,7 +78,7 @@ public class JBehaveRunnerTest extends JUnitStories {
                                 .withDefaultFormats().withPathResolver(new ResolveToPackagedName())
                                 .withViewResources(viewResources)
                                 .withFormats(Format.CONSOLE, Format.TXT, Format.HTML, Format.XML)
-                                .withFailureTrace(true).withFailureTraceCompression(false).withCrossReference(xref))
+                                .withFailureTrace(true).withFailureTraceCompression(true).withCrossReference(xref))
                 .useParameterConverters(parameterConverters)
                 // use '%' instead of '$' to identify parameters
                 .useStepPatternParser(new RegexPrefixCapturingPatternParser("%")).useStepMonitor(xref.getStepMonitor());

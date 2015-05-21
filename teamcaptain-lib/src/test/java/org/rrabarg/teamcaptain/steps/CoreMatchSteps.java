@@ -214,7 +214,7 @@ public class CoreMatchSteps extends Steps {
 
     @Then("the team captain is notified of the %type message from %player")
     public void thenTheTeamCaptainIsNotified(String type, String player) {
-        genericFixture.checkOutboundTeamCaptainEmailIsCorrect(getTeamCaptainNotificationKind(type), match,
+        genericFixture.checkOutboundTeamCaptainMessageIsCorrect(getTeamCaptainNotificationKind(type), match,
                 theLastPlayerWhoReplied);
     }
 

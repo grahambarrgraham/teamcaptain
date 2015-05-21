@@ -57,7 +57,7 @@ public class CompetitionBuilder {
     private final LocalTime aEndTime = aTime.plus(3, HOURS);
     private final String aLocationFirstLine = "1 some street";
     private final String aLocationPostcode = "EH1 1YA";
-    private final String aTitle = "A test match";
+    private final String aTitle = "MX1 Hurst Away";
 
     private Schedule standardSchedule(String scheduleName) {
         return new Schedule(standardMatch());
