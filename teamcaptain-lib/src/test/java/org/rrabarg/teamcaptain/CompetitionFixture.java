@@ -19,7 +19,6 @@ import java.util.Optional;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.rrabarg.teamcaptain.channel.Email;
 import org.rrabarg.teamcaptain.channel.Message;
 import org.rrabarg.teamcaptain.config.MutableClockFactory;
 import org.rrabarg.teamcaptain.domain.Channel;
@@ -98,7 +97,7 @@ public class CompetitionFixture {
     }
 
     public void checkHasReceivedDetailedMatchStatus(Player player, Match match, List<Player> allNotifiedPlayers) {
-        final Message message = checkOutboundMessageIsCorrect(player,
+        final Optional<Message> message = checkOutboundMessageIsCorrect(player,
                 NotificationKind.MatchStatus, match);
         checkPlayerIsNamedInMessage(message, player);
         checkOutboundMessageContainsListOfPlayers(message,
@@ -108,7 +107,7 @@ public class CompetitionFixture {
 
     public void checkAnTeamCaptainMatchConfirmationIsRaised(Competition comp, Match match,
             List<Player> allAcceptedPlayers) {
-        final Message message = checkTeamCaptainAlert(comp, "confirmation");
+        final Optional<Message> message = checkTeamCaptainAlert(comp, "confirmation");
         checkOutboundMessageContainsListOfPlayers(message,
                 allAcceptedPlayers);
         checkOutboundMessageContainsMatchDetails(message, match);
@@ -122,20 +121,14 @@ public class CompetitionFixture {
         checkTeamCaptainAlert(comp, "insufficient");
     }
 
-    protected Message checkTeamCaptainAlert(Competition comp, String expectedText) {
+    protected Optional<Message> checkTeamCaptainAlert(Competition comp, String expectedText) {
 
-        final Message message = peekLastMessage(comp.getTeamCaptain());
-        assertThat("Team captain alert message is expected", message,
-                notNullValue());
+        final Optional<Message> optionalMessage = peekLastMessage(comp.getTeamCaptain());
+        assertThat("Team captain alert message is expected", optionalMessage.isPresent());
         assertThat("Team captain alert should contain text '" + expectedText
-                + "'", getMessageText(message).toLowerCase(),
+                + "'", optionalMessage.get().getSubjectAndBody(),
                 containsString(expectedText));
-        return message;
-    }
-
-    private String getMessageText(Message message) {
-        return (message.getSubject() == null ? "" : message.getSubject())
-                + message.getBody();
+        return optionalMessage;
     }
 
     public void checkDailyReminderIsSentForDaysBeforeMatch(int daysBeforeMatch,
@@ -161,13 +154,15 @@ public class CompetitionFixture {
 
     protected void checkThereAreNoRemindersForPlayersThatDidNotRespond(
             Match match, final Player playerThatDidNotRespond) {
-        final Optional<Email> findAnyReminder = mailbox
+        final Optional<Message> findAnyReminder = mailbox
                 .viewAll(playerThatDidNotRespond.getEmailAddress())
                 .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()))
                 .findFirst();
 
-        assertThat(findAnyReminder.get().getTimestamp(),
-                isDaysBeforeMatch(5, match));
+        if (findAnyReminder.isPresent()) {
+            assertThat(findAnyReminder.get().getTimestamp(),
+                    isDaysBeforeMatch(5, match));
+        }
     }
 
     public void fixDateTimeBeforeMatch(long amount, ChronoUnit unit, Match match) {
@@ -184,7 +179,7 @@ public class CompetitionFixture {
                         peekLastMessage(player), selectedPlayersThatAccepted));
     }
 
-    private Message peekLastMessage(User user) {
+    private Optional<Message> peekLastMessage(User user) {
         return mailbox.peek(user.getEmailAddress());
     }
 
@@ -229,11 +224,11 @@ public class CompetitionFixture {
         assertThat("Message must not be null for player " + player, message,
                 notNullValue());
 
-        assertThat("Message body doesn't contain the match title" + player,
-                getMessageText(message), containsString(match.getTitle()));
+        assertThat("Message content doesn't contain the match title" + player,
+                message.getSubjectAndBody(), containsString(match.getTitle()));
 
-        assertThat("Message Body mismatch for player " + player,
-                message.getBody(),
+        assertThat("Message content mismatch for player " + player,
+                message.getSubjectAndBody(),
                 containsString(getContentStringFor(kindOfMessage)));
         if (daysBeforeMatch != null) {
             assertThat("Email Date is not correct for player " + player,
@@ -243,80 +238,89 @@ public class CompetitionFixture {
     }
 
     protected void checkOutgoingMessageIsCorrect(Player player,
-            NotificationKind kindOfMessage, Match match, Message message,
+            NotificationKind kindOfMessage, Match match, Optional<Message> message,
             Integer daysBeforeMatch) {
 
-        assertThat("Message must not be null for player " + player, message,
-                notNullValue());
+        assertThat("Message must be present for player " + player, message.isPresent());
 
-        if (Channel.Email == message.getChannel()) {
+        final Message m = message.get();
+
+        if (Channel.Email == m.getChannel()) {
             assertThat("Email subject must contain match title" + player,
-                    message.getSubject(), containsString(match.getTitle()));
+                    m.getSubject(), containsString(match.getTitle()));
         } else {
             assertThat("Message must contain match title" + player,
-                    message.getBody(), containsString(match.getTitle()));
+                    m.getSubjectAndBody(), containsString(match.getTitle()));
         }
 
-        assertThat("Message Body mismatch for player " + player,
-                message.getBody(),
+        assertThat("The outgoing message must be of the expected type : " + kindOfMessage, m.getSubjectAndBody(),
                 containsString(getContentStringFor(kindOfMessage)));
 
         if (daysBeforeMatch != null) {
             assertThat("Message date is not correct for player " + player,
-                    message.getTimestamp(),
+                    m.getTimestamp(),
                     isDaysBeforeMatch(daysBeforeMatch, match));
         }
     }
 
-    protected void checkOutboundMessageContainsListOfPlayers(Message message,
+    protected void checkOutboundMessageContainsListOfPlayers(Optional<Message> optionalMessage,
             List<Player> players) {
         assertThat(
                 "While checking that outbound email contained list of team's players, found email null",
-                message, notNullValue());
+                optionalMessage.isPresent());
         players.stream().forEach(
-                player -> checkPlayerIsNamedInMessage(message, player));
+                player -> checkPlayerIsNamedInMessage(optionalMessage, player));
     }
 
-    private void checkPlayerIsNamedInMessage(Message message, Player player) {
-        assertThat("Message body must contain the players name",
-                message.getBody(), containsString(player.getKey()));
+    private void checkPlayerIsNamedInMessage(Optional<Message> message, Player player) {
+        assertThat("Message content must contain the players name",
+                message.get().getSubjectAndBody(), containsString(player.getKey()));
     }
 
-    protected void checkOutboundMessageContainsMatchDetails(Message message,
+    protected void checkOutboundMessageContainsMatchDetails(Optional<Message> optionalMessage,
             Match match) {
         assertThat(
                 "While checking that outbound message contained match details, found email null",
-                message, notNullValue());
+                optionalMessage.isPresent());
 
-        assertThat("Message body must contain the match location",
-                message.getBody(), containsString(match.getLocation()
+        final Message message = optionalMessage.get();
+
+        assertThat("Message content must contain the match location",
+                message.getSubjectAndBody(), containsString(match.getLocation()
                         .toString()));
 
-        assertThat("Message body must contain the match title",
-                message.getBody(), containsString(match.getTitle().toString()));
+        assertThat("Message content must contain the match title",
+                message.getSubjectAndBody(), containsString(match.getTitle().toString()));
 
         assertThat(
-                "Message body must contain the match date",
-                message.getBody(),
+                "Message content must contain the match date",
+                message.getSubjectAndBody(),
                 containsString(match.getStartDateTime().format(
                         DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))));
 
         assertThat(
-                "Message body must contain the match start time",
-                message.getBody(),
+                "Message content must contain the match start time",
+                message.getSubjectAndBody(),
                 containsString(match.getStartDateTime().format(
                         DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM))));
 
         if (match.getTravelDetails() != null) {
-            assertThat("Message body must contain the match travel details",
-                    message.getBody(), containsString(match.getTravelDetails()));
+            assertThat("Message content must contain the match travel details",
+                    message.getSubjectAndBody(), containsString(match.getTravelDetails()));
         }
     }
 
-    public Message checkOutboundMessageIsCorrect(Player player,
+    public Optional<Message> checkOutboundMessageIsCorrect(Player player,
             NotificationKind kind, Match match) {
-        checkOutgoingMessageIsCorrect(player, kind, match, peekLastMessage(player), null);
-        return peekLastMessage(player);
+        final Optional<Message> findMessage = peekLastMessage(player);
+        checkOutgoingMessageIsCorrect(player, kind, match, findMessage, null);
+        return findMessage;
+    }
+
+    private Optional<Message> findMessage(Player player, NotificationKind kind) {
+        return mailbox.viewAll(player.getEmailAddress())
+                .filter(message -> message.getSubjectAndBody().contains(getContentStringFor(kind)))
+                .findFirst();
     }
 
     protected void checkReminderOnDay(int daysBeforeMatch, Match match, List<Player> playersThatDidntRespond) {
@@ -335,7 +339,7 @@ public class CompetitionFixture {
     protected String getContentStringFor(NotificationKind messageKind) {
         switch (messageKind) {
         case CanYouPlay:
-            return "Can you play";
+            return "selected to play";
         case ConfirmationOfStandby:
             return "Brilliant, thanks, I'll be in touch shortly to confirm.";
         case ConfirmationOfAcceptance:
@@ -343,15 +347,15 @@ public class CompetitionFixture {
         case ConfirmationOfDecline:
             return "Sorry you couldn't play";
         case Reminder:
-            return "Sorry to bother you again";
+            return "Match reminder";
         case StandBy:
             return "Can you standby";
         case StandDown:
-            break;
+            return "won't need you for this match";
         case MatchConfirmation:
-            return "confirmed team selection";
+            return "Team selection has been now been confirmed";
         case MatchStatus:
-            return "match status";
+            return "here is a status update";
         default:
             break;
         }
@@ -424,7 +428,7 @@ public class CompetitionFixture {
             checkTeamCaptainAlert(comp, "Message requires attention");
             break;
         case MatchFulfilled:
-            checkTeamCaptainAlert(comp, "confirmed team");
+            checkTeamCaptainAlert(comp, "Team selection has been now been confirmed");
             checkOutboundMessageContainsListOfPlayers(peekLastMessage(comp.getTeamCaptain()),
                     selectedPlayersThatAccepted);
             break;

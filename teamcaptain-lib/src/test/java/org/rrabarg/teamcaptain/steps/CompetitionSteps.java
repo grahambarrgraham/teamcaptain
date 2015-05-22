@@ -17,6 +17,7 @@ import javax.inject.Provider;
 import org.jbehave.core.annotations.AfterScenario;
 import org.jbehave.core.annotations.Aliases;
 import org.jbehave.core.annotations.BeforeScenario;
+import org.jbehave.core.annotations.Composite;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
@@ -83,6 +84,14 @@ public class CompetitionSteps {
         builder.withPlayerPool(getPlayersByFirstName(getPlayerFirstNamesFromText(players)));
     }
 
+    @Given("a match is scheduled and is in the selection window")
+    @Composite(steps = {
+            "Given a match is scheduled",
+            "Given the match is in the selection window" })
+    public void givenAMatchIsScheduledAndIsInTheWindow() throws IOException {
+        // nothing additional required
+    }
+
     @Given("a match is scheduled")
     public void givenAMatchIsScheduled() throws IOException {
         competition = builder.build();
@@ -93,12 +102,6 @@ public class CompetitionSteps {
     public void theMatchIsInTheSelectionWindow() throws IOException {
         fixture.fixDateTimeBeforeMatch(10, ChronoUnit.DAYS, match);
         fixture.refreshWorkflows(competition);
-    }
-
-    @Given("a match is scheduled and is in the selection window")
-    public void givenAMatchIsScheduledAndIsInTheWindow() throws IOException {
-        givenAMatchIsScheduled();
-        theMatchIsInTheSelectionWindow();
     }
 
     @Given("%players is selected and %acceptsOrDecline")
@@ -114,6 +117,11 @@ public class CompetitionSteps {
     @Given("time elapses till %daysBeforeMatch days before the match")
     public void timeElapses(int daysBeforeMatch) {
         fixture.pumpWorkflowsTillXDaysBeforeMatch(daysBeforeMatch, match);
+    }
+
+    @When("time elapses till %daysBeforeMatch days before the match")
+    public void whenTimeElapses(int daysBeforeMatch) {
+        timeElapses(daysBeforeMatch);
     }
 
     @When("%players is selected and %acceptsOrDecline")

@@ -87,6 +87,10 @@ public class Match {
         workflowState.setPlayerState(player, playerState);
     }
 
+    public void setTravelDetails(String travelDetails) {
+        workflowState.setTravelDetails(travelDetails);
+    }
+
     public WorkflowState getWorkflowState() {
         return workflowState;
     }

@@ -15,9 +15,14 @@ public class MatchBuilder {
     private ZonedDateTime endDateTime;
     private String aLocationFirstLine;
     private String aLocationPostcode;
+    private String travelDetails;
 
     public Match build() {
-        return new Match(aTitle, startDateTime, endDateTime, new Location(aLocationFirstLine, aLocationPostcode));
+        final Match match = new Match(aTitle, startDateTime, endDateTime, new Location(aLocationFirstLine,
+                aLocationPostcode));
+        match.setTravelDetails(travelDetails);
+        return match;
+
     }
 
     public MatchBuilder withTitle(String aTitle) {
@@ -29,6 +34,11 @@ public class MatchBuilder {
             String aLocationPostcode) {
         this.aLocationFirstLine = aLocationFirstLine;
         this.aLocationPostcode = aLocationPostcode;
+        return this;
+    }
+
+    public MatchBuilder withTravelDetails(String travelDetails) {
+        this.travelDetails = travelDetails;
         return this;
     }
 

@@ -1,5 +1,8 @@
 Narrative Team selections isn't going well, the captain is alerted
 
+Meta:
+@include
+
 Scenario: there are insufficient eligible players
 Given a competition requires 2 men and 1 lady per match
 And the player pool consists of joe, john, peter, jed, stacy

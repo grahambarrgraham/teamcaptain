@@ -71,7 +71,7 @@ public class CompetitionBuilder {
     }
 
     private Match standardMatch() {
-        return new MatchBuilder().withTitle(aTitle)
+        return new MatchBuilder().withTitle(aTitle).withTravelDetails("TBC")
                 .withStart(aDate, aTime)
                 .withEnd(aDate, aEndTime)
                 .withLocation(aLocationFirstLine, aLocationPostcode).build();

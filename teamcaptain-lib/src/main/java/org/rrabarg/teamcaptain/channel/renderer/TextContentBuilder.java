@@ -9,78 +9,80 @@ import org.rrabarg.teamcaptain.domain.Notification;
 import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Player;
 
-class SmsContentBuilder {
+class TextContentBuilder {
 
     private final Notification notification;
 
-    SmsContentBuilder(Notification notification) {
+    TextContentBuilder(Notification notification) {
         this.notification = notification;
     }
 
     StringBuilder builder = new StringBuilder();
 
-    public SmsContentBuilder add(String s) {
+    public TextContentBuilder add(String s) {
         builder.append(s);
         return this;
     }
 
-    public SmsContentBuilder matchConfirmation() {
+    public TextContentBuilder matchConfirmation() {
         this
                 .hello()
-                .matchDescription()
+                .append("Team selection has been now been confirmed.").space()
                 .matchDetails()
+                .teamForMatch()
                 .travelDetails()
                 .signoff();
         return this;
     }
 
-    private SmsContentBuilder travelDetails() {
-        return this.append(getMatch().getTravelDetails());
+    public TextContentBuilder space() {
+        return append("  ");
     }
 
-    private SmsContentBuilder matchDetails() {
-        this.append("Location: ")
+    private TextContentBuilder travelDetails() {
+        return append("Travel details : ")
+                .append(getMatch().getTravelDetails()).space();
+    }
+
+    private TextContentBuilder matchDetails() {
+        return this.append("Location: ")
                 .append(getMatch().getLocation().toString())
                 .append(". When: ")
                 .matchStartTime()
-                .append(" on ")
-                .matchDate()
-                .append(". ")
-                .teamForMatch()
-                .append(". ");
-        return this;
+                .space();
     }
 
-    private SmsContentBuilder teamForMatch() {
-        this.append("Team: ");
-        this.append(getMatch().getAcceptedPlayers(notification.getPlayerPool()).toString());
-        return this;
+    private TextContentBuilder teamForMatch() {
+        return append("Team: ")
+                .append(getMatch().getAcceptedPlayers(notification.getPlayerPool()).toString())
+                .space();
     }
 
-    private SmsContentBuilder matchStartTime() {
+    private TextContentBuilder matchStartTime() {
         return this.append(getMatch().getStartDateTime()
                 .format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM)));
     }
 
-    public SmsContentBuilder canYouStandby() {
+    public TextContentBuilder canYouStandby() {
         this
                 .hello()
-                .append("Can you standby for ")
-                .matchDescription()
+                .append("Can you standby for this match?")
+                .space()
+                .matchDetails()
                 .answerYesOrNo()
                 .signoff();
         return this;
     }
 
-    public SmsContentBuilder confirmStandby() {
+    public TextContentBuilder confirmStandby() {
         this
                 .hello()
-                .append("Brilliant, thanks, I'll be in touch shortly to confirm. ")
+                .append("Brilliant, thanks, I'll be in touch shortly to confirm. ").space()
                 .signoff();
         return this;
     }
 
-    public SmsContentBuilder append(String s) {
+    public TextContentBuilder append(String s) {
         if (s != null) {
             builder.append(s);
         }
@@ -91,7 +93,7 @@ class SmsContentBuilder {
         return builder.toString();
     }
 
-    public SmsContentBuilder matchTitle() {
+    public TextContentBuilder matchTitle() {
         builder.append(getMatch().getTitle());
         return this;
     }
@@ -100,93 +102,75 @@ class SmsContentBuilder {
         return notification.getMatch();
     }
 
-    public SmsContentBuilder reminder() {
+    public TextContentBuilder reminder() {
         this
                 .hello()
-                .append("Reminder. ")
-                .matchDescription()
+                .append("Match reminder!!").space()
                 .answerYesOrNo()
                 .signoff();
         return this;
     }
 
-    public SmsContentBuilder matchDescription() {
-        this.append(" Match : ")
-                .matchTitle()
-                .append(" on ")
-                .matchDate()
-                .append(" at ")
-                .matchStartTime()
-                .append(". ");
-        return this;
-    }
-
-    public SmsContentBuilder canYouPlayContent() {
+    public TextContentBuilder canYouPlayContent() {
         this
                 .hello()
-                .append("Can you play ")
-                .matchDescription()
+                .append("You been selected to play!").space()
+                .matchDetails()
                 .answerYesOrNo()
                 .signoff();
         return this;
     }
 
-    public SmsContentBuilder confirmAcceptance() {
+    public TextContentBuilder confirmAcceptance() {
         this
                 .hello()
-                .append("Brilliant, your in. I'll be in touch shortly with details. ")
+                .append("Brilliant, your in. I'll be in touch shortly with details.")
+                .space()
                 .signoff();
         return this;
     }
 
-    public SmsContentBuilder confirmDecline() {
+    public TextContentBuilder confirmDecline() {
         this.hello()
-                .append("Sorry you couldn't play, hope too see you soon. ")
+                .append("Sorry you couldn't play, hope too see you soon.")
+                .space()
                 .signoff();
         return this;
     }
 
-    private SmsContentBuilder matchDate() {
+    private TextContentBuilder matchDate() {
         this.append(getMatch().getStartDateTime()
                 .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)));
         return this;
     }
 
-    public SmsContentBuilder signoff() {
-        this
-                .append("Thanks ")
+    public TextContentBuilder signoff() {
+        return append("Thanks ")
                 .append(notification.getTeamCaptain().getFirstname());
-        return this;
     }
 
-    public SmsContentBuilder answerYesOrNo() {
-        this
-                .append("Please reply with the text YES or NO. ");
-        return this;
+    public TextContentBuilder answerYesOrNo() {
+        return append("Please reply with the text YES or NO.").space();
     }
 
-    public SmsContentBuilder hello() {
-        this
-                .append("Hi ")
+    public TextContentBuilder hello() {
+        return append("Hi ")
                 .append(notification.getTargetContactDetail().getFirstname())
-                .append(". ");
-        return this;
+                .append(",")
+                .space();
     }
 
-    public SmsContentBuilder matchStatus() {
+    public TextContentBuilder matchStatus() {
         this
                 .hello()
-                .append("A full team has not yet been selected for ")
-                .matchTitle()
-                .append(" on ")
-                .matchDate()
-                .append(".")
+                .append("Unfortunately a full team has not not yet been selected, here is a status update.")
+                .space()
                 .playerStatus()
                 .signoff();
         return this;
     }
 
-    private SmsContentBuilder playerStatus() {
+    private TextContentBuilder playerStatus() {
         final List<Player> acceptedPlayers = getMatch().getAcceptedPlayers(notification.getPlayerPool());
         final List<Player> declinedPlayers = getMatch().getDeclinedPlayers(notification.getPlayerPool());
         final List<Player> notifiedPlayers = getMatch().getNotifiedPlayers(notification.getPlayerPool());
@@ -199,28 +183,37 @@ class SmsContentBuilder {
                 .playerStatusDetail(onStandbyPlayers, "accepted a standby request");
     }
 
-    private SmsContentBuilder playerStatusDetail(List<Player> player, String description) {
+    private TextContentBuilder playerStatusDetail(List<Player> player, String description) {
         if (player.isEmpty()) {
-            this.append("No players have ").append(description).append(".");
+            this.append("No players have ").append(description).space();
         } else {
             this.append("The following players have ").append(description).append(" : ");
             this.append(player.toString());
+            this.space();
         }
-        this.append(".  ");
         return this;
     }
 
-    public SmsContentBuilder alert(NotificationKind kind) {
+    public TextContentBuilder alert(NotificationKind kind) {
         this
                 .hello()
                 .append("Alert : " + kind)
-                .matchTitle()
-                .append(" on ")
-                .matchDate()
-                .append(".")
                 .playerStatus()
                 .signoff();
         return this;
+    }
+
+    public TextContentBuilder standdown() {
+        this
+                .hello()
+                .append("Thankyou for standing by for this match, we've managed to get full team now, so won't need you for this match after all.")
+                .space()
+                .signoff();
+        return this;
+    }
+
+    public TextContentBuilder matchTitleAndDate() {
+        return matchTitle().append(" on ").matchDate();
     }
 
 }

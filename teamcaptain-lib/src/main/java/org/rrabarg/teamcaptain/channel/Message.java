@@ -70,4 +70,8 @@ public class Message {
         return new Message(this, instant);
     }
 
+    public String getSubjectAndBody() {
+        return getSubject() == null ? getBody() : "Subject : " + getSubject() + " Body : " + getBody();
+    }
+
 }

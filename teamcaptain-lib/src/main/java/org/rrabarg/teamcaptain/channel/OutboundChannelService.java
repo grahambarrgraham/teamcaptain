@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.channel.renderer.SmsNotificationRenderer;
 import org.rrabarg.teamcaptain.config.ReactorMessageKind;
 import org.rrabarg.teamcaptain.domain.Channel;
 import org.rrabarg.teamcaptain.domain.Notification;
@@ -28,9 +27,6 @@ public class OutboundChannelService implements Consumer<Event<Notification>> {
 
     @Autowired
     Reactor reactor;
-
-    @Autowired
-    SmsNotificationRenderer playerNotificationRenderer;
 
     @Autowired
     ChannelResolverService channelResolverService;

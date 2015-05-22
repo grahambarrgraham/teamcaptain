@@ -69,11 +69,20 @@ public class MatchWorkflow {
 
         final List<Player> team = match.getAcceptedPlayers(getPlayerPool());
         if (getSelectionStrategy().isViable(team)) {
-            sendConfirmationEmailsToPlayer(team);
+
+            // send confirmation notifications
+            sendNotificationToPlayers(team, NotificationKind.MatchConfirmation);
             sendTeamCaptainAlert(NotificationKind.MatchFulfilled);
 
+            // send stand-down notifications
+            final List<Player> standbyPlayers = match.getAcceptedOnStandbyPlayers(getPlayerPool());
+            sendNotificationToPlayers(standbyPlayers, NotificationKind.StandDown);
+            standbyPlayers.stream().forEach(player -> getState().setPlayerState(player, PlayerState.None));
+
+            // update state
             team.stream().forEach(player -> getState().setPlayerState(player, PlayerState.Confirmed));
             match.setMatchState(MatchState.MatchFulfilled);
+
         }
 
         if ((MatchState.FirstPickPlayersNotified == match.getMatchState()) &&
@@ -99,12 +108,12 @@ public class MatchWorkflow {
         notificationService.teamCaptainNotification(competition, match, kind);
     }
 
-    private void sendConfirmationEmailsToPlayer(List<Player> team) {
+    private void sendNotificationToPlayers(List<Player> team, NotificationKind kind) {
         team.stream()
                 .peek(player -> log.debug("notifying " + player + " for " + match + " for "
-                        + NotificationKind.MatchConfirmation))
+                        + kind))
                 .forEach(
-                        player -> sendNotification(player, NotificationKind.MatchConfirmation));
+                        player -> sendNotification(player, kind));
     }
 
     private void sendStandbyRequestIfPossible(Player player) {
