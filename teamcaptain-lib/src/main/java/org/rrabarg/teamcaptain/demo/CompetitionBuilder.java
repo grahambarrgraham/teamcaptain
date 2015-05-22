@@ -5,6 +5,10 @@ import static java.util.Arrays.asList;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.rrabarg.teamcaptain.NotificationStrategy;
 import org.rrabarg.teamcaptain.SelectionStrategy;
@@ -44,6 +48,9 @@ public class CompetitionBuilder {
     public static final Player jeff = new Player("Jeff", "Fourty", Gender.Male, "jeff@nomail.com", "2229");
     public static final Player jed = new Player("Jed", "Fifty", Gender.Male, "jed@nomail.com", "3339");
     public static final Player peter = new Player("Peter", "Pan", Gender.Male, "peterpan@nomail.com", "4449");
+
+    public static Map<String, Player> firstNameMap = createMap(stacy, sharon, safron, sara,
+            sonia, joe, jimmy, peter, jed, josh, john);
 
     private Player[] players = new Player[] { stacy, sharon, safron, joe, jimmy, peter };
 
@@ -89,6 +96,23 @@ public class CompetitionBuilder {
         return this;
     }
 
+    public CompetitionBuilder withPlayerPool(List<Player> players) {
+        this.players = players.toArray(new Player[players.size()]);
+        return this;
+    }
+
+    public static Player getPlayerByFirstName(String playerName) {
+        return firstNameMap.get(playerName.trim().toLowerCase());
+    }
+
+    public static List<Player> getPlayersByFirstName(List<String> playerNames) {
+        return playerNames.stream()
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .map(p -> firstNameMap.get(p.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
     public CompetitionBuilder withContactPreference(ContactPreference preference) {
         notificationStrategy = new BasicNotificationStrategy(7, 15, 4, preference);
         asList(players).stream().forEach(player -> player.setContactPreference(preference));
@@ -100,6 +124,13 @@ public class CompetitionBuilder {
                 standardSchedule(DEFAULT_COMPETITION_NAME),
                 standardPlayerPool(DEFAULT_COMPETITION_NAME),
                 selectionStrategy, notificationStrategy, teamCaptain);
+    }
+
+    private static Map<String, Player> createMap(Player... players) {
+        final Map<String, Player> result =
+                asList(players).stream().collect(Collectors.toMap(a -> a.getFirstname().toLowerCase(),
+                        Function.<Player> identity()));
+        return result;
     }
 
 }

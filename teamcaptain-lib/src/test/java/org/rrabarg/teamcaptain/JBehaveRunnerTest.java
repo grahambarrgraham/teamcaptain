@@ -1,10 +1,13 @@
 package org.rrabarg.teamcaptain;
 
+import static java.util.Arrays.asList;
+
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Properties;
 
 import org.jbehave.core.Embeddable;
+import org.jbehave.core.annotations.UsingEmbedder;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.embedder.StoryControls;
@@ -33,6 +36,7 @@ import org.springframework.context.ApplicationContext;
 import de.codecentric.jbehave.junit.monitoring.JUnitReportingRunner;
 
 @RunWith(JUnitReportingRunner.class)
+@UsingEmbedder(metaFilters = { "-skip" })
 public class JBehaveRunnerTest extends JUnitStories {
 
     private final CrossReference xref = new CrossReference();
@@ -40,6 +44,8 @@ public class JBehaveRunnerTest extends JUnitStories {
     public JBehaveRunnerTest() {
         configuredEmbedder().embedderControls().doGenerateViewAfterStories(false).doIgnoreFailureInStories(false)
                 .doIgnoreFailureInView(true).useThreads(1).useStoryTimeoutInSecs(360);
+
+        configuredEmbedder().useMetaFilters(asList("-skip"));
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.inject.Provider;
 
+import org.mortbay.log.Log;
 import org.rrabarg.teamcaptain.channel.Email;
 import org.rrabarg.teamcaptain.channel.Message;
 import org.rrabarg.teamcaptain.channel.NotificationRenderer;
@@ -69,6 +70,7 @@ public class EmailNotificationRenderer implements NotificationRenderer {
                 subjectBuilder = subject().add("REMINDER: ").matchTitle();
                 contentBuilder = content().reminder();
                 break;
+            case MatchFulfilled:
             case MatchConfirmation:
                 subjectBuilder = subject().add("Match Confirmed: ").matchTitle();
                 contentBuilder = content().matchConfirmation();
@@ -89,6 +91,8 @@ public class EmailNotificationRenderer implements NotificationRenderer {
                 subjectBuilder = subject().add("Match Alert : ").matchTitle();
                 contentBuilder = content().alert(notification.getKind());
             default:
+                Log.warn("Email rendering did not know how to render %s for %s", notification.getKind(),
+                        notification.getTarget());
                 break;
             }
 

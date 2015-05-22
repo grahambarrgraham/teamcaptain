@@ -70,7 +70,7 @@ public class MatchWorkflow {
         final List<Player> team = match.getAcceptedPlayers(getPlayerPool());
         if (getSelectionStrategy().isViable(team)) {
             sendConfirmationEmailsToPlayer(team);
-            sendAdminAlert(NotificationKind.MatchFulfilled);
+            sendTeamCaptainAlert(NotificationKind.MatchFulfilled);
 
             team.stream().forEach(player -> getState().setPlayerState(player, PlayerState.Confirmed));
             match.setMatchState(MatchState.MatchFulfilled);
@@ -95,7 +95,7 @@ public class MatchWorkflow {
         return this;
     }
 
-    public void sendAdminAlert(NotificationKind kind) {
+    public void sendTeamCaptainAlert(NotificationKind kind) {
         notificationService.teamCaptainNotification(competition, match, kind);
     }
 
@@ -118,7 +118,7 @@ public class MatchWorkflow {
 
         final Player theSubstitute = nextPick.sub.get();
         sendNotification(theSubstitute, NotificationKind.StandBy);
-        sendAdminAlert(NotificationKind.StandbyPlayersNotified);
+        sendTeamCaptainAlert(NotificationKind.StandbyPlayersNotified);
         match.setPlayerState(theSubstitute, PlayerState.Notified);
     }
 
@@ -143,7 +143,7 @@ public class MatchWorkflow {
                         .map(s -> getNextPickPlayer(s)).collect(Collectors.toList());
 
         if (potentialSubstitutes.stream().filter(s -> !s.sub.isPresent()).findAny().isPresent()) {
-            sendAdminAlert(NotificationKind.InsufficientPlayers);
+            sendTeamCaptainAlert(NotificationKind.InsufficientPlayers);
         }
 
         final Stream<Player> firstPick = potentialFirstPick.stream().filter(
@@ -209,7 +209,7 @@ public class MatchWorkflow {
         final Substitute sub = getNextPickPlayer(player);
 
         if (!sub.sub.isPresent()) {
-            sendAdminAlert(NotificationKind.InsufficientPlayers);
+            sendTeamCaptainAlert(NotificationKind.InsufficientPlayers);
             return;
         }
 
