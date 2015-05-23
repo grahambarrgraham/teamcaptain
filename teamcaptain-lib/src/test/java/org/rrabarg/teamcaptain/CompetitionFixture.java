@@ -85,6 +85,7 @@ public class CompetitionFixture {
 
     public void clearCompetition(Competition comp) {
         competitionService.clearCompetition(comp);
+        clearScenarioState();
     }
 
     public void clearScenarioState() {

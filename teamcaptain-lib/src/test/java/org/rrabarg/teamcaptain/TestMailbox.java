@@ -44,14 +44,14 @@ public class TestMailbox implements Consumer<Event<Message>> {
     @Override
     public synchronized void accept(Event<Message> event) {
 
-        log.debug("Test mailbox intercepting outgoing email to " + event.getData().getToAddress());
+        // log.debug("Test mailbox intercepting outgoing email to " + event.getData().getToAddress());
 
         final Message email = event.getData();
 
         Stack<Message> stack = notificationMap.get(email.getToAddress());
 
         if (stack == null) {
-            log.debug("Test mailbox adding stack for " + email.getToAddress());
+            // log.debug("Test mailbox adding stack for " + email.getToAddress());
             stack = new Stack<>();
             notificationMap.put(email.getToAddress(), stack);
         }

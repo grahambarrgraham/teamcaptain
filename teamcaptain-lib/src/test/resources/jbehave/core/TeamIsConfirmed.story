@@ -11,6 +11,8 @@ When joe and john and stacy then accept
 Then the match is confirmed with joe, john and stacy
 
 Scenario: the match is confirmed, confirmed standby players are stood down
+Meta:
+@includeonly
 Given a competition requires 2 men and 1 lady per match
 And the player pool consists of joe, john, peter, jed, stacy
 And a match is scheduled and is in the selection window

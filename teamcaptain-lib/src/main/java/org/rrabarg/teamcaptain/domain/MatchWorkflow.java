@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -145,15 +146,19 @@ public class MatchWorkflow {
     }
 
     private void sendStandbys() {
-        getPlayerPool().getPlayers().stream().filter(stateIsOneOf(PlayerStatus.Notified))
-                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, MatchStatusUpdate))
+        getPlayerPool().getPlayers().stream()
+                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, StandBy))
                 .forEach(player -> sendStandbyRequestIfPossible(player));
+
     }
 
     private void sendReminders() {
+        // EnumSet<NotificationKind> kinds = EnumSet.allOf(NotificationKind.class);
+        final EnumSet<NotificationKind> kinds = EnumSet.of(Reminder, StandBy, MatchStatusUpdate);
+
         getPlayerPool().getPlayers().stream()
                 .filter(stateIsOneOf(PlayerStatus.Notified, PlayerStatus.NotifiedForStandby))
-                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, StandBy))
+                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, kinds))
                 .forEach(player -> sendNotification(player, Reminder));
     }
 
@@ -164,7 +169,7 @@ public class MatchWorkflow {
                 .filter(stateIsOneOf(PlayerStatus.Notified, PlayerStatus.NotifiedForStandby,
                         PlayerStatus.AcceptedOnStandby,
                         PlayerStatus.Accepted))
-                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, Reminder))
+                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, MatchStatusUpdate))
                 .forEach(player -> sendNotification(player, MatchStatusUpdate));
     }
 
@@ -263,30 +268,14 @@ public class MatchWorkflow {
         }
     }
 
+    public boolean wasPlayerNotifiedAtLeastADayAgo(Player player, Set<NotificationKind> kinds) {
+        final PlayerState playerState = getMatch().getWorkflowState().getPlayerState(player);
+        return playerState == null ? false : playerState.wasPlayerNotifiedAtLeastADayAgo(now(), kinds);
+    }
+
     public boolean wasPlayerNotifiedAtLeastADayAgo(Player player, NotificationKind kind) {
         final PlayerState playerState = getMatch().getWorkflowState().getPlayerState(player);
-
-        if ((playerState == null) || (playerState.getTimestampOfLastNotification() == null)) {
-            return false;
-        }
-
-        if (!isAtLeastADayAgo(playerState.getTimestampOfLastNotification())) {
-            if (kind == playerState.getKindOfLastNotification()) {
-                return true;
-            }
-        } else {
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean isAtLeastADayAgo(Instant timestamp) {
-        return atLeastXDaysAgo(timestamp, 1);
-    }
-
-    private boolean atLeastXDaysAgo(Instant timestamp, int i) {
-        return Duration.between(timestamp, now()).toDays() >= i;
+        return playerState == null ? false : playerState.wasPlayerNotifiedAtLeastADayAgo(now(), kind);
     }
 
     private Instant now() {
