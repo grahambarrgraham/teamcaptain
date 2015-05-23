@@ -21,7 +21,7 @@ public enum NotificationKind {
     MatchFulfilled(Information),
     InsufficientPlayers(Information),
     OutOfBandMessage(Information),
-    MatchStatus(Information);
+    MatchStatusUpdate(Information);
 
     private final Category category;
 

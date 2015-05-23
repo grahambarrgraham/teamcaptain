@@ -5,16 +5,19 @@ import java.time.Instant;
 
 import javax.inject.Provider;
 
-import org.mortbay.log.Log;
 import org.rrabarg.teamcaptain.channel.Email;
 import org.rrabarg.teamcaptain.channel.Message;
 import org.rrabarg.teamcaptain.channel.NotificationRenderer;
 import org.rrabarg.teamcaptain.channel.SmsMessage;
 import org.rrabarg.teamcaptain.domain.Channel;
 import org.rrabarg.teamcaptain.domain.Notification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class TextNotificationRenderer implements NotificationRenderer {
+
+    Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     Provider<Clock> clock;
@@ -76,7 +79,7 @@ public class TextNotificationRenderer implements NotificationRenderer {
                 subject().add("Match Confirmed: ").matchTitleAndDate();
                 content().matchConfirmation();
                 break;
-            case MatchStatus:
+            case MatchStatusUpdate:
                 subject().add("Match Status Update : ").matchTitleAndDate();
                 content().matchStatus();
                 break;
@@ -93,8 +96,9 @@ public class TextNotificationRenderer implements NotificationRenderer {
             case StandbyPlayersNotified:
                 subject().add("Match Alert : ").matchTitle();
                 content().alert(notification.getKind());
+                break;
             default:
-                Log.warn("Email rendering did not know how to render %s for %s", notification.getKind(),
+                log.warn("Email rendering did not know how to render " + notification.getKind() + " for " +
                         notification.getTarget());
                 break;
             }

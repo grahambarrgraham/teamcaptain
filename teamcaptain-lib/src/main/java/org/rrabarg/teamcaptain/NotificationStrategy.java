@@ -11,4 +11,6 @@ public interface NotificationStrategy {
     long getDaysTillMatchForStandbys();
 
     ContactPreference getContactPreference();
+
+    int getDaysTillMatchForStatusUpdate();
 }

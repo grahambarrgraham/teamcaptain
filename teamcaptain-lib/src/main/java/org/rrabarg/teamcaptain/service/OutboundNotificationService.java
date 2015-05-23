@@ -36,7 +36,9 @@ public class OutboundNotificationService {
     Provider<Clock> clock;
 
     public void playerNotification(Competition competition, Match match, Player player, NotificationKind kind) {
-        final Notification notification = new PlayerNotification(competition, match, player, kind, now());
+        final PlayerNotification notification = new PlayerNotification(competition, match, player, kind, now());
+
+        match.getWorkflowState().setLastNotification(notification);
 
         reactor.notify(ReactorMessageKind.OutboundNotification,
                 new Event<>(notification));

@@ -174,12 +174,15 @@ class TextContentBuilder {
         final List<Player> acceptedPlayers = getMatch().getAcceptedPlayers(notification.getPlayerPool());
         final List<Player> declinedPlayers = getMatch().getDeclinedPlayers(notification.getPlayerPool());
         final List<Player> notifiedPlayers = getMatch().getNotifiedPlayers(notification.getPlayerPool());
+        final List<Player> notifiedForStandbyPlayers = getMatch().getNotifiedForStandbyPlayers(
+                notification.getPlayerPool());
         final List<Player> onStandbyPlayers = getMatch().getAcceptedOnStandbyPlayers(
                 notification.getPlayerPool());
 
         return playerStatusDetail(acceptedPlayers, "accepted")
                 .playerStatusDetail(declinedPlayers, "declined")
-                .playerStatusDetail(notifiedPlayers, "yet to respond")
+                .playerStatusDetail(notifiedPlayers, "yet to respond to a selection notification")
+                .playerStatusDetail(notifiedForStandbyPlayers, "yet to respond to a standby notification")
                 .playerStatusDetail(onStandbyPlayers, "accepted a standby request");
     }
 
@@ -198,6 +201,7 @@ class TextContentBuilder {
         this
                 .hello()
                 .append("Alert : " + kind)
+                .space()
                 .playerStatus()
                 .signoff();
         return this;

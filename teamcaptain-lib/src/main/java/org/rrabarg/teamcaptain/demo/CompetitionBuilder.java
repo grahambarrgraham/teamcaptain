@@ -30,7 +30,7 @@ public class CompetitionBuilder {
 
     public static final String DEFAULT_COMPETITION_NAME = "All England Championship";
 
-    public static final TeamCaptain teamCaptain = new TeamCaptain(new ContactDetail("nick", "peters",
+    public static final TeamCaptain teamCaptain = new TeamCaptain(new ContactDetail("Nick", "Peters",
             "nick@nomail.com",
             "3434"), ContactPreference.emailOnly(), Gender.Female);
 
@@ -56,7 +56,7 @@ public class CompetitionBuilder {
 
     private SelectionStrategy selectionStrategy = new SimpleGenderedSelectionStrategy(3, 3);
 
-    private NotificationStrategy notificationStrategy = new BasicNotificationStrategy(7, 15, 4,
+    private NotificationStrategy notificationStrategy = new BasicNotificationStrategy(7, 15, 4, 3,
             ContactPreference.emailOnly());
 
     private final LocalDate aDate = LocalDate.of(2014, 3, 20);
@@ -114,7 +114,7 @@ public class CompetitionBuilder {
     }
 
     public CompetitionBuilder withContactPreference(ContactPreference preference) {
-        notificationStrategy = new BasicNotificationStrategy(7, 15, 4, preference);
+        notificationStrategy = new BasicNotificationStrategy(7, 15, 4, 3, preference);
         asList(players).stream().forEach(player -> player.setContactPreference(preference));
         return this;
     }

@@ -24,10 +24,10 @@ import org.rrabarg.teamcaptain.config.MutableClockFactory;
 import org.rrabarg.teamcaptain.domain.Channel;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
-import org.rrabarg.teamcaptain.domain.MatchState;
+import org.rrabarg.teamcaptain.domain.MatchStatus;
 import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Player;
-import org.rrabarg.teamcaptain.domain.PlayerState;
+import org.rrabarg.teamcaptain.domain.PlayerStatus;
 import org.rrabarg.teamcaptain.domain.User;
 import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.NotificationRepository;
@@ -98,19 +98,15 @@ public class CompetitionFixture {
 
     public void checkHasReceivedDetailedMatchStatus(Player player, Match match, List<Player> allNotifiedPlayers) {
         final Optional<Message> message = checkOutboundMessageIsCorrect(player,
-                NotificationKind.MatchStatus, match);
+                NotificationKind.MatchStatusUpdate, match);
         checkPlayerIsNamedInMessage(message, player);
-        checkOutboundMessageContainsListOfPlayers(message,
-                allNotifiedPlayers);
-        checkOutboundMessageContainsMatchDetails(message, match);
+        checkOutboundMessageMatchStatusDetails(message, match, allNotifiedPlayers);
     }
 
     public void checkAnTeamCaptainMatchConfirmationIsRaised(Competition comp, Match match,
             List<Player> allAcceptedPlayers) {
         final Optional<Message> message = checkTeamCaptainAlert(comp, "confirmation");
-        checkOutboundMessageContainsListOfPlayers(message,
-                allAcceptedPlayers);
-        checkOutboundMessageContainsMatchDetails(message, match);
+        checkOutboundMessageMatchConfirmationDetails(message, match, allAcceptedPlayers);
     }
 
     public void checkAnTeamCaptainStandbyAlertIsRaised(Competition comp) {
@@ -141,9 +137,9 @@ public class CompetitionFixture {
     public void checkPlayerIsAssignedToTheMatch(Player player, Match thematch) {
         assertThat("The match must exist", thematch, notNullValue());
         assertThat("The match must be in notified state",
-                MatchState.FirstPickPlayersNotified == thematch.getMatchState());
+                MatchStatus.FirstPickPlayersNotified == thematch.getMatchStatus());
         assertThat("The player should be in the accepted state",
-                PlayerState.Accepted == thematch.getPlayerState(player));
+                PlayerStatus.Accepted == thematch.getPlayerState(player));
     }
 
     public void checkThereAreNoRemindersForPlayersThatDidNotRespond(Match match, List<Player> playersThatDidntRespond) {
@@ -185,8 +181,8 @@ public class CompetitionFixture {
 
     public void checkMatchConfirmationContainsTheMatchDetails(Match match, List<Player> selectedPlayersThatAccepted) {
         selectedPlayersThatAccepted.stream().forEach(
-                player -> checkOutboundMessageContainsMatchDetails(
-                        peekLastMessage(player), match));
+                player -> checkOutboundMessageMatchConfirmationDetails(
+                        peekLastMessage(player), match, selectedPlayersThatAccepted));
     }
 
     public void checkMatchConfirmationSentToAllConfirmedPlayers(Match match, List<Player> selectedPlayersThatAccepted) {
@@ -277,26 +273,12 @@ public class CompetitionFixture {
                 message.get().getSubjectAndBody(), containsString(player.getKey()));
     }
 
-    protected void checkOutboundMessageContainsMatchDetails(Optional<Message> optionalMessage,
-            Match match) {
-        assertThat(
-                "While checking that outbound message contained match details, found email null",
-                optionalMessage.isPresent());
+    protected void checkOutboundMessageMatchConfirmationDetails(Optional<Message> optionalMessage, Match match,
+            List<Player> players) {
+
+        checkOutboundMessageMatchStatusDetails(optionalMessage, match, players);
 
         final Message message = optionalMessage.get();
-
-        assertThat("Message content must contain the match location",
-                message.getSubjectAndBody(), containsString(match.getLocation()
-                        .toString()));
-
-        assertThat("Message content must contain the match title",
-                message.getSubjectAndBody(), containsString(match.getTitle().toString()));
-
-        assertThat(
-                "Message content must contain the match date",
-                message.getSubjectAndBody(),
-                containsString(match.getStartDateTime().format(
-                        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))));
 
         assertThat(
                 "Message content must contain the match start time",
@@ -308,6 +290,32 @@ public class CompetitionFixture {
             assertThat("Message content must contain the match travel details",
                     message.getSubjectAndBody(), containsString(match.getTravelDetails()));
         }
+
+        assertThat("Message content must contain the match location",
+                message.getSubjectAndBody(), containsString(match.getLocation()
+                        .toString()));
+
+    }
+
+    protected void checkOutboundMessageMatchStatusDetails(Optional<Message> optionalMessage,
+            Match match, List<Player> players) {
+        assertThat(
+                "While checking that outbound message contained match details, found email null",
+                optionalMessage.isPresent());
+
+        final Message message = optionalMessage.get();
+
+        assertThat("Message content must contain the match title",
+                message.getSubjectAndBody(), containsString(match.getTitle().toString()));
+
+        assertThat(
+                "Message content must contain the match date",
+                message.getSubjectAndBody(),
+                containsString(match.getStartDateTime().format(
+                        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))));
+
+        checkOutboundMessageContainsListOfPlayers(optionalMessage, players);
+
     }
 
     public Optional<Message> checkOutboundMessageIsCorrect(Player player,
@@ -354,7 +362,7 @@ public class CompetitionFixture {
             return "won't need you for this match";
         case MatchConfirmation:
             return "Team selection has been now been confirmed";
-        case MatchStatus:
+        case MatchStatusUpdate:
             return "here is a status update";
         default:
             break;
@@ -433,7 +441,7 @@ public class CompetitionFixture {
                     selectedPlayersThatAccepted);
             break;
         case InsufficientPlayers:
-            checkTeamCaptainAlert(comp, "insufficient");
+            checkTeamCaptainAlert(comp, "Insufficient");
             break;
         default:
             throw new UnsupportedOperationException(String.format(

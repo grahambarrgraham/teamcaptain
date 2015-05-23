@@ -1,17 +1,25 @@
 package org.rrabarg.teamcaptain.domain;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toMap;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.CanYouPlay;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.ConfirmationOfAcceptance;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.ConfirmationOfDecline;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.ConfirmationOfStandby;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.InsufficientPlayers;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.MatchConfirmation;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.MatchFulfilled;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.MatchStatusUpdate;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.Reminder;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.StandBy;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.StandDown;
+import static org.rrabarg.teamcaptain.domain.NotificationKind.StandbyPlayersNotified;
 
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -59,40 +67,45 @@ public class MatchWorkflow {
 
         if (getDaysTillMatch() < 0) {
             log.info("match {} is in past so is ignored", match);
-            match.setMatchState(MatchState.MatchOutOfWindow);
+            match.setMatchStatus(MatchStatus.MatchOutOfWindow);
         }
 
-        if (MatchState.InWindow == match.getMatchState()) {
+        if (MatchStatus.InWindow == match.getMatchStatus()) {
             notifyFirstPickPlayers();
-            match.setMatchState(MatchState.FirstPickPlayersNotified);
+            match.setMatchStatus(MatchStatus.FirstPickPlayersNotified);
         }
 
         final List<Player> team = match.getAcceptedPlayers(getPlayerPool());
         if (getSelectionStrategy().isViable(team)) {
 
             // send confirmation notifications
-            sendNotificationToPlayers(team, NotificationKind.MatchConfirmation);
-            sendTeamCaptainAlert(NotificationKind.MatchFulfilled);
+            sendNotificationToPlayers(team, MatchConfirmation);
+            sendTeamCaptainAlert(MatchFulfilled);
 
             // send stand-down notifications
             final List<Player> standbyPlayers = match.getAcceptedOnStandbyPlayers(getPlayerPool());
-            sendNotificationToPlayers(standbyPlayers, NotificationKind.StandDown);
-            standbyPlayers.stream().forEach(player -> getState().setPlayerState(player, PlayerState.None));
+            sendNotificationToPlayers(standbyPlayers, StandDown);
+            standbyPlayers.stream().forEach(player -> getState().setPlayerState(player, PlayerStatus.None));
 
             // update state
-            team.stream().forEach(player -> getState().setPlayerState(player, PlayerState.Confirmed));
-            match.setMatchState(MatchState.MatchFulfilled);
+            team.stream().forEach(player -> getState().setPlayerState(player, PlayerStatus.Confirmed));
+            match.setMatchStatus(MatchStatus.MatchFulfilled);
 
         }
 
-        if ((MatchState.FirstPickPlayersNotified == match.getMatchState()) &&
+        if ((MatchStatus.FirstPickPlayersNotified == match.getMatchStatus()) &&
                 (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForStandbys())) {
             sendStandbys();
         }
 
-        if ((MatchState.FirstPickPlayersNotified == match.getMatchState()) &&
+        if ((MatchStatus.FirstPickPlayersNotified == match.getMatchStatus()) &&
                 (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForReminders())) {
             sendReminders();
+        }
+
+        if ((MatchStatus.FirstPickPlayersNotified == match.getMatchStatus()) &&
+                (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForStatusUpdate())) {
+            sendStatusUpdates();
         }
 
         try {
@@ -109,11 +122,11 @@ public class MatchWorkflow {
     }
 
     private void sendNotificationToPlayers(List<Player> team, NotificationKind kind) {
-        team.stream()
-                .peek(player -> log.debug("notifying " + player + " for " + match + " for "
-                        + kind))
-                .forEach(
-                        player -> sendNotification(player, kind));
+        sendNotificationToPlayers(team.stream(), kind);
+    }
+
+    private void sendNotificationToPlayers(Stream<Player> team, NotificationKind kind) {
+        team.forEach(player -> sendNotification(player, kind));
     }
 
     private void sendStandbyRequestIfPossible(Player player) {
@@ -126,19 +139,33 @@ public class MatchWorkflow {
         }
 
         final Player theSubstitute = nextPick.sub.get();
-        sendNotification(theSubstitute, NotificationKind.StandBy);
-        sendTeamCaptainAlert(NotificationKind.StandbyPlayersNotified);
-        match.setPlayerState(theSubstitute, PlayerState.Notified);
+        match.setPlayerStatus(theSubstitute, PlayerStatus.NotifiedForStandby);
+        sendNotification(theSubstitute, StandBy);
+        sendTeamCaptainAlert(StandbyPlayersNotified);
     }
 
     private void sendStandbys() {
-        getPlayersWithAPendingNotification()
+        getPlayerPool().getPlayers().stream().filter(stateIsOneOf(PlayerStatus.Notified))
+                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, MatchStatusUpdate))
                 .forEach(player -> sendStandbyRequestIfPossible(player));
     }
 
     private void sendReminders() {
-        getPlayersWithAPendingNotification()
-                .forEach(player -> sendNotification(player, NotificationKind.Reminder));
+        getPlayerPool().getPlayers().stream()
+                .filter(stateIsOneOf(PlayerStatus.Notified, PlayerStatus.NotifiedForStandby))
+                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, StandBy))
+                .forEach(player -> sendNotification(player, Reminder));
+    }
+
+    private void sendStatusUpdates() {
+        getPlayerPool()
+                .getPlayers()
+                .stream()
+                .filter(stateIsOneOf(PlayerStatus.Notified, PlayerStatus.NotifiedForStandby,
+                        PlayerStatus.AcceptedOnStandby,
+                        PlayerStatus.Accepted))
+                .filter(player -> wasPlayerNotifiedAtLeastADayAgo(player, Reminder))
+                .forEach(player -> sendNotification(player, MatchStatusUpdate));
     }
 
     private MatchWorkflow notifyFirstPickPlayers() {
@@ -146,53 +173,27 @@ public class MatchWorkflow {
         final Collection<Player> potentialFirstPick = getSelectionStrategy().firstPick(getPlayerPool());
 
         final List<Substitute> potentialSubstitutes =
-                potentialFirstPick.stream().filter(p -> match.getPlayerState(p) == PlayerState.Declined)
+                potentialFirstPick.stream().filter(p -> match.getPlayerState(p) == PlayerStatus.Declined)
                         .peek(p -> log.info("The first pick player " + p
                                 + " had previously declined this match so will be substituted"))
                         .map(s -> getNextPickPlayer(s)).collect(Collectors.toList());
 
         if (potentialSubstitutes.stream().filter(s -> !s.sub.isPresent()).findAny().isPresent()) {
-            sendTeamCaptainAlert(NotificationKind.InsufficientPlayers);
+            sendTeamCaptainAlert(InsufficientPlayers);
         }
 
         final Stream<Player> firstPick = potentialFirstPick.stream().filter(
-                p -> match.getPlayerState(p) != PlayerState.Declined);
+                p -> match.getPlayerState(p) != PlayerStatus.Declined);
 
         final Stream<Player> substitutes = potentialSubstitutes.stream().filter(s -> s.sub.isPresent())
                 .map(s -> s.sub.get());
 
         Stream.concat(substitutes, firstPick)
                 .peek(player -> log.debug("notifying " + player + " for " + match + " for "
-                        + NotificationKind.CanYouPlay))
-                .peek(player -> getState().setPlayerState(player, PlayerState.Notified))
-                .forEach(player -> sendNotification(player, NotificationKind.CanYouPlay));
+                        + CanYouPlay))
+                .peek(player -> getState().setPlayerState(player, PlayerStatus.Notified))
+                .forEach(player -> sendNotification(player, CanYouPlay));
         return this;
-    }
-
-    private Stream<Player> getPlayersWithAPendingNotification() {
-        return getMostRecentNotificationAtLeastADayOldPerPlayer()
-                .map(notification -> notification.getPlayer())
-                .filter(stateIsOneOf(PlayerState.Notified));
-    }
-
-    private Stream<PlayerNotification> getMostRecentNotificationAtLeastADayOldPerPlayer() {
-        return getMostRecentNotificationForEachPlayer()
-                .filter(a -> isAtLeastADayAgo(a.getTimestamp()));
-    }
-
-    private Stream<PlayerNotification> getMostRecentNotificationForEachPlayer() {
-        return notificationService
-                .getPendingNotifications(match)
-                .collect(groupingBy(m -> m.getTarget()))
-                .entrySet()
-                .stream()
-                .filter(e -> (e.getKey() instanceof Player))
-                .collect(toMap(Map.Entry::getKey,
-                        e -> e.getValue().stream().max(Comparator.comparing(Notification::getTimestamp)).get()))
-                .values()
-                .stream()
-                .filter(a -> a instanceof PlayerNotification)
-                .map(a -> (PlayerNotification) a);
     }
 
     Notification earliest(List<Notification> notifications) {
@@ -200,36 +201,37 @@ public class MatchWorkflow {
     }
 
     public void iCanPlay(Player player) throws IOException {
-        match.setPlayerState(player, PlayerState.Accepted);
-        sendNotification(player, NotificationKind.ConfirmationOfAcceptance);
+        match.setPlayerStatus(player, PlayerStatus.Accepted);
+        sendNotification(player, ConfirmationOfAcceptance);
         pump();
     }
 
     private void iCanStandby(Player player) {
-        match.setPlayerState(player, PlayerState.AcceptedOnStandby);
-        sendNotification(player, NotificationKind.ConfirmationOfStandby);
+        match.setPlayerStatus(player, PlayerStatus.AcceptedOnStandby);
+        sendNotification(player, ConfirmationOfStandby);
         pump();
     }
 
     private void iCannotPlay(Player player) {
-        match.setPlayerState(player, PlayerState.Declined);
-        sendNotification(player, NotificationKind.ConfirmationOfDecline);
+        match.setPlayerStatus(player, PlayerStatus.Declined);
+        sendNotification(player, ConfirmationOfDecline);
 
         final Substitute sub = getNextPickPlayer(player);
 
         if (!sub.sub.isPresent()) {
-            sendTeamCaptainAlert(NotificationKind.InsufficientPlayers);
+            sendTeamCaptainAlert(InsufficientPlayers);
             return;
         }
 
         final Player theSubstitute = sub.sub.get();
 
-        sendNotification(theSubstitute, NotificationKind.CanYouPlay);
-        match.setPlayerState(theSubstitute, PlayerState.Notified);
+        sendNotification(theSubstitute, CanYouPlay);
+        match.setPlayerStatus(theSubstitute, PlayerStatus.Notified);
         pump();
     }
 
     public void sendNotification(Player player, NotificationKind notificationKind) {
+        log.debug("Sending " + notificationKind + " to " + player);
         notificationService.playerNotification(competition, match, player, notificationKind);
     }
 
@@ -259,6 +261,24 @@ public class MatchWorkflow {
         } catch (final Exception e) {
             throw new RuntimeException("Failed to update workflow state " + this + " with " + playerResponse);
         }
+    }
+
+    public boolean wasPlayerNotifiedAtLeastADayAgo(Player player, NotificationKind kind) {
+        final PlayerState playerState = getMatch().getWorkflowState().getPlayerState(player);
+
+        if ((playerState == null) || (playerState.getTimestampOfLastNotification() == null)) {
+            return false;
+        }
+
+        if (!isAtLeastADayAgo(playerState.getTimestampOfLastNotification())) {
+            if (kind == playerState.getKindOfLastNotification()) {
+                return true;
+            }
+        } else {
+            return true;
+        }
+
+        return false;
     }
 
     private boolean isAtLeastADayAgo(Instant timestamp) {
@@ -292,7 +312,7 @@ public class MatchWorkflow {
     private Substitute getNextPickPlayer(Player p) {
         do {
             final Player nextPick = getSelectionStrategy().nextPick(getPlayerPool(), p);
-            if ((nextPick != null) && (match.getPlayerState(nextPick) == PlayerState.None)) {
+            if ((nextPick != null) && (match.getPlayerState(nextPick) == PlayerStatus.None)) {
                 return new Substitute(p, Optional.of(nextPick));
             }
 
@@ -317,13 +337,13 @@ public class MatchWorkflow {
         return competition.getPlayerPool();
     }
 
-    private Predicate<? super Player> stateIsOneOf(PlayerState playerstate, PlayerState... playerstates) {
+    private Predicate<? super Player> stateIsOneOf(PlayerStatus playerstate, PlayerStatus... playerstates) {
         return player -> EnumSet.of(playerstate, playerstates).contains(
                 getPlayerState(player));
     }
 
-    private PlayerState getPlayerState(Player player) {
-        return getState().getPlayerState(player);
+    private PlayerStatus getPlayerState(Player player) {
+        return getState().getPlayerStatus(player);
     }
 
 }

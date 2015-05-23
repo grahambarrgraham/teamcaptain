@@ -71,20 +71,20 @@ public class Match {
         return title;
     }
 
-    public PlayerState getPlayerState(Player player) {
-        return workflowState.getPlayerState(player);
+    public PlayerStatus getPlayerState(Player player) {
+        return workflowState.getPlayerStatus(player);
     }
 
-    public MatchState getMatchState() {
+    public MatchStatus getMatchStatus() {
         return workflowState.getMatchState();
     }
 
-    public void setMatchState(MatchState matchState) {
-        workflowState.setMatchState(matchState);
+    public void setMatchStatus(MatchStatus matchStatus) {
+        workflowState.setMatchState(matchStatus);
     }
 
-    public void setPlayerState(Player player, PlayerState playerState) {
-        workflowState.setPlayerState(player, playerState);
+    public void setPlayerStatus(Player player, PlayerStatus playerStatus) {
+        workflowState.setPlayerState(player, playerStatus);
     }
 
     public void setTravelDetails(String travelDetails) {
@@ -138,28 +138,32 @@ public class Match {
     }
 
     public List<Player> getAcceptedPlayers(PlayerPool pool) {
-        return getPlayersInState(PlayerState.Accepted, pool);
+        return getPlayersInState(PlayerStatus.Accepted, pool);
     }
 
     public List<Player> getConfirmedPlayers(PlayerPool pool) {
-        return getPlayersInState(PlayerState.Confirmed, pool);
+        return getPlayersInState(PlayerStatus.Confirmed, pool);
     }
 
     public List<Player> getDeclinedPlayers(PlayerPool playerPool) {
-        return getPlayersInState(PlayerState.Declined, playerPool);
+        return getPlayersInState(PlayerStatus.Declined, playerPool);
     }
 
     public List<Player> getNotifiedPlayers(PlayerPool playerPool) {
-        return getPlayersInState(PlayerState.Notified, playerPool);
+        return getPlayersInState(PlayerStatus.Notified, playerPool);
+    }
+
+    public List<Player> getNotifiedForStandbyPlayers(PlayerPool playerPool) {
+        return getPlayersInState(PlayerStatus.NotifiedForStandby, playerPool);
     }
 
     public List<Player> getAcceptedOnStandbyPlayers(PlayerPool playerPool) {
-        return getPlayersInState(PlayerState.AcceptedOnStandby, playerPool);
+        return getPlayersInState(PlayerStatus.AcceptedOnStandby, playerPool);
     }
 
-    private List<Player> getPlayersInState(PlayerState playerState, PlayerPool pool) {
+    private List<Player> getPlayersInState(PlayerStatus playerStatus, PlayerPool pool) {
         final List<Player> playerKeys = workflowState.getPlayerStates().entrySet().stream()
-                .filter(e -> e.getValue() == playerState)
+                .filter(e -> e.getValue() == playerStatus)
                 .map(e -> e.getKey()).map(k -> pool.getPlayerForKey(k)).collect(Collectors.toList());
         return playerKeys;
     }

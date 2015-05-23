@@ -45,7 +45,7 @@ public class JBehaveRunnerTest extends JUnitStories {
         configuredEmbedder().embedderControls().doGenerateViewAfterStories(false).doIgnoreFailureInStories(false)
                 .doIgnoreFailureInView(true).useThreads(1).useStoryTimeoutInSecs(360);
 
-        configuredEmbedder().useMetaFilters(asList("+include"));
+        configuredEmbedder().useMetaFilters(asList("+includeonly"));
     }
 
     @Override

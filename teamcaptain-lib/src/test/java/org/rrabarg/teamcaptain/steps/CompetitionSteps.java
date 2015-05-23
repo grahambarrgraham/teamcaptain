@@ -39,7 +39,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class CompetitionSteps {
 
-    private final NotificationStrategy testNotificationStrategy = new BasicNotificationStrategy(7, 10, 4,
+    private static final int DAYS_TILL_MATCH_TILL_WINDOW_OPEN = 10;
+
+    private final NotificationStrategy testNotificationStrategy = new BasicNotificationStrategy(7,
+            DAYS_TILL_MATCH_TILL_WINDOW_OPEN, 4, 3,
             ContactPreference.emailOnly());
 
     @Inject
@@ -100,7 +103,7 @@ public class CompetitionSteps {
 
     @Given("the match is in the selection window")
     public void theMatchIsInTheSelectionWindow() throws IOException {
-        fixture.fixDateTimeBeforeMatch(10, ChronoUnit.DAYS, match);
+        fixture.fixDateTimeBeforeMatch(DAYS_TILL_MATCH_TILL_WINDOW_OPEN, ChronoUnit.DAYS, match);
         fixture.refreshWorkflows(competition);
     }
 
