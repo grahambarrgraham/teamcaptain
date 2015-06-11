@@ -1,5 +1,8 @@
 Narrative A player cannot play and so a substitute is selected
 
+Meta:
+@include
+
 Scenario: player cannot play
 Given a competition requires 2 men and 1 lady per match
 And the player pool consists of joe, john, peter, jed, stacy

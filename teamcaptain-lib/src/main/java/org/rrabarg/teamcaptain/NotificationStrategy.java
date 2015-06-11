@@ -13,4 +13,6 @@ public interface NotificationStrategy {
     ContactPreference getContactPreference();
 
     int getDaysTillMatchForStatusUpdate();
+
+    int getDaysTillMatchForAutoStandbySelection();
 }

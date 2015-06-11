@@ -1,5 +1,8 @@
 Narrative The match date passes
 
+Meta:
+@wip
+
 Scenario: the match date passes, all selected players (including the standby) are notified it has passed, and notes player status
 Given a match is scheduled and is in the selection window
 And all selected players accept except one, and that player has an eligible substitute in the pool

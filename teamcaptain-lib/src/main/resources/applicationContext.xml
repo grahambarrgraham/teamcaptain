@@ -7,6 +7,8 @@
 	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
 	<context:component-scan base-package="org.rrabarg.teamcaptain">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<context:exclude-filter type="assignable" expression="org.rrabarg.teamcaptain.config.MvcConfiguration"/>
 	</context:component-scan>
 
 	<aop:aspectj-autoproxy />

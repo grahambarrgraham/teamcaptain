@@ -63,9 +63,6 @@ public class CompetitionFixture {
     CompetitionService competitionService;
 
     @Autowired
-    ScheduleService scheduleService;
-
-    @Autowired
     TestMailbox mailbox;
 
     @Autowired
@@ -93,21 +90,11 @@ public class CompetitionFixture {
         playerNotificationRepository.clear();
     }
 
-    public void saveCompetition(Competition competition) {
-        competitionService.saveCompetition(competition);
-    }
-
     public void checkHasReceivedDetailedMatchStatus(Player player, Match match, List<Player> allNotifiedPlayers) {
         final Optional<Message> message = checkOutboundMessageIsCorrect(player,
                 NotificationKind.MatchStatusUpdate, match);
         checkPlayerIsNamedInMessage(message, player);
         checkOutboundMessageMatchStatusDetails(message, match, allNotifiedPlayers);
-    }
-
-    public void checkAnTeamCaptainMatchConfirmationIsRaised(Competition comp, Match match,
-            List<Player> allAcceptedPlayers) {
-        final Optional<Message> message = checkTeamCaptainAlert(comp, "confirmation");
-        checkOutboundMessageMatchConfirmationDetails(message, match, allAcceptedPlayers);
     }
 
     public void checkAnTeamCaptainStandbyAlertIsRaised(Competition comp) {
@@ -138,7 +125,7 @@ public class CompetitionFixture {
     public void checkPlayerIsAssignedToTheMatch(Player player, Match thematch) {
         assertThat("The match must exist", thematch, notNullValue());
         assertThat("The match must be in notified state",
-                MatchStatus.FirstPickPlayersNotified == thematch.getMatchStatus());
+                MatchStatus.SelectionInProgress == thematch.getMatchStatus());
         assertThat("The player should be in the accepted state",
                 PlayerStatus.Accepted == thematch.getPlayerState(player));
     }
@@ -457,8 +444,8 @@ public class CompetitionFixture {
 
         exceptions.stream().forEach(e -> aPlayerDoesNotRespond(e, match));
 
-        selectedPlayers.stream().filter(a -> a.equals(exceptions))
-                .forEach(a -> aPlayerResponds(a, response.inverse()));
+        selectedPlayers.stream().filter(player -> exceptions.contains(player))
+                .forEach(player -> aPlayerResponds(player, response.inverse()));
         return exceptions;
     }
 

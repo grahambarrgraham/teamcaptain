@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import org.jbehave.core.annotations.AfterScenario;
+import org.jbehave.core.annotations.Alias;
 import org.jbehave.core.annotations.Aliases;
 import org.jbehave.core.annotations.BeforeScenario;
 import org.jbehave.core.annotations.Composite;
@@ -40,10 +41,19 @@ import org.springframework.stereotype.Component;
 public class CompetitionSteps {
 
     private static final int DAYS_TILL_MATCH_TILL_WINDOW_OPEN = 10;
+    private static final int DAYS_TILL_MATCH_TILL_SEND_REMINDERS = 7;
+    private static final int DAYS_TILL_MATCH_TILL_ASK_STANDBYS = 4;
+    private static final int DAYS_TILL_MATCH_TILL_SEND_STATUS_UPDATE = 3;
+    private static final int DAYS_TILL_MATCH_TILL_AUTO_SELECT_STANDBYS = 2;
 
-    private final NotificationStrategy testNotificationStrategy = new BasicNotificationStrategy(7,
-            DAYS_TILL_MATCH_TILL_WINDOW_OPEN, 4, 3,
-            ContactPreference.emailOnly());
+    private final NotificationStrategy testNotificationStrategy =
+            new BasicNotificationStrategy(
+                    DAYS_TILL_MATCH_TILL_WINDOW_OPEN,
+                    DAYS_TILL_MATCH_TILL_SEND_REMINDERS,
+                    DAYS_TILL_MATCH_TILL_ASK_STANDBYS,
+                    DAYS_TILL_MATCH_TILL_SEND_STATUS_UPDATE,
+                    DAYS_TILL_MATCH_TILL_AUTO_SELECT_STANDBYS,
+                    ContactPreference.emailOnly());
 
     @Inject
     Provider<CompetitionFixture> fixtureProvider;
@@ -95,6 +105,14 @@ public class CompetitionSteps {
         // nothing additional required
     }
 
+    @When("a match is scheduled and is in the selection window")
+    @Composite(steps = {
+            "Given a match is scheduled",
+            "Given the match is in the selection window" })
+    public void whenAMatchIsScheduledAndIsInTheWindow() throws IOException {
+        // nothing additional required
+    }
+
     @Given("a match is scheduled")
     public void givenAMatchIsScheduled() throws IOException {
         competition = builder.build();
@@ -107,14 +125,39 @@ public class CompetitionSteps {
         fixture.refreshWorkflows(competition);
     }
 
-    @Given("%players is selected and %acceptsOrDecline")
+    @Given("%player is selected")
     @Aliases(values = {
-            "%players is selected to standby and %acceptOrDecline",
-            "%players are selected to standby and %acceptOrDecline",
-            "%players are selected and %acceptsOrDecline",
-            "%players then %acceptOrDecline" })
-    public void givenPlayersRespond(String players, String acceptOrDecline) {
-        whenPlayersRespond(players, acceptOrDecline);
+            "%players are selected"
+    })
+    public void givenPlayersAreSelected(String players, String acceptOrDecline) {
+        thenPlayersAreSelected(players, acceptOrDecline);
+    }
+
+    @Then("%player is selected")
+    @Aliases(values = {
+            "%players are selected"
+    })
+    public void thenPlayersAreSelected(String players, String acceptOrDecline) {
+        getPlayers(players).stream().forEach(p ->
+                fixture.checkOutboundMessageIsCorrect(p, NotificationKind.CanYouPlay, match));
+    }
+
+    @Given("%player is selected to standby")
+    @Aliases(values = {
+            "%players are selected to standby"
+    })
+    public void givenPlayersAreSelectedToStandBy(String players, String acceptOrDecline) {
+        getPlayers(players).stream().forEach(p ->
+                fixture.checkOutboundMessageIsCorrect(p, NotificationKind.StandBy, match));
+    }
+
+    @Then("%player is selected to standby")
+    @Aliases(values = {
+            "%players are selected to standby"
+    })
+    public void thenPlayersAreSelectedToStandBy(String players, String acceptOrDecline) {
+        getPlayers(players).stream().forEach(p ->
+                fixture.checkOutboundMessageIsCorrect(p, NotificationKind.StandBy, match));
     }
 
     @Given("time elapses till %daysBeforeMatch days before the match")
@@ -148,6 +191,7 @@ public class CompetitionSteps {
     }
 
     @Then("%players are stood down")
+    @Alias("%players is stood down")
     public void thenPlayersAreStoodDown(String players) {
         getPlayers(players).stream().forEach(p -> fixture.checkOutboundMessageIsCorrect(p, StandDown, match));
     }
@@ -163,6 +207,13 @@ public class CompetitionSteps {
         final List<Player> allNotifiedPlayers = getPlayers(players);
         allNotifiedPlayers.stream().forEach(
                 p -> fixture.checkHasReceivedDetailedMatchStatus(p, match, allNotifiedPlayers));
+    }
+
+    @Then("an acceptance confirmation is sent to %players")
+    public void checkPlayersAreSentAcceptanceConfirmation(String players) {
+        final List<Player> allNotifiedPlayers = getPlayers(players);
+        allNotifiedPlayers.stream().forEach(
+                p -> fixture.checkOutboundMessageIsCorrect(p, NotificationKind.ConfirmationOfAcceptance, match));
     }
 
     private Response getResponse(String declinesOrAccepts) {
@@ -208,20 +259,4 @@ public class CompetitionSteps {
                 .collect(Collectors.toList());
     }
 
-    // private int getNumber(String numberOfPlayers) {
-    //
-    // final int n = numberOfPlayers.indexOf(' ');
-    // final String s = n >= 0 ? numberOfPlayers.substring(0, n - 1).trim() : s;
-    //
-    // switch (s.trim().toLowerCase()) {
-    // case "one":
-    // return 1;
-    // case "two":
-    // return 2;
-    // case "three":
-    // return 3;
-    // default:
-    // return Integer.parseInt(numberOfPlayers);
-    // }
-    // }
 }

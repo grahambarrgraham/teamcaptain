@@ -9,17 +9,20 @@ public class BasicNotificationStrategy implements NotificationStrategy {
     private final int daysTillMatchForStandbys;
     private final int daysTillMatchForStatus;
     private final ContactPreference contactPreference;
+    private final int daysTillMatchForAuthStandbySelection;
 
     public BasicNotificationStrategy(
+            @JsonProperty("daysTillMatchForNotifications") int daysTillMatchTillWindowOpen,
             @JsonProperty("daysTillMatchForReminders") int daysTillMatchForReminders,
-            @JsonProperty("daysTillMatchForNotifications") int daysTillMatchForNotifications,
             @JsonProperty("daysTillMatchForStandbys") int daysTillMatchForStandbys,
             @JsonProperty("daysTillMatchTillStatusUpdate") int daysTillMatchTillStatusUpdate,
+            @JsonProperty("daysTillMatchForAuthStandBySelection") int daysTillMatchForAuthStandbySelection,
             @JsonProperty("contactPreference") ContactPreference contactPreference) {
         this.daysTillMatchForReminders = daysTillMatchForReminders;
-        this.daysTillMatchForNotifications = daysTillMatchForNotifications;
+        this.daysTillMatchForNotifications = daysTillMatchTillWindowOpen;
         this.daysTillMatchForStandbys = daysTillMatchForStandbys;
         this.daysTillMatchForStatus = daysTillMatchTillStatusUpdate;
+        this.daysTillMatchForAuthStandbySelection = daysTillMatchForAuthStandbySelection;
         this.contactPreference = contactPreference;
     }
 
@@ -46,6 +49,11 @@ public class BasicNotificationStrategy implements NotificationStrategy {
     @Override
     public ContactPreference getContactPreference() {
         return contactPreference;
+    }
+
+    @Override
+    public int getDaysTillMatchForAutoStandbySelection() {
+        return daysTillMatchForAuthStandbySelection;
     }
 
 }

@@ -56,8 +56,8 @@ public class CompetitionBuilder {
 
     private SelectionStrategy selectionStrategy = new SimpleGenderedSelectionStrategy(3, 3);
 
-    private NotificationStrategy notificationStrategy = new BasicNotificationStrategy(7, 15, 4, 3,
-            ContactPreference.emailOnly());
+    private NotificationStrategy notificationStrategy = new BasicNotificationStrategy(15, 7, 4, 3,
+            2, ContactPreference.emailOnly());
 
     private final LocalDate aDate = LocalDate.of(2014, 3, 20);
     private final LocalTime aTime = LocalTime.of(20, 00);
@@ -114,7 +114,7 @@ public class CompetitionBuilder {
     }
 
     public CompetitionBuilder withContactPreference(ContactPreference preference) {
-        notificationStrategy = new BasicNotificationStrategy(7, 15, 4, 3, preference);
+        notificationStrategy = new BasicNotificationStrategy(15, 7, 4, 3, 2, preference);
         asList(players).stream().forEach(player -> player.setContactPreference(preference));
         return this;
     }

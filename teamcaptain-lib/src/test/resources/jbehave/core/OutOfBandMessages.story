@@ -1,5 +1,8 @@
 Narrative: Out of band, (i.e. unexpected messages). If possible, the team captain is notified.
 
+Meta:
+@wip
+
 Scenario: a player declines, then subsequently confirms, but a substitute has been selected  
 Given a match is scheduled and is in the selection window
 And a selected player with an eligible substitute declines

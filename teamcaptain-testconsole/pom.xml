@@ -39,7 +39,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.rrabarg</groupId>
-			<artifactId>teamcaptain-lib</artifactId>
+			<artifactId>teamcaptain-webapp</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<!--Vertx provided dependencies -->

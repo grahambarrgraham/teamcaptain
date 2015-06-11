@@ -73,12 +73,52 @@ public class MatchWorkflow {
 
         if (MatchStatus.InWindow == match.getMatchStatus()) {
             notifyFirstPickPlayers();
-            match.setMatchStatus(MatchStatus.FirstPickPlayersNotified);
+            match.setMatchStatus(MatchStatus.SelectionInProgress);
         }
 
-        final List<Player> team = match.getAcceptedPlayers(getPlayerPool());
-        if (getSelectionStrategy().isViable(team)) {
+        if (MatchStatus.SelectionInProgress == match.getMatchStatus()) {
+            if (confirmMatch() == true) {
+                match.setMatchStatus(MatchStatus.MatchFulfilled);
+            }
+        }
 
+        if (MatchStatus.SelectionInProgress == match.getMatchStatus()) {
+
+            if (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForStandbys()) {
+                sendStandbys();
+            }
+
+            if (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForStatusUpdate()) {
+                sendStatusUpdates();
+            }
+
+            if (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForAutoStandbySelection()) {
+                if (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForReminders()) {
+                    sendReminders();
+                }
+
+                autoStandbySelection();
+
+                if (confirmMatch() == true) {
+                    match.setMatchStatus(MatchStatus.MatchFulfilled);
+                }
+            }
+        }
+
+        try {
+            workflowService.recordWorkflow(this);
+        } catch (final IOException e) {
+            throw new RuntimeException("Failed pump", e);
+        }
+
+        return this;
+    }
+
+    private boolean confirmMatch() {
+
+        final List<Player> team = match.getAcceptedPlayers(getPlayerPool());
+
+        if (getSelectionStrategy().isViable(team)) {
             // send confirmation notifications
             sendNotificationToPlayers(team, MatchConfirmation);
             sendTeamCaptainAlert(MatchFulfilled);
@@ -90,32 +130,25 @@ public class MatchWorkflow {
 
             // update state
             team.stream().forEach(player -> getState().setPlayerState(player, PlayerStatus.Confirmed));
-            match.setMatchStatus(MatchStatus.MatchFulfilled);
 
+            return true;
         }
 
-        if ((MatchStatus.FirstPickPlayersNotified == match.getMatchStatus()) &&
-                (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForStandbys())) {
-            sendStandbys();
-        }
+        return false;
 
-        if ((MatchStatus.FirstPickPlayersNotified == match.getMatchStatus()) &&
-                (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForReminders())) {
-            sendReminders();
-        }
+    }
 
-        if ((MatchStatus.FirstPickPlayersNotified == match.getMatchStatus()) &&
-                (getDaysTillMatch() <= getNotificationStrategy().getDaysTillMatchForStatusUpdate())) {
-            sendStatusUpdates();
-        }
+    private void autoStandbySelection() {
 
-        try {
-            workflowService.recordWorkflow(this);
-        } catch (final IOException e) {
-            throw new RuntimeException("Failed pump", e);
-        }
+        final Optional<Player> firstStandby = getPlayerPool()
+                .getPlayers()
+                .stream()
+                .filter(stateIsOneOf(PlayerStatus.AcceptedOnStandby))
+                .findFirst();
 
-        return this;
+        if (firstStandby.isPresent()) {
+            iCanPlay(firstStandby.get());
+        }
     }
 
     public void sendTeamCaptainAlert(NotificationKind kind) {
@@ -205,16 +238,26 @@ public class MatchWorkflow {
         return notifications.get(0);
     }
 
-    public void iCanPlay(Player player) throws IOException {
-        match.setPlayerStatus(player, PlayerStatus.Accepted);
-        sendNotification(player, ConfirmationOfAcceptance);
-        pump();
+    public void iCanPlay(Player player) {
+        if (MatchStatus.SelectionInProgress == match.getMatchStatus()) {
+            match.setPlayerStatus(player, PlayerStatus.Accepted);
+            sendNotification(player, ConfirmationOfAcceptance);
+            pump();
+        } else {
+            sendNotification(player, StandDown);
+            match.setPlayerStatus(player, PlayerStatus.None);
+        }
     }
 
     private void iCanStandby(Player player) {
-        match.setPlayerStatus(player, PlayerStatus.AcceptedOnStandby);
-        sendNotification(player, ConfirmationOfStandby);
-        pump();
+        if (MatchStatus.SelectionInProgress == match.getMatchStatus()) {
+            match.setPlayerStatus(player, PlayerStatus.AcceptedOnStandby);
+            sendNotification(player, ConfirmationOfStandby);
+            pump();
+        } else {
+            sendNotification(player, StandDown);
+            match.setPlayerStatus(player, PlayerStatus.None);
+        }
     }
 
     private void iCannotPlay(Player player) {
