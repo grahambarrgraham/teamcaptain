@@ -1,24 +1,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.rrabarg</groupId>
-	<artifactId>teamcaptain-lib</artifactId>
+	<groupId>org.rrabarg.teamcaptain</groupId>
+	<artifactId>app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<parent>
-		<groupId>org.rrabarg</groupId>
-		<artifactId>teamcaptain-root</artifactId>
+		<groupId>org.rrabarg.teamcaptain</groupId>
+		<artifactId>root</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
+
+	<properties>
+		<!--Dependency versions -->
+		<vertx.version>2.0.0-final</vertx.version>
+		<vertx.testtools.version>2.0.0-final</vertx.testtools.version>
+		<maven.vertx.plugin.version>2.0.0-final</maven.vertx.plugin.version>
+	</properties>
 
 
 	<dependencies>
 
 		<dependency>
-			<groupId>org.rrabarg</groupId>
-			<artifactId>teamcaptain.testconsole</artifactId>
+			<groupId>org.rrabarg.teamcaptain</groupId>
+			<artifactId>console</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
@@ -47,6 +54,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
 		<!--spring-boot-starter-mail-->
@@ -104,6 +116,26 @@
 			<artifactId>logback-classic</artifactId>
 		</dependency>
 
+		<!--Vertx provided dependencies -->
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-core</artifactId>
+			<version>${vertx.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-platform</artifactId>
+			<version>${vertx.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>testtools</artifactId>
+			<version>${vertx.testtools.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- other -->
 
 		<!--<dependency>-->
@@ -151,6 +183,12 @@
 			<!--<artifactId>httpclient</artifactId>-->
 		<!--</dependency>-->
 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+
 	</dependencies>
+
 
 </project>

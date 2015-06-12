@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.testconsole;
 
 import java.net.URL;
 
@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import org.vertx.java.core.json.JsonObject;

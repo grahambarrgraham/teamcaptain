@@ -1,10 +1,10 @@
 package org.rrabarg.teamcaptain.channel;
 
-import java.time.Instant;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.rrabarg.teamcaptain.domain.Channel;
+
+import java.time.Instant;
 
 public class Message {
 

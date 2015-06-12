@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.testconsole;
 
 import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.jed;
 import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.jimmy;
@@ -20,6 +20,7 @@ import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.TeamCaptainManager;
 import org.rrabarg.teamcaptain.strategy.ContactPreference;
 import org.rrabarg.teamcaptain.strategy.SimpleGenderedSelectionStrategy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,7 +1,8 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.testconsole;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.platform.PlatformLocator;

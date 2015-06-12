@@ -13,7 +13,7 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
 import org.rrabarg.teamcaptain.domain.Channel;
 import org.rrabarg.teamcaptain.domain.Notification;
 import org.rrabarg.teamcaptain.domain.User.UserRole;

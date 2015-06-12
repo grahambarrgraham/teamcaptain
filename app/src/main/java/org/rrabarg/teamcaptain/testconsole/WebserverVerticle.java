@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.testconsole;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +24,8 @@ public class WebserverVerticle extends Verticle {
         final Logger logger = container.logger();
 
         final RouteMatcher httpRouteMatcher = new RouteMatcher().get("/",
-                request -> request.response().sendFile("web/chat.html")).get(".*\\.(css|js)$",
-                request -> request.response().sendFile("web/" + new File(request.path())));
+                request -> request.response().sendFile("vertx/web/chat.html")).get(".*\\.(css|js)$",
+                request -> request.response().sendFile("vertx/web/" + new File(request.path())));
 
         vertx.createHttpServer().requestHandler(httpRouteMatcher).listen(8080, "localhost");
 

@@ -1,7 +1,27 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.testconsole;
 
-import static reactor.event.selector.Selectors.$;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.rrabarg.teamcaptain.channel.Message;
+import org.rrabarg.teamcaptain.config.MutableClockFactory;
+import org.rrabarg.teamcaptain.domain.Channel;
+import org.rrabarg.teamcaptain.domain.ReactorMessageKind;
+import org.rrabarg.teamcaptain.service.TeamCaptainManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
+import reactor.core.Reactor;
+import reactor.event.Event;
+import reactor.function.Consumer;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,29 +31,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import org.rrabarg.teamcaptain.channel.Message;
-import org.rrabarg.teamcaptain.config.MutableClockFactory;
-import org.rrabarg.teamcaptain.domain.ReactorMessageKind;
-import org.rrabarg.teamcaptain.domain.Channel;
-import org.rrabarg.teamcaptain.service.TeamCaptainManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
-
-import reactor.core.Reactor;
-import reactor.event.Event;
-import reactor.function.Consumer;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import static reactor.event.selector.Selectors.$;
 
 @Component
 @Profile("vertx.testconsole")
