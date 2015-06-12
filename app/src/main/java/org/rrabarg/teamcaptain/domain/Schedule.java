@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-@Entity
+//@Entity
 public class Schedule {
 
-    @Id
+    //@Id
     private String id;
 
     private final List<Match> matches;

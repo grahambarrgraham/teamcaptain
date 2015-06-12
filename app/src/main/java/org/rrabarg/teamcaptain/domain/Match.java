@@ -4,13 +4,10 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-@Entity
+//@Entity
 public class Match {
 
-    @Id
+    //@Id
     private String id;
 
     private String scheduleId;

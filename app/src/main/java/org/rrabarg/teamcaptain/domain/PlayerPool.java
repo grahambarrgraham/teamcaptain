@@ -1,19 +1,16 @@
 package org.rrabarg.teamcaptain.domain;
 
+import org.rrabarg.teamcaptain.Util;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-import org.rrabarg.teamcaptain.Util;
-
-@Entity
+//@Entity
 public class PlayerPool {
 
-    @Id
+    //@Id
     private String id;
 
     protected final Map<String, Player> players;
