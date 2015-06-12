@@ -8,7 +8,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.ReactorMessageKind;
 import org.rrabarg.teamcaptain.domain.Channel;
 import org.rrabarg.teamcaptain.domain.Notification;
 import org.slf4j.Logger;

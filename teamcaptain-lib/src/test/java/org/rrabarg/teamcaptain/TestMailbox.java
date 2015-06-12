@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct;
 
 import org.rrabarg.teamcaptain.channel.Email;
 import org.rrabarg.teamcaptain.channel.Message;
-import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.ReactorMessageKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

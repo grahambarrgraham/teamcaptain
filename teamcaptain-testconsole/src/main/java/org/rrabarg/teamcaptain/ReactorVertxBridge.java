@@ -16,7 +16,7 @@ import javax.inject.Inject;
 
 import org.rrabarg.teamcaptain.channel.Message;
 import org.rrabarg.teamcaptain.config.MutableClockFactory;
-import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.ReactorMessageKind;
 import org.rrabarg.teamcaptain.domain.Channel;
 import org.rrabarg.teamcaptain.service.TeamCaptainManager;
 import org.slf4j.Logger;

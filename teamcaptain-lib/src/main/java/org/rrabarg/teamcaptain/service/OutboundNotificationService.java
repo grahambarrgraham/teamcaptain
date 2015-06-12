@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.ReactorMessageKind;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;
 import org.rrabarg.teamcaptain.domain.Notification;

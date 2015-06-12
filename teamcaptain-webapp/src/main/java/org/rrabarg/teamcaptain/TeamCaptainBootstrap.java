@@ -16,7 +16,7 @@ public class TeamCaptainBootstrap {
 
     @SuppressWarnings("resource")
     public static void main(String[] args) throws InterruptedException {
-        bootstrap("inmemory, mutableclock, androidsms, jetty");
+        bootstrap("inmemory, androidsms, jetty");
     }
 
     public static void bootstrap(String... profiles) {
@@ -46,8 +46,6 @@ public class TeamCaptainBootstrap {
         if (!webApplicationContextInitialized) {
             System.exit(1);
         }
-
-        new CompetitionBuilder().build();
     }
 
 

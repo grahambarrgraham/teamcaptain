@@ -7,7 +7,7 @@ import javax.inject.Inject;
 
 import org.rrabarg.teamcaptain.channel.NotificationMatcherService.MatcherResult;
 import org.rrabarg.teamcaptain.channel.NotificationMatcherService.MatcherResultItem;
-import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.ReactorMessageKind;
 import org.rrabarg.teamcaptain.domain.MatchWorkflow;
 import org.rrabarg.teamcaptain.domain.NotificationKind;
 import org.rrabarg.teamcaptain.domain.Player;

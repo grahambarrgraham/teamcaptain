@@ -1,7 +1,7 @@
 package org.rrabarg.teamcaptain.channel.smsgateway.androidphone;
 
 import org.rrabarg.teamcaptain.channel.SmsMessage;
-import org.rrabarg.teamcaptain.config.ReactorMessageKind;
+import org.rrabarg.teamcaptain.domain.ReactorMessageKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;

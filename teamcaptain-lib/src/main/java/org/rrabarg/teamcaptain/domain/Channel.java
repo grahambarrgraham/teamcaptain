@@ -1,7 +1,5 @@
 package org.rrabarg.teamcaptain.domain;
 
-import org.rrabarg.teamcaptain.config.ReactorMessageKind;
-
 public enum Channel {
 
     Email(ReactorMessageKind.OutboundEmail), Sms(ReactorMessageKind.OutboundSms);
