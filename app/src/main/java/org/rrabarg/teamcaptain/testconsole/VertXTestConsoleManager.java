@@ -20,11 +20,11 @@ public class VertXTestConsoleManager {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-//    @Value("${chatconsole.http.port}")
-    int serverPort = 8081;
+    @Value("${chatconsole.http.port}")
+    int serverPort;
 
-//    @Value("${chatconsole.chat.port}")
-    int chatPort = 8082;
+    @Value("${chatconsole.chat.port}")
+    int chatPort;
 
     @Inject
     PlatformManager vertxPlatformManager;
