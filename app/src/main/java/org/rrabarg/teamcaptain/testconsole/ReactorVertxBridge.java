@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 import static reactor.event.selector.Selectors.$;
 
 @Component
-@Profile("vertx.chatconsole")
+@Profile("chatconsole")
 public class ReactorVertxBridge implements Consumer<Event<Message>> {
 
     Logger log = LoggerFactory.getLogger(this.getClass());
@@ -64,6 +64,9 @@ public class ReactorVertxBridge implements Consumer<Event<Message>> {
 
     @PostConstruct
     public void configure() {
+
+        log.info("Configuring reactor vertx bridge for chat console");
+
         reactor.on($(ReactorMessageKind.OutboundEmail), this);
         reactor.on($(ReactorMessageKind.OutboundSms), this);
 

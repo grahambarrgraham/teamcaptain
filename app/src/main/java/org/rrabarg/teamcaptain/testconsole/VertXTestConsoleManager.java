@@ -15,16 +15,16 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.PlatformManager;
 
 @Component
-@Profile("vertx.chatconsole")
+@Profile("chatconsole")
 public class VertXTestConsoleManager {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${webconsole.http.port}")
-    int serverPort;
+//    @Value("${chatconsole.http.port}")
+    int serverPort = 8081;
 
-    @Value("${webconsole.chat.port}")
-    int chatPort;
+//    @Value("${chatconsole.chat.port}")
+    int chatPort = 8082;
 
     @Inject
     PlatformManager vertxPlatformManager;
