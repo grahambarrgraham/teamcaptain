@@ -1,0 +1,8 @@
+http://red-server.local:8080/androidsms?task=a GET outgoing queued messages to send to SMS
+http://red-server.local:8080/androidsms POST incomeing SMS message to team captain
+
+chat URL
+http://red-server.local:8081
+
+External IP
+http://86.6.26.16:8080/androidsms

@@ -10,7 +10,7 @@ import javax.inject.Inject;
 
 @SpringBootApplication
 @EnableAspectJAutoProxy(proxyTargetClass = false)
-@ComponentScan(basePackages = "org.rrabarg.teamcaptain")
+@ComponentScan(basePackages = "org.rrabarg.teamcaptain, org.vertx.java.core")
 public class TeamCaptainApplication {
 
     @Inject

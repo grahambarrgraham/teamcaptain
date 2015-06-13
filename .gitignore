@@ -20,3 +20,5 @@ hs_err_pid*
 /.idea
 *.iml
 .fuse_hidden*
+
+app.log

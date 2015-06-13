@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+@SuppressWarnings("unused")
 public class WebserverVerticle extends Verticle {
 
     @Override
@@ -30,7 +31,9 @@ public class WebserverVerticle extends Verticle {
 
         JsonObject config = container.config();
 
-        vertx.createHttpServer().requestHandler(httpRouteMatcher).listen(config.getInteger("server.port"), "localhost");
+        vertx.createHttpServer().requestHandler(httpRouteMatcher).listen(config.getInteger("server.port"));
+
+        logger.info("Created vertx HTTP listener on port " + config.getInteger("server.port"));
 
         vertx.createHttpServer().websocketHandler(ws -> {
             final Matcher m = chatUrlPattern.matcher(ws.path());

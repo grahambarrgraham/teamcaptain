@@ -51,7 +51,7 @@ public class AndroidPhoneSmsGatewayController implements Consumer<Event<SmsMessa
     }
 
     @RequestMapping(value = "/androidsms", method = RequestMethod.GET)
-    public @ResponseBody SmsSyncResponse getQueuedMessages(@RequestParam String task) {
+    public @ResponseBody SmsSyncResponse getQueuedMessages(@RequestParam(required = false) String task) {
         return new SmsSyncResponse(secretKey, deque.stream());
     }
 
