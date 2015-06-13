@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain.testconsole;
+package org.rrabarg.teamcaptain.config;
 
 import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.jed;
 import static org.rrabarg.teamcaptain.demo.CompetitionBuilder.jimmy;
@@ -24,8 +24,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("vertx.testconsole")
-public class TestDataConfiguration {
+@Profile("testdata")
+public class TestDataConfig {
 
     @Inject
     CompetitionService competitionService;

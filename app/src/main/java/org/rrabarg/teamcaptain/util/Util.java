@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.util;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

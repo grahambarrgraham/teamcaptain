@@ -16,7 +16,7 @@
   
   <logger name="com.google.gdata.client.http.HttpGDataRequest" level="DEBUG"/>
   <logger name="com.google.gdata.util.XmlParser" level="INFO"/>
-   
+
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
     <resetJUL>true</resetJUL>
   </contextListener>

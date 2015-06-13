@@ -28,8 +28,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Provider;
 
-import org.rrabarg.teamcaptain.NotificationStrategy;
-import org.rrabarg.teamcaptain.SelectionStrategy;
 import org.rrabarg.teamcaptain.service.OutboundNotificationService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
 import org.slf4j.Logger;

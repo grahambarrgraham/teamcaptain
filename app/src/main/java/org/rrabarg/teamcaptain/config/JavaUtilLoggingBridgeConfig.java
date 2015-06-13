@@ -6,7 +6,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JavaUtilLoggingBridgeConfiguration {
+public class JavaUtilLoggingBridgeConfig {
 
     @PostConstruct
     void setup() {

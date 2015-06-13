@@ -24,7 +24,7 @@ import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.rrabarg.teamcaptain.CompetitionFixture;
 import org.rrabarg.teamcaptain.CompetitionFixture.Response;
-import org.rrabarg.teamcaptain.NotificationStrategy;
+import org.rrabarg.teamcaptain.domain.NotificationStrategy;
 import org.rrabarg.teamcaptain.demo.CompetitionBuilder;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.Match;

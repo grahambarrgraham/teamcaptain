@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -14,20 +15,27 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.PlatformManager;
 
 @Component
-@Profile("vertx.testconsole")
+@Profile("vertx.chatconsole")
 public class VertXTestConsoleManager {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Value("${webconsole.http.port}")
+    int serverPort;
+
+    @Value("${webconsole.chat.port}")
+    int chatPort;
+
     @Inject
     PlatformManager vertxPlatformManager;
 
-    private static final String VERTX_CONSOLE_MODULE = "org.rrabarg~teamcaptain.testconsole~0.0.1-SNAPSHOT";
+    private static final String VERTX_CONSOLE_MODULE = "teamcaptain~web-console~1";
 
     @PostConstruct
     void deployVertxConsoleModule() {
 
-        final JsonObject conf = new JsonObject().putString("foo", "wibble");
+        final JsonObject conf = new JsonObject().putNumber("server.port", serverPort);
+        conf.putNumber("chat.port", chatPort);
 
         vertxPlatformManager.deployModuleFromClasspath(VERTX_CONSOLE_MODULE, conf, 1, new URL[] {},
 

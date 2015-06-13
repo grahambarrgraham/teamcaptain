@@ -5,9 +5,6 @@ import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
-import javax.inject.Inject;
-
-import org.rrabarg.teamcaptain.config.JavaUtilLoggingBridgeConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;

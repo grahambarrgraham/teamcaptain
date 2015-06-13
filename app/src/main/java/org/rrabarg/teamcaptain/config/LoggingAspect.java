@@ -1,7 +1,5 @@
 package org.rrabarg.teamcaptain.config;
 
-import javax.annotation.PostConstruct;
-
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -9,7 +7,11 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 @Aspect
 @Component
@@ -17,9 +19,13 @@ public class LoggingAspect {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    @Autowired
+    Environment env;
+
     @PostConstruct
     public void hello() {
         log.info("logging aspect configured");
+        log.info("Environment is " + env);
     }
 
     @AfterReturning(pointcut = "execution(* org.rrabarg.teamcaptain.*Service.*(..))", returning = "retval")

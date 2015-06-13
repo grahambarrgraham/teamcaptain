@@ -1,4 +1,4 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.domain;
 
 import org.rrabarg.teamcaptain.strategy.ContactPreference;
 

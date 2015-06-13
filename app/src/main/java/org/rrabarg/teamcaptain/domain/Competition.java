@@ -2,8 +2,6 @@ package org.rrabarg.teamcaptain.domain;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.rrabarg.teamcaptain.NotificationStrategy;
-import org.rrabarg.teamcaptain.SelectionStrategy;
 
 public class Competition {
 

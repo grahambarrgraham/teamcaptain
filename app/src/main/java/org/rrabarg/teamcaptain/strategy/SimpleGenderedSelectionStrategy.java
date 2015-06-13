@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.rrabarg.teamcaptain.SelectionStrategy;
+import org.rrabarg.teamcaptain.domain.SelectionStrategy;
 import org.rrabarg.teamcaptain.domain.Gender;
 import org.rrabarg.teamcaptain.domain.Player;
 import org.rrabarg.teamcaptain.domain.PlayerPool;

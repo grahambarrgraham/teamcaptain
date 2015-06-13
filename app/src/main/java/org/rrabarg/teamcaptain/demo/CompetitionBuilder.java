@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.rrabarg.teamcaptain.NotificationStrategy;
-import org.rrabarg.teamcaptain.SelectionStrategy;
+import org.rrabarg.teamcaptain.domain.NotificationStrategy;
+import org.rrabarg.teamcaptain.domain.SelectionStrategy;
 import org.rrabarg.teamcaptain.domain.Competition;
 import org.rrabarg.teamcaptain.domain.ContactDetail;
 import org.rrabarg.teamcaptain.domain.Gender;

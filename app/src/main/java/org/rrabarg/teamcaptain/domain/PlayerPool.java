@@ -1,6 +1,6 @@
 package org.rrabarg.teamcaptain.domain;
 
-import org.rrabarg.teamcaptain.Util;
+import org.rrabarg.teamcaptain.util.Util;
 
 import java.util.Arrays;
 import java.util.Collection;

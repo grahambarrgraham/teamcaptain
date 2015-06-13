@@ -1,7 +1,7 @@
 package org.rrabarg.teamcaptain.strategy;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.rrabarg.teamcaptain.NotificationStrategy;
+import org.rrabarg.teamcaptain.domain.NotificationStrategy;
 
 public class BasicNotificationStrategy implements NotificationStrategy {
     private final int daysTillMatchForReminders;

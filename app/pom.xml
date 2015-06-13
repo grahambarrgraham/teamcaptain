@@ -52,6 +52,11 @@
 
 		<!--<dependency>-->
 			<!--<groupId>org.springframework.boot</groupId>-->
+			<!--<artifactId>spring-boot-devtools</artifactId>-->
+		<!--</dependency>-->
+
+		<!--<dependency>-->
+			<!--<groupId>org.springframework.boot</groupId>-->
 			<!--<artifactId>spring-boot-starter-data-jpa</artifactId>-->
 		<!--</dependency>-->
 
@@ -136,10 +141,10 @@
 			<!--<groupId>org.scala-lang</groupId>-->
 			<!--<artifactId>scala-library</artifactId>-->
 		<!--</dependency>-->
-		<!--<dependency>-->
-			<!--<groupId>cglib</groupId>-->
-			<!--<artifactId>cglib</artifactId>-->
-		<!--</dependency>-->
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+		</dependency>
 		<!--<dependency>-->
 			<!--<groupId>org.neo4j</groupId>-->
 			<!--<artifactId>neo4j-cypher-compiler-2.1</artifactId>-->

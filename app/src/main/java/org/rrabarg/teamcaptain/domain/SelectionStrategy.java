@@ -1,11 +1,9 @@
-package org.rrabarg.teamcaptain;
+package org.rrabarg.teamcaptain.domain;
+
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 import java.util.Collection;
 import java.util.List;
-
-import org.codehaus.jackson.annotate.JsonTypeInfo;
-import org.rrabarg.teamcaptain.domain.Player;
-import org.rrabarg.teamcaptain.domain.PlayerPool;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public interface SelectionStrategy {

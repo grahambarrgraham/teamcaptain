@@ -1,22 +1,19 @@
 package org.rrabarg.teamcaptain.config;
 
-import java.io.IOException;
-
-import javax.inject.Inject;
-
 import org.rrabarg.teamcaptain.service.TeamCaptainManager;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import javax.inject.Inject;
+import java.io.IOException;
 
 @Configuration
 @EnableScheduling
 public class ScheduleConfig {
 
     private static final int WORKFLOW_REFRESH_DELAY = 1000 * 60;
-
-    @Inject
-    JavaUtilLoggingBridgeConfiguration julBridge; // ensure configured
 
     @Inject
     TeamCaptainManager teamCaptainManager;

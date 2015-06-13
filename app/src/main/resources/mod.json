@@ -1,5 +1,5 @@
 {
-  "main":"org.rrabarg.teamcaptain.WebserverVerticle",
+  "main":"org.rrabarg.teamcaptain.testconsole.WebserverVerticle",
   "description":"Vert.x Websocket Chat Team Captain Test Console",
   "licenses": [],
   "author": "Graham Barr",

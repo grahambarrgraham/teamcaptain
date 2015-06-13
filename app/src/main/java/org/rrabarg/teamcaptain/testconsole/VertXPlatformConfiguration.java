@@ -9,7 +9,7 @@ import org.vertx.java.platform.PlatformLocator;
 import org.vertx.java.platform.PlatformManager;
 
 @Configuration
-@Profile("vertx.testconsole")
+@Profile("vertx.chatconsole")
 public class VertXPlatformConfiguration {
 
     @Bean

@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 import static reactor.event.selector.Selectors.$;
 
 @Component
-@Profile("vertx.testconsole")
+@Profile("vertx.chatconsole")
 public class ReactorVertxBridge implements Consumer<Event<Message>> {
 
     Logger log = LoggerFactory.getLogger(this.getClass());
