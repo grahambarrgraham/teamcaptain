@@ -28,21 +28,29 @@ public class TeamCaptainManager {
 
     @PostConstruct
     public void refreshCompetitions() throws IOException {
+
+        log.info("Refreshing all competitions");
+
         competitions = competitionService.getCompetitionIds().stream()
-                .map(a -> competitionService.findCompetitionByName(a))
+                .map(a -> competitionService.findCompetitionById(a))
                 .filter(a -> a != null)
+                .peek(e -> log.debug("Refreshing competition {}", e.getName()))
                 .collect(Collectors.toList());
     }
 
-    public synchronized void refreshWorkflows() {
-        competitions.stream().forEach(competition -> refreshWorkflow(competition));
+    public synchronized void applyWorkflowForAllCompetitions() {
+        log.info("Applying workflow for all competitions");
+        competitions.stream().forEach(competition -> applyWorkflow(competition));
     }
 
-    private void refreshWorkflow(Competition competition) {
+    private void applyWorkflow(Competition competition) {
+
+        log.info("Applying workflow for {}", competition.getName());
+
         try {
             workflowService.refresh(competition);
         } catch (final IOException e) {
-            log.error("Failed to refresh workflow for competitition %s", competition, e);
+            log.error("Failed to refresh workflow for competition {}", competition, e);
         }
     }
 

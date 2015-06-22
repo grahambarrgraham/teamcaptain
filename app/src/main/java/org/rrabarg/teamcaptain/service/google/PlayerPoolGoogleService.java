@@ -42,6 +42,7 @@ public class PlayerPoolGoogleService implements PlayerPoolService {
 
             log.debug("savePlayerPool, adding players " + playerPool.getPlayers());
             contactRepository.addPlayersToPool(poolId, playerPool.getPlayers());
+            contactRepository.addTeamCaptainToPool(poolId, playerPool.getTeamCaptain());
 
             return poolId;
         } catch (final Exception e) {
@@ -77,7 +78,7 @@ public class PlayerPoolGoogleService implements PlayerPoolService {
             log.debug("Looking for pool of players with pool id " + playerPoolId);
             return contactRepository.getPlayerPoolById(playerPoolId);
         } catch (final Exception e) {
-            throw new RuntimeException("Failed to find pool for id " + playerPoolId);
+            throw new RuntimeException("Failed to find pool for id " + playerPoolId, e);
         }
     }
 

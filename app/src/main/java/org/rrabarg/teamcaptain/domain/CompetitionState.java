@@ -9,15 +9,12 @@ public class CompetitionState {
     String playerPoolId;
     NotificationStrategy notificationStrategy;
     SelectionStrategy selectionStrategy;
-    String teamCaptainId;
 
     public CompetitionState(
             @JsonProperty("playerPoolId") String playerPoolId,
-            @JsonProperty("teamCaptainId") String teamCaptainId,
             @JsonProperty("selectionStrategy") SelectionStrategy selectionStrategy,
             @JsonProperty("notificationStrategy") NotificationStrategy notificationStrategy) {
         this.playerPoolId = playerPoolId;
-        this.teamCaptainId = teamCaptainId;
         this.selectionStrategy = selectionStrategy;
         this.notificationStrategy = notificationStrategy;
     }
@@ -54,9 +51,5 @@ public class CompetitionState {
     @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
-    }
-
-    public String getTeamCaptainId() {
-        return getTeamCaptainId();
     }
 }

@@ -78,7 +78,7 @@ public class CompetitionBuilder {
     }
 
     private PlayerPool standardPlayerPool(String competitionName) {
-        return new PlayerPool(players);
+        return new PlayerPool(teamCaptain, players);
     }
 
     public CompetitionBuilder withSelectStrategy(SelectionStrategy selectionStrategy) {
@@ -123,7 +123,7 @@ public class CompetitionBuilder {
         return new Competition(DEFAULT_COMPETITION_NAME,
                 standardSchedule(DEFAULT_COMPETITION_NAME),
                 standardPlayerPool(DEFAULT_COMPETITION_NAME),
-                selectionStrategy, notificationStrategy, teamCaptain);
+                selectionStrategy, notificationStrategy);
     }
 
     private static Map<String, Player> createMap(Player... players) {

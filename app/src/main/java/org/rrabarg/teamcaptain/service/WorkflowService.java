@@ -30,9 +30,6 @@ public class WorkflowService {
     Provider<MatchWorkflow> provider;
 
     @Autowired
-    ScheduleService scheduleService;
-
-    @Autowired
     Provider<Clock> clock;
 
     Map<Match, MatchWorkflow> workflowMap = new HashMap<>();
@@ -69,7 +66,7 @@ public class WorkflowService {
     }
 
     public void recordWorkflow(MatchWorkflow matchWorkflow) throws IOException {
-        scheduleService.updateMatch(matchWorkflow.getMatch());
+        competitionService.updateMatch(matchWorkflow.getMatch());
     }
 
     public void pump() {

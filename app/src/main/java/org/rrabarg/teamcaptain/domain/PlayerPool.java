@@ -15,19 +15,27 @@ public class PlayerPool {
 
     protected final Map<String, Player> players;
 
+    private final TeamCaptain teamCaptain;
+
     /**
      * Used for entity creation
      */
-    public PlayerPool(Player... players) {
+    public PlayerPool(TeamCaptain teamCaptain, Player... players) {
+        this.teamCaptain = teamCaptain;
         this.players = createMap(Arrays.asList(players));
     }
 
     /**
      * Used for load from persistent store
      */
-    public PlayerPool(String poolId, Collection<Player> players) {
+    public PlayerPool(String poolId, TeamCaptain teamCaptain, Collection<Player> players) {
+        this.teamCaptain = teamCaptain;
         this.players = createMap(players);
         this.id = poolId;
+    }
+
+    public TeamCaptain getTeamCaptain() {
+        return teamCaptain;
     }
 
     public Collection<Player> getPlayers() {

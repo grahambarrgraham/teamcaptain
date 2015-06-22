@@ -1,8 +1,5 @@
 package org.rrabarg.teamcaptain.channel.smsgateway.androidphone;
 
-/**
- * Created by graham on 09/06/15.
- */
 public class SyncMessage {
 
     private String from;
@@ -12,6 +9,9 @@ public class SyncMessage {
     private String secret;
     private String device_id;
     private String unixtimestamp;
+
+    public SyncMessage() {
+    }
 
     public SyncMessage(String from, String message, String messageId, String sent_to, String secret, String device_id, String unixtimestamp) {
         this.from = from;
@@ -49,5 +49,13 @@ public class SyncMessage {
 
     public String getUnixtimestamp() {
         return unixtimestamp;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

@@ -44,18 +44,18 @@ public class TestDataConfig {
 
         log.warn("Configuring Test Data");
 
-        competition = new CompetitionBuilder()
-                .withPlayerPool(stacy, sharon, safron, sally, joe, jimmy, peter, jed)
-                .withSelectStrategy(new SimpleGenderedSelectionStrategy(1, 1))
-                .withContactPreference(ContactPreference.smsQuestionsWithEmailBroadcast())
-                .build();
-        competitionService.saveCompetition(competition);
-        teamCaptainManager.refreshCompetitions();
-    }
+        competition = competitionService.getCompetitionByName(CompetitionBuilder.DEFAULT_COMPETITION_NAME);
 
-    public void reset() throws IOException {
-        competitionService.clearCompetition(competition);
-        setTestData();
+        if (competition == null) {
+
+            competition = new CompetitionBuilder()
+                    .withPlayerPool(stacy, sharon, safron, sally, joe, jimmy, peter, jed)
+                    .withSelectStrategy(new SimpleGenderedSelectionStrategy(1, 1))
+                    .withContactPreference(ContactPreference.smsQuestionsWithEmailBroadcast())
+                    .build();
+
+            competitionService.createCompetition(competition);
+        }
     }
 
 }

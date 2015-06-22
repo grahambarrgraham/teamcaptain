@@ -13,7 +13,10 @@ import reactor.function.Consumer;
 import javax.annotation.PostConstruct;
 import javax.inject.Provider;
 import java.time.Clock;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import static reactor.event.selector.Selectors.$;
 
@@ -27,7 +30,7 @@ public class AndroidPhoneSmsGatewayController implements Consumer<Event<SmsMessa
     @Autowired
     Provider<Clock> clock;
 
-    ConcurrentLinkedDeque deque = new ConcurrentLinkedDeque();
+    ConcurrentLinkedQueue<SmsMessage> deque = new ConcurrentLinkedQueue();
 
     private String secretKey;
 
@@ -38,7 +41,7 @@ public class AndroidPhoneSmsGatewayController implements Consumer<Event<SmsMessa
     }
 
     @RequestMapping(value = "/androidsms", method = RequestMethod.POST)
-    public @ResponseBody SmsSyncResponse receiveMessage(@ModelAttribute("customer") SyncMessage syncMessage, BindingResult result) {
+    public @ResponseBody SmsSyncResponse receiveMessage(@ModelAttribute("payload") SyncMessage syncMessage, BindingResult result) {
 
         if (result.hasErrors()) {
             return new SmsSyncResponse(true, result.getAllErrors().toString());
@@ -52,12 +55,14 @@ public class AndroidPhoneSmsGatewayController implements Consumer<Event<SmsMessa
 
     @RequestMapping(value = "/androidsms", method = RequestMethod.GET)
     public @ResponseBody SmsSyncResponse getQueuedMessages(@RequestParam(required = false) String task) {
-        return new SmsSyncResponse(secretKey, deque.stream());
+        Collection<SmsMessage> messages = deque.stream().collect(Collectors.toList());
+        deque.removeAll(messages);
+        return new SmsSyncResponse(secretKey, messages);
     }
 
     @Override
     public void accept(Event<SmsMessage> smsMessageEvent) {
-        deque.addLast(smsMessageEvent);
+        deque.add(smsMessageEvent.getData());
     }
 
 

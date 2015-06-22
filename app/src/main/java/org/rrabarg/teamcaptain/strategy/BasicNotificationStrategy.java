@@ -7,7 +7,7 @@ public class BasicNotificationStrategy implements NotificationStrategy {
     private final int daysTillMatchForReminders;
     private final int daysTillMatchForNotifications;
     private final int daysTillMatchForStandbys;
-    private final int daysTillMatchForStatus;
+    private final int daysTillMatchForStatusUpdate;
     private final ContactPreference contactPreference;
     private final int daysTillMatchForAuthStandbySelection;
 
@@ -15,20 +15,20 @@ public class BasicNotificationStrategy implements NotificationStrategy {
             @JsonProperty("daysTillMatchForNotifications") int daysTillMatchTillWindowOpen,
             @JsonProperty("daysTillMatchForReminders") int daysTillMatchForReminders,
             @JsonProperty("daysTillMatchForStandbys") int daysTillMatchForStandbys,
-            @JsonProperty("daysTillMatchTillStatusUpdate") int daysTillMatchTillStatusUpdate,
-            @JsonProperty("daysTillMatchForAuthStandBySelection") int daysTillMatchForAuthStandbySelection,
+            @JsonProperty("daysTillMatchForStatusUpdate") int daysTillMatchTillStatusUpdate,
+            @JsonProperty("daysTillMatchForAutoStandbySelection") int daysTillMatchForAutoStandbySelection,
             @JsonProperty("contactPreference") ContactPreference contactPreference) {
         this.daysTillMatchForReminders = daysTillMatchForReminders;
         this.daysTillMatchForNotifications = daysTillMatchTillWindowOpen;
         this.daysTillMatchForStandbys = daysTillMatchForStandbys;
-        this.daysTillMatchForStatus = daysTillMatchTillStatusUpdate;
-        this.daysTillMatchForAuthStandbySelection = daysTillMatchForAuthStandbySelection;
+        this.daysTillMatchForStatusUpdate = daysTillMatchTillStatusUpdate;
+        this.daysTillMatchForAuthStandbySelection = daysTillMatchForAutoStandbySelection;
         this.contactPreference = contactPreference;
     }
 
     @Override
     public int getDaysTillMatchForStatusUpdate() {
-        return daysTillMatchForStatus;
+        return daysTillMatchForStatusUpdate;
     }
 
     @Override

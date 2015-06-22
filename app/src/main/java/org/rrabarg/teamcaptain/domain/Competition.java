@@ -12,19 +12,16 @@ public class Competition {
     private final PlayerPool playerPool;
     private final SelectionStrategy selectionStrategy;
     private final NotificationStrategy notificationStrategy;
-    private final TeamCaptain teamCaptain;
 
     public Competition(String name, Schedule schedule,
             PlayerPool playerPool,
             SelectionStrategy selectStrategy,
-            NotificationStrategy notificationStrategy,
-            TeamCaptain teamCaptain) {
+            NotificationStrategy notificationStrategy) {
         this.schedule = schedule;
         this.playerPool = playerPool;
         this.name = name;
         this.selectionStrategy = selectStrategy;
         this.notificationStrategy = notificationStrategy;
-        this.teamCaptain = teamCaptain;
     }
 
     public Schedule getSchedule() {
@@ -40,7 +37,7 @@ public class Competition {
     }
 
     public TeamCaptain getTeamCaptain() {
-        return teamCaptain;
+        return getPlayerPool().getTeamCaptain();
     }
 
     public SelectionStrategy getSelectionStrategy() {
@@ -53,6 +50,10 @@ public class Competition {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getId() {
+        return id;
     }
 
     @Override

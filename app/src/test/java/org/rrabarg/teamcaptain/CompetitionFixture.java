@@ -31,7 +31,6 @@ import org.rrabarg.teamcaptain.domain.PlayerStatus;
 import org.rrabarg.teamcaptain.domain.User;
 import org.rrabarg.teamcaptain.service.CompetitionService;
 import org.rrabarg.teamcaptain.service.NotificationRepository;
-import org.rrabarg.teamcaptain.service.ScheduleService;
 import org.rrabarg.teamcaptain.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

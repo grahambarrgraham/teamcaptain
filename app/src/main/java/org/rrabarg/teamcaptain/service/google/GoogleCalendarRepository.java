@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,7 @@ import com.google.api.services.calendar.model.Events;
 
 @Repository
 @Profile("google")
-public class ScheduleGoogleRepository {
+public class GoogleCalendarRepository {
 
     Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
@@ -50,46 +51,31 @@ public class ScheduleGoogleRepository {
     private CompetitionStateSerialisationHelper competitionStateSerialisationHelper;
 
     public Schedule getScheduleByName(String competitionName) throws IOException {
+        return getScheduleById(getScheduleIdForName(competitionName));
+    }
 
-        final String scheduleId = getScheduleId(competitionName);
-
+    public Schedule getScheduleById(String scheduleId) throws IOException {
         if (scheduleId == null) {
             return null;
         }
-
-        return new Schedule(scheduleId, null, getMatches(scheduleId));
+        return new Schedule(scheduleId, null, getMatchesForScheduleId(scheduleId));
     }
 
-    public CompetitionState getCompetitionState(final String scheduleId) throws IOException {
-        final CalendarListEntry calendar = getCalendarById(scheduleId);
+    public CompetitionState getCompetitionState(final String competitionId) throws IOException {
+        final CalendarListEntry calendar = getCalendarById(competitionId);
 
-        log.debug("Loading calendar description " + calendar.getDescription() + " for schedule id " + scheduleId);
+        log.debug("Loading calendar description " + calendar.getDescription() + " for schedule id " + competitionId);
 
         final CompetitionState competitionState =
                 competitionStateSerialisationHelper.fromString(calendar.getDescription());
         return competitionState;
     }
 
-    public CompetitionState getScheduleState(String scheduleId) throws IOException {
-        final CalendarListEntry calendar = getCalendarById(scheduleId);
-        log.debug("getState, Loading calendar description " + calendar.getDescription() + " for schedule id "
-                + scheduleId);
-        return competitionStateSerialisationHelper.fromString(calendar.getDescription());
+    public void deleteSchedule(String scheduleId) throws IOException {
+        getCalendars().delete(scheduleId).execute();
     }
 
-    private CalendarListEntry getCalendarById(final String calendarId) throws IOException {
-        return googleCalendarClient.calendarList().get(calendarId).execute();
-    }
-
-    public String addSchedule(String scheduleTitle) throws IOException {
-        return addCalendar(scheduleTitle).getId();
-    }
-
-    public void deleteSchedule(String sheduleId) throws IOException {
-        getCalendars().delete(sheduleId).execute();
-    }
-
-    public String scheduleMatch(String scheduleId, Match match)
+    public String addMatchToSchedule(String scheduleId, Match match)
             throws IOException {
         final String id = getEvents().insert(scheduleId, asEvent(match)).execute().getId();
         match.init(id, scheduleId);
@@ -102,7 +88,7 @@ public class ScheduleGoogleRepository {
         }
     }
 
-    public String getScheduleId(String scheduleName) throws IOException {
+    public String getScheduleIdForName(String scheduleName) throws IOException {
         final List<CalendarListEntry> items = getCalendarList().getItems();
         for (final CalendarListEntry calendarListEntry : items) {
             if (scheduleName.equals(calendarListEntry.getSummary()) && (!calendarListEntry.isDeleted())) {
@@ -112,38 +98,34 @@ public class ScheduleGoogleRepository {
         return null;
     }
 
-    List<Match> getMatches(String scheduleId) throws IOException {
-        final List<Event> items = getEventsForSchedule(scheduleId).getItems();
-        return items.stream().map(event -> asMatch(scheduleId, event))
+    public List<Match> getMatchesForScheduleId(String scheduleId) throws IOException {
+        return getEventsForSchedule(scheduleId).getItems().stream()
+                .map(event -> asMatch(scheduleId, event))
                 .collect(Collectors.toList());
     }
 
-    public Calendar setCompetitionState(String scheduleId, CompetitionState state) throws IOException {
-        final Calendar entry = getCalendars().get(scheduleId).execute();
+    public Calendar setCompetitionState(String competitionId, CompetitionState state) throws IOException {
+        final Calendar entry = getCalendars().get(competitionId).execute();
         entry.setDescription(competitionStateSerialisationHelper.toString(state));
-        final Calendar execute = getCalendars().update(scheduleId, entry).execute();
-        return execute;
+        return getCalendars().update(competitionId, entry).execute();
     }
 
-    private Match asMatch(String scheduleId, Event event) {
-        return new Match(
-                event.getId(),
-                scheduleId,
-                event.getSummary(),
-                asJavaDateTime(event.getStart().getDateTime(), getTimezone(event)),
-                asJavaDateTime(event.getEnd().getDateTime(), getTimezone(event)), Location.fromString(event
-                        .getLocation()), workflowStateSerialisationHelper.fromString(event.getDescription()));
-    }
-
-    private TimeZone getTimezone(Event event) {
-        final String timeZone = event.getStart().getTimeZone();
-        return timeZone == null ? TimeZone.getDefault() : TimeZone.getTimeZone(timeZone);
-    }
-
-    private Calendar addCalendar(String summary) throws IOException {
+    public String addSchedule(String scheduleName) throws IOException {
         final Calendar entry = new Calendar();
-        entry.setSummary(summary);
-        return getCalendars().insert(entry).execute();
+        entry.setSummary(scheduleName);
+        return getCalendars().insert(entry).execute().getId();
+    }
+
+    public void updateEvent(Match match) throws IOException {
+        getEvents().update(match.getScheduleId(), match.getId(), asEvent(match)).execute();
+    }
+
+    public Set<String> getAllScheduleIds(String schedulePrefix) throws IOException {
+        return getCalendarList().getItems().stream()
+                .filter(e -> e.getSummary().startsWith(schedulePrefix))
+                .filter(e -> !e.isDeleted())
+                .map(e -> e.getId())
+                .collect(Collectors.toSet());
     }
 
     private Event asEvent(Match match) {
@@ -178,16 +160,33 @@ public class ScheduleGoogleRepository {
         return googleCalendarClient.calendarList().list().execute();
     }
 
-    private Events getEventsForSchedule(String scheduleId) throws IOException {
-        return getEvents().list(scheduleId).execute();
+    private Events getEventsForSchedule(String calendarId) throws IOException {
+        return getEvents().list(calendarId).execute();
     }
 
     private com.google.api.services.calendar.Calendar.Events getEvents() {
         return googleCalendarClient.events();
     }
 
-    public void updateMatch(Match match) throws IOException {
-        getEvents().update(match.getScheduleId(), match.getId(), asEvent(match)).execute();
+
+    private Match asMatch(String scheduleId, Event event) {
+        return new Match(
+                event.getId(),
+                scheduleId,
+                event.getSummary(),
+                asJavaDateTime(event.getStart().getDateTime(), getTimezone(event)),
+                asJavaDateTime(event.getEnd().getDateTime(), getTimezone(event)), Location.fromString(event
+                .getLocation()), workflowStateSerialisationHelper.fromString(event.getDescription()));
     }
+
+    private TimeZone getTimezone(Event event) {
+        final String timeZone = event.getStart().getTimeZone();
+        return timeZone == null ? TimeZone.getDefault() : TimeZone.getTimeZone(timeZone);
+    }
+
+    private CalendarListEntry getCalendarById(final String calendarId) throws IOException {
+        return googleCalendarClient.calendarList().get(calendarId).execute();
+    }
+
 
 }

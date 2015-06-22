@@ -164,7 +164,7 @@ public class ReactorVertxBridge implements Consumer<Event<Message>> {
                 final Date parse = dateFormat.parse(dateAsString);
                 mutableClockFactory.fixInstant(parse.toInstant());
                 publishCurrentDate();
-                teamCaptainManager.refreshWorkflows();
+                teamCaptainManager.applyWorkflowForAllCompetitions();
             } catch (final ParseException e) {
                 log.warn("Failed to parse date in setDate instruction : {}", dateAsString, e);
             }

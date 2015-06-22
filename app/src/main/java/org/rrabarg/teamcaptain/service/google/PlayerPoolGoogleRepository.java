@@ -3,18 +3,13 @@ package org.rrabarg.teamcaptain.service.google;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.rrabarg.teamcaptain.domain.ContactDetail;
+import com.google.gdata.data.contacts.*;
+import org.rrabarg.teamcaptain.domain.*;
 import org.rrabarg.teamcaptain.domain.Gender;
-import org.rrabarg.teamcaptain.domain.Player;
-import org.rrabarg.teamcaptain.domain.PlayerPool;
-import org.rrabarg.teamcaptain.domain.TeamCaptain;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -24,12 +19,7 @@ import com.google.gdata.client.Query;
 import com.google.gdata.client.contacts.ContactsService;
 import com.google.gdata.data.Link;
 import com.google.gdata.data.TextConstruct;
-import com.google.gdata.data.contacts.ContactEntry;
-import com.google.gdata.data.contacts.ContactFeed;
-import com.google.gdata.data.contacts.ContactGroupEntry;
-import com.google.gdata.data.contacts.ContactGroupFeed;
 import com.google.gdata.data.contacts.Gender.Value;
-import com.google.gdata.data.contacts.GroupMembershipInfo;
 import com.google.gdata.data.extensions.Email;
 import com.google.gdata.data.extensions.FamilyName;
 import com.google.gdata.data.extensions.GivenName;
@@ -60,7 +50,7 @@ public class PlayerPoolGoogleRepository {
 
         if (groups.size() > 1) {
             log.warn("Multiple contact groups for name " + competitionName
-                    + " probably left over by an abandonded test");
+                    + " probably left over by an abandoned test");
         }
 
         final Collection<ContactGroupEntry> filteredGroups = groups.stream().filter(e -> e.getDeleted() != null)
@@ -100,7 +90,7 @@ public class PlayerPoolGoogleRepository {
         return filter.collect(Collectors.toList());
     }
 
-    public String createPlayerPoolWithName(String title) throws MalformedURLException, IOException,
+    public String createPlayerPoolWithName(String title) throws IOException,
             ServiceException {
 
         if (title == null) {
@@ -121,38 +111,60 @@ public class PlayerPoolGoogleRepository {
             throw new RuntimeException("Invalid pool id " + poolId);
         }
 
-        final List<Player> players = streamAllContactsInGroup(poolId).map(entry -> instantiatePlayer(entry)).collect(
-                Collectors.toList());
+        Stream<ContactEntry> contactEntryStream = streamAllContactsInGroup(poolId);
 
-        return new PlayerPool(poolId, players);
+        Map<Boolean, List<ContactEntry>> map = contactEntryStream.collect(Collectors.groupingBy(e -> isTeamCaptain(e)));
+
+        if (map.get(true) == null) {
+            throw new RuntimeException("Cannot load player pool which does not have a team captain");
+        }
+
+        final Stream<ContactEntry> playersContactEntries = map.get(false).stream();
+
+        final List<Player> players = playersContactEntries
+                .map(entry -> instantiatePlayer(entry)).collect(Collectors.toList());
+
+        final ContactEntry teamCaptainContactEntry = map.get(true).get(0);
+        return new PlayerPool(poolId, instantiateTeamCaptain(teamCaptainContactEntry), players);
 
     }
 
-    public void addPlayersToPool(String poolId, Collection<Player> players) throws MalformedURLException, IOException,
+    private boolean isTeamCaptain(ContactEntry ce) {
+        return ce.getUserDefinedFields().stream()
+                .filter(e -> "UserType".equals(e.getKey()))
+                .anyMatch(e -> "TeamCaptain".equalsIgnoreCase(e.getValue()));
+    }
+
+    public void addPlayersToPool(String poolId, Collection<Player> players) throws IOException,
             ServiceException {
         for (final Player player : players) {
-            addPlayer(poolId, player);
+            addUser(poolId, player);
         }
     }
 
-    public void clearPlayersFromPool(String poolId) throws MalformedURLException, IOException, ServiceException {
+    public void addTeamCaptainToPool(String poolId, TeamCaptain teamCaptain) throws IOException,
+            ServiceException {
+            addUser(poolId, teamCaptain);
+    }
+
+    public void clearPlayersFromPool(String poolId) throws IOException, ServiceException {
         assert (poolId != null);
         streamAllContactsInGroup(poolId).forEach(a -> deleteContact(a));
     }
 
-    private void addPlayer(String poolId, final Player player) {
+    private void addUser(String poolId, final User user) {
 
-        log.debug("Adding contact for player " + player + " to pool " + poolId);
+        log.debug("Adding contact for user " + user + " to pool " + poolId);
 
         ContactEntry addedContact;
         try {
-            addedContact = contactService.insert(getContactFeedUrl(), buildContact(player, poolId));
+            addedContact = contactService.insert(getContactFeedUrl(), buildContact(user, poolId));
         } catch (IOException | ServiceException e) {
-            throw new RuntimeException("Failed to add player " + player, e);
+            throw new RuntimeException("Failed to add player " + user, e);
         }
-        player.setId(addedContact.getId());
+        user.setId(addedContact.getId());
 
-        log.debug("Added contact for player " + player + " to pool " + poolId + " got player id "
+        log.debug("Added contact for player " + user + " to pool " + poolId + " got player id "
                 + addedContact.getId() + " status " + addedContact.getStatus());
     }
 
@@ -182,29 +194,32 @@ public class PlayerPoolGoogleRepository {
         return new URL(link.getHref());
     }
 
-    private ContactEntry buildContact(Player player, String groupHref) {
+    private ContactEntry buildContact(User user, String groupHref) {
         final ContactEntry contact = new ContactEntry();
         final Name name = new Name();
-        name.setGivenName(new GivenName(player.getFirstname(), null));
-        name.setFamilyName(new FamilyName(player.getSurname(), null));
+        name.setGivenName(new GivenName(user.getFirstname(), null));
+        name.setFamilyName(new FamilyName(user.getSurname(), null));
         contact.setName(name);
-        contact.setGender(asGoogleGender(player.getGender()));
+        contact.setGender(asGoogleGender(user.getGender()));
         final GroupMembershipInfo groupMembershipInfo = new GroupMembershipInfo(false, groupHref);
         contact.addGroupMembershipInfo(groupMembershipInfo);
 
-        if (player.getEmailAddress() != null) {
+        if (user.getEmailAddress() != null) {
             final Email email = new Email();
-            email.setAddress(player.getEmailAddress());
-            email.setDisplayName(player.getFirstname() + " " + player.getSurname());
+            email.setAddress(user.getEmailAddress());
+            email.setDisplayName(user.getFirstname() + " " + user.getSurname());
             email.setLabel(CONTACT_LABEL);
             contact.addEmailAddress(email);
         }
 
-        if (player.getMobileNumber() != null) {
+        if (user.getMobileNumber() != null) {
             final PhoneNumber phoneNumber = new PhoneNumber();
-            phoneNumber.setPhoneNumber(player.getMobileNumber());
+            phoneNumber.setPhoneNumber(user.getMobileNumber());
             phoneNumber.setLabel(CONTACT_LABEL);
         }
+
+        String type = (user instanceof  Player) ? "Player" : "TeamCaptain";
+        contact.getUserDefinedFields().add(new UserDefinedField("UserType", type));
 
         return contact;
     }
@@ -286,14 +301,12 @@ public class PlayerPoolGoogleRepository {
         return optional.isPresent() ? optional.get().getPhoneNumber() : null;
     }
 
-    private Stream<ContactEntry> streamAllContactsInGroup(String groupId) throws MalformedURLException, IOException,
+    private Stream<ContactEntry> streamAllContactsInGroup(String groupId) throws IOException,
             ServiceException {
 
         if (groupId == null) {
             throw new RuntimeException("Invalid contact group " + groupId);
         }
-
-        // TODO - work out how to do this using Stream supplier model
 
         final List<ContactEntry> contactEntries = new ArrayList<>();
 

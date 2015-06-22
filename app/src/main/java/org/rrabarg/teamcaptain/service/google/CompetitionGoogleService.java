@@ -1,18 +1,11 @@
 package org.rrabarg.teamcaptain.service.google;
 
+import java.io.IOException;
 import java.util.Collection;
 
-import org.rrabarg.teamcaptain.domain.Competition;
-import org.rrabarg.teamcaptain.domain.CompetitionState;
-import org.rrabarg.teamcaptain.domain.PlayerPool;
-import org.rrabarg.teamcaptain.domain.Schedule;
-import org.rrabarg.teamcaptain.domain.TeamCaptain;
+import org.rrabarg.teamcaptain.domain.*;
 import org.rrabarg.teamcaptain.service.CompetitionService;
-import org.rrabarg.teamcaptain.service.CompetitionStateService;
 import org.rrabarg.teamcaptain.service.PlayerPoolService;
-import org.rrabarg.teamcaptain.service.ScheduleService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -21,96 +14,97 @@ import org.springframework.stereotype.Component;
 @Profile("google")
 public class CompetitionGoogleService implements CompetitionService {
 
-    Logger log = LoggerFactory.getLogger(getClass().getName());
+    @Autowired
+    ScheduleGoogleService scheduleService;
 
     @Autowired
-    ScheduleService scheduleService;
-
-    @Autowired
-    CompetitionStateService competitionStateService;
+    CompetitionStateGoogleService competitionStateService;
 
     @Autowired
     PlayerPoolService playerPoolService;
 
     @Override
-    public String saveCompetition(Competition competition) {
+    public String createCompetition(Competition competition) {
         try {
             final String name = competition.getName();
             final String poolId = playerPoolService.savePlayerPool(name, competition.getPlayerPool());
             final String scheduleId = scheduleService.saveSchedule(name, competition.getSchedule());
-            final String teamCaptainId = competition.getTeamCaptain().getId();
+
+            competition.setId(scheduleId);
+
             competitionStateService.save(
-                    null,
-                    new CompetitionState(poolId, teamCaptainId,
+                    scheduleId,
+                    new CompetitionState(poolId,
                             competition.getSelectionStrategy(),
                             competition.getNotificationStrategy()));
+
             return scheduleId;
+
         } catch (final Exception e) {
             throw new RuntimeException("Failed to save competition " + competition, e);
         }
     }
 
     @Override
-    public Competition findCompetitionByName(String competitionName) {
+    public Competition findCompetitionById(String competitionId) {
 
         try {
-            final Schedule schedule = scheduleService.findByName(competitionName);
+            final Schedule schedule = scheduleService.getScheduleById(competitionId);
 
             if (schedule == null) {
                 return null;
             }
 
-            final CompetitionState competitionState = competitionStateService.getCompetitionState(competitionName);
+            final CompetitionState competitionState = competitionStateService.getCompetitionState(competitionId);
 
-            schedule.getMatches().stream().map(a -> a.getWorkflowState())
-                    .forEach(a -> log.debug("Schedule " + schedule.getId() + " loaded match state " + a));
+            final PlayerPool playerPool = findPlayerPool(competitionState.getPlayerPoolId());
 
-            final PlayerPool playerPool = findPlayerPool(competitionName, competitionState.getPlayerPoolId());
-
-            final Competition competition = new Competition(competitionName, schedule, playerPool,
+            final Competition competition = new Competition(competitionId, schedule, playerPool,
                     competitionState.getSelectionStrategy(),
-                    competitionState.getNotificationStrategy(),
-                    getTeamCaptain(competitionState.getTeamCaptainId()));
+                    competitionState.getNotificationStrategy());
 
             schedule.setCompetition(competition);
-            competition.setId(competitionName);
+            competition.setId(competitionId);
 
             return competition;
 
         } catch (final Exception e) {
-            throw new RuntimeException("Failure whilst try to find competition with name " + competitionName, e);
+            throw new RuntimeException("Failure whilst try to find competition with name " + competitionId, e);
         }
     }
 
-    private TeamCaptain getTeamCaptain(String teamCaptainId) {
-        throw new UnsupportedOperationException("method not implemented yet");
+    @Override
+    public Competition getCompetitionByName(String competitionName) throws IOException {
+        return findCompetitionById(scheduleService.getScheduleIdForName(competitionName));
     }
 
-    private PlayerPool findPlayerPool(String competitionName, String playerPoolId) {
+    @Override
+    public void updateMatch(Match match) throws IOException {
+        scheduleService.updateMatch(match);
+    }
+
+    @Override
+    public void clearCompetition(Competition comp) {
+        throw new UnsupportedOperationException("Clear competition not implemented");
+    }
+
+    private PlayerPool findPlayerPool(String playerPoolId) {
 
         final PlayerPool pool = playerPoolService.findById(playerPoolId);
 
         if (pool == null) {
-            throw new RuntimeException("Competition " + competitionName
-                    + " in invalid state, could not find player pool " + playerPoolId);
+            throw new RuntimeException("could not find player pool " + playerPoolId);
         }
         return pool;
     }
 
     @Override
-    public void clearCompetition(Competition competition) {
-        try {
-            scheduleService.clearMatches(competition.getSchedule());
-            playerPoolService.clearPlayers(competition.getName(), competition.getPlayerPool());
-        } catch (final Exception e) {
-            throw new RuntimeException("Failed to clear competition " + competition.getName(), e);
-        }
-    }
-
-    @Override
     public Collection<String> getCompetitionIds() {
-        throw new UnsupportedOperationException(
-                "not yet implemented, requires a naming conventions for schedules in google calendar, to be able to select them.");
+        try {
+            return scheduleService.getAllScheduleIds();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to get all competition ids", e);
+        }
     }
 
 }
